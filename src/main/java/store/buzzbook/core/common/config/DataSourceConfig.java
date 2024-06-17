@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +15,7 @@ import javax.sql.DataSource;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "mysql")
+@ConfigurationProperties(prefix = "spring.datasource")
 public class DataSourceConfig {
 
 	private String driverClassName;
@@ -40,9 +41,9 @@ public class DataSourceConfig {
 		basicDataSource.setMinIdle(minIdle);
 
 		basicDataSource.setValidationQuery("SELECT 1");
-		basicDataSource.setTestOnReturn(true);
-		basicDataSource.setTestOnBorrow(true);
-		basicDataSource.setTestWhileIdle(true);
+		basicDataSource.setTestOnReturn(false);
+		basicDataSource.setTestOnBorrow(false);
+		basicDataSource.setTestWhileIdle(false);
 
 		return basicDataSource;
 	}

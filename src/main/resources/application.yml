@@ -8,6 +8,12 @@ spring:
     password: 6@H(77fpCZDiC6!!
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+    type: org.apache.commons.dbcp2.BasicDataSource
+    initial-size: 20
+    max-total: 40
+    max-idle: 15
+    min-idle: 10
+
   jpa:
     hibernate:
       ddl-auto: update
