@@ -2,12 +2,8 @@ package store.buzzbook.core.entity.product;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-import java.util.Date;
+import lombok.*;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Table(name = "book")
@@ -16,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Getter
+@Setter
 public class Book {
 
     @Id
@@ -39,7 +36,7 @@ public class Book {
 
     @Column(nullable = false)
     @JsonProperty("pubdate")
-    private Date publishDate;
+    private ZonedDateTime publishDate;
 
     @OneToMany
     private List<BookAuthor> bookAuthors;

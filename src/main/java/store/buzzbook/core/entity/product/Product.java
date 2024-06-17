@@ -5,9 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Getter
@@ -25,7 +24,7 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
-    private Date forward_date;
+    private ZonedDateTime forward_date;
 
     @Column(nullable = false)
     private Double score;
