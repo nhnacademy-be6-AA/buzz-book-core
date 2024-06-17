@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@Getter @Setter
 public class BookApiResponse {
     @JsonProperty("item")
     private List<Item> items;
@@ -34,6 +35,7 @@ public class BookApiResponse {
         @JsonProperty("description")
         private String description;
 
-        private String categoryName;
+        @JsonProperty("cover")
+        private String cover;
     }
 }
