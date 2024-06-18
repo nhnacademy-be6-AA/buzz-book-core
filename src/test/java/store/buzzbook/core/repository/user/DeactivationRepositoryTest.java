@@ -61,7 +61,6 @@ class DeactivationRepositoryTest {
 		deactivation =
 			Deactivation
 			.builder()
-			// .id(1L)
 			.user(user)
 			.reason("기타")
 			.deactivationDate(ZonedDateTime.now())

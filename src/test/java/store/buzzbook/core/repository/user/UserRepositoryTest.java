@@ -1,18 +1,19 @@
 package store.buzzbook.core.repository.user;
 
+import java.time.ZonedDateTime;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import store.buzzbook.account.domain.user.Grade;
-import store.buzzbook.account.domain.user.User;
-import store.buzzbook.account.domain.user.UserStatus;
-import store.buzzbook.account.repository.account.GradeRepository;
-import store.buzzbook.account.repository.account.UserRepository;
 
-import java.time.ZonedDateTime;
+import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserStatus;
+import store.buzzbook.core.repository.account.GradeRepository;
+import store.buzzbook.core.repository.account.UserRepository;
 
 @DataJpaTest
 class UserRepositoryTest {

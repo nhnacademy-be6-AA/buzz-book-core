@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.account.domain.product.Product;
+import store.buzzbook.core.entity.product.Product;
 
 @Builder
 @Getter

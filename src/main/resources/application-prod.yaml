@@ -1,0 +1,24 @@
+spring:
+    application:
+        name: core
+
+    datasource:
+        url: jdbc:mysql://133.186.241.167:3306/be6_aa_dev?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+        username: be6_aa
+        password: 6@H(77fpCZDiC6!!
+        driver-class-name: com.mysql.cj.jdbc.Driver
+
+        type: org.apache.commons.dbcp2.BasicDataSource
+        initial-size: 20
+        max-total: 40
+        max-idle: 15
+        min-idle: 10
+
+    jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+                dialect: org.hibernate.dialect.MySQL8Dialect

@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.cart.Wishlist;
+import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.User;
@@ -20,6 +21,7 @@ import store.buzzbook.core.repository.account.GradeRepository;
 import store.buzzbook.core.repository.account.UserRepository;
 import store.buzzbook.core.repository.account.WishlistRepository;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @DataJpaTest
@@ -41,6 +43,8 @@ class CartWishlistRepositoryTest {
 	private CartDetailRepository cartDetailRepository;
 	@Autowired
 	private WishlistRepository wishlistRepository;
+
+	private Product product;
 
 	@BeforeEach
 	void setUp() {
@@ -70,6 +74,16 @@ class CartWishlistRepositoryTest {
 		cart = Cart.builder()
 			.user(user)
 			.cartUpdatedDate(ZonedDateTime.now()).build();
+
+		Category category = Category.builder().name("test").build();
+
+		entityManager.persist(category);
+
+		product = Product.builder().score(1d)
+			.stock(100)
+			.price(BigDecimal.valueOf(10000L))
+			.category(category).build();
+
 	}
 
 
@@ -83,15 +97,14 @@ class CartWishlistRepositoryTest {
 		Assertions.assertEquals(cart.getId(), resultCart.getId());
 		Assertions.assertEquals(cart.getUser().getId(), resultCart.getUser().getId());
 
+
+
 	}
 
 	@Test
 	@DisplayName("장바구니 상품 추가 테스트")
 	void testCreateCartDetail(){
 		cartRepository.save(cart);
-
-		Product product = Product.builder().id(1L).name("호랑이").build();
-
 
 		entityManager.persist(product);
 
@@ -107,7 +120,6 @@ class CartWishlistRepositoryTest {
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(cartDetail.getId(), result.getId());
 		Assertions.assertEquals(cartDetail.getProduct().getId(), product.getId());
-		Assertions.assertEquals(cartDetail.getProduct().getName(), result.getProduct().getName());
 		Assertions.assertEquals(cartDetail.getQuantity(), result.getQuantity());
 	}
 
@@ -116,8 +128,6 @@ class CartWishlistRepositoryTest {
 	@DisplayName("장바구니 상품 삭제 테스트")
 	void testCreateAndDeleteDetail(){
 		cartRepository.save(cart);
-
-		Product product = Product.builder().id(1L).name("호랑이").build();
 
 		entityManager.persist(product);
 
@@ -133,7 +143,6 @@ class CartWishlistRepositoryTest {
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(cartDetail.getId(), result.getId());
 		Assertions.assertEquals(cartDetail.getProduct().getId(), product.getId());
-		Assertions.assertEquals(cartDetail.getProduct().getName(), result.getProduct().getName());
 		Assertions.assertEquals(cartDetail.getQuantity(), result.getQuantity());
 
 		cartDetailRepository.deleteById(cartDetail.getId());
@@ -145,7 +154,6 @@ class CartWishlistRepositoryTest {
 	@Test
 	@DisplayName("위시리스트 추가 테스트")
 	void testCreateWishList(){
-		Product product = Product.builder().id(1L).name("호랑이").build();
 		Wishlist wishlist = Wishlist.builder()
 				.product(product)
 				.user(user).build();

@@ -19,7 +19,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 @DataJpaTest
-public class AddressRepositoryTest {
+class AddressRepositoryTest {
 	@Autowired
 	private EntityManager entityManager;
 

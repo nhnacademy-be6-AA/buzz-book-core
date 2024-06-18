@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.account.domain.user.User;
+import store.buzzbook.core.entity.user.User;
 
 import java.time.ZonedDateTime;
 
