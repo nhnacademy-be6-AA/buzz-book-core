@@ -15,7 +15,7 @@ import java.util.List;
 @Tag(name = "Book Management API", description = "도서 정보 CRUD API")
 public class BookController {
 
-    private BookService bookService;
+    private final BookService bookService;
 
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book book) {

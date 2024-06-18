@@ -1,23 +1,24 @@
 package store.buzzbook.core.entity.product;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Getter
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Entity
 @NoArgsConstructor
-@Builder
-@AllArgsConstructor
+@Getter
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private int stock;
 
@@ -27,15 +28,32 @@ public class Product {
     private ZonedDateTime forward_date;
 
     @Column(nullable = false)
-    private Double score;
+    private int score;
 
     private String thumbnail_path;
 
     @OneToOne
-    @JoinColumn(name = "category_id", nullable = false ,referencedColumnName = "id")
+    @JoinColumn(name = "category_id", nullable = false, referencedColumnName = "id")
     private Category category;
 
     @OneToMany(mappedBy = "product")
     private List<Review> reviews;
 
+    @ManyToOne
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
+
+    @Builder
+    public Product(int stock, BigDecimal price, String forward_date,
+            int score, String thumbnail_path, Category category,Book book)
+    {
+        this.stock = stock;
+        this.price = price;
+        LocalDate localDate = LocalDate.parse(forward_date);
+        this.forward_date = localDate.atStartOfDay(ZoneId.systemDefault());
+        this.score = score;
+        this.thumbnail_path = thumbnail_path;
+        this.category = category;
+        this.book = book;
+    }
 }
