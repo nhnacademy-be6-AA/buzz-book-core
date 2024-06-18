@@ -1,0 +1,82 @@
+package store.buzzbook.core.repository.user;
+
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import store.buzzbook.core.entity.user.Deactivation;
+import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserStatus;
+import store.buzzbook.core.repository.account.DeactivationRepository;
+import store.buzzbook.core.repository.account.GradeRepository;
+import store.buzzbook.core.repository.account.UserRepository;
+
+import java.time.ZonedDateTime;
+
+@DataJpaTest
+class DeactivationRepositoryTest {
+	@Autowired
+	private EntityManager entityManager;
+
+	@Autowired
+	private DeactivationRepository deactivationRepository;
+	@Autowired
+	private GradeRepository gradeRepository;
+	@Autowired
+	private UserRepository userRepository;
+
+	private Grade grade;
+	private User user;
+	private Deactivation deactivation;
+
+	@BeforeEach
+	void setUp() {
+
+		grade = Grade.builder()
+			.benefit(2.5)
+			.name("플래티넘")
+			.standard(200000)
+			.build();
+
+		gradeRepository.save(grade);
+
+		user = User.builder()
+			.loginId("asd123")
+			.name("john doe")
+			.grade(grade)
+			.email("email123@nhn.com")
+			.contactNumber("010-0000-1111")
+			.birthday(ZonedDateTime.now())
+			.modifyDate(ZonedDateTime.now())
+			.createDate(ZonedDateTime.now())
+			.password("encrytedsolongpassword123345")
+			.lastLoginDate(ZonedDateTime.now())
+			.status(UserStatus.ACTIVE).build();
+		userRepository.save(user);
+
+		deactivation =
+			Deactivation
+			.builder()
+			// .id(1L)
+			.user(user)
+			.reason("기타")
+			.deactivationDate(ZonedDateTime.now())
+			.build();
+	}
+
+	@Test
+	@DisplayName("유저 탈퇴 리스트 추가 테스트")
+	void testDeactivation() {
+		deactivationRepository.save(deactivation);
+
+		Deactivation result = deactivationRepository.findById(user.getId()).orElse(null);
+
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(deactivation.getReason(), result.getReason());
+		Assertions.assertEquals(deactivation.getUser().getLoginId(), result.getUser().getLoginId());
+	}
+}
