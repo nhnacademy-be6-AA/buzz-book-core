@@ -1,4 +1,4 @@
-package store.buzzbook.core.repository.account;
+package store.buzzbook.core.repository.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

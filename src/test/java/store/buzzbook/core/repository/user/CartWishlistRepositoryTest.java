@@ -13,13 +13,9 @@ import store.buzzbook.core.entity.cart.Wishlist;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
-import store.buzzbook.core.repository.account.CartDetailRepository;
-import store.buzzbook.core.repository.account.CartRepository;
-import store.buzzbook.core.repository.account.GradeRepository;
-import store.buzzbook.core.repository.account.UserRepository;
-import store.buzzbook.core.repository.account.WishlistRepository;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -51,7 +47,7 @@ class CartWishlistRepositoryTest {
 
 		grade = Grade.builder()
 			.benefit(2.5)
-			.name("플래티넘")
+			.name(GradeName.NORMAL)
 			.standard(200000)
 			.build();
 
@@ -79,7 +75,7 @@ class CartWishlistRepositoryTest {
 
 		entityManager.persist(category);
 
-		product = Product.builder().score(1d)
+		product = Product.builder().score(10)
 			.stock(100)
 			.price(BigDecimal.valueOf(10000L))
 			.category(category).build();

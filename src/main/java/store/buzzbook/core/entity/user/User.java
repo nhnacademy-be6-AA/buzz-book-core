@@ -74,7 +74,4 @@ public class User {
 	@Column(name = "is_admin")
 	private boolean isAdmin;
 
-	//todo why one to many?
-	@OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<Order> order;
 }

@@ -9,11 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
-import store.buzzbook.core.repository.account.DeactivationRepository;
-import store.buzzbook.core.repository.account.GradeRepository;
-import store.buzzbook.core.repository.account.UserRepository;
 
 import java.time.ZonedDateTime;
 
@@ -38,7 +36,7 @@ class DeactivationRepositoryTest {
 
 		grade = Grade.builder()
 			.benefit(2.5)
-			.name("플래티넘")
+			.name(GradeName.NORMAL)
 			.standard(200000)
 			.build();
 

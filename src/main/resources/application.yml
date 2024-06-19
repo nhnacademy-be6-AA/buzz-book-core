@@ -11,14 +11,9 @@ spring:
     max-idle: 15
     min-idle: 10
 
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
 
 aladin:
   api:

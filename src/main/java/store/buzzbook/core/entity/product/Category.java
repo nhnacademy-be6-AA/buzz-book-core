@@ -27,10 +27,11 @@ public class Category {
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
 
-    @OneToMany(mappedBy = "parentCategory")
-    private List<Category> subCategories;
-
     @OneToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    public Category(String name, Category parentCategory) {}
+
+
 }

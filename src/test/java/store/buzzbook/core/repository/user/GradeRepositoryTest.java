@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import store.buzzbook.core.entity.user.Grade;
-import store.buzzbook.core.repository.account.GradeRepository;
+import store.buzzbook.core.entity.user.GradeName;
 
 @DataJpaTest
 class GradeRepositoryTest {
@@ -19,7 +19,7 @@ class GradeRepositoryTest {
 	public void setUp() {
 		grade = Grade.builder()
 			.benefit(2.5)
-			.name("플래티넘")
+			.name(GradeName.NORMAL)
 			.standard(200000)
 			.build();
 

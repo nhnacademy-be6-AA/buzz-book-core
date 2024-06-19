@@ -1,12 +1,14 @@
 package store.buzzbook.core.service.user;
 
 import store.buzzbook.core.dto.user.LoginUserResponse;
+import store.buzzbook.core.dto.user.RegisterUserRequest;
+import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 
 public interface UserService {
-	LoginUserResponse requestLogin(Long id);
+	LoginUserResponse requestLogin(String loginId);
 	UserInfo successLogin(Long id);
-	Long requestSignUp(UserInfo userInfo);
+	RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest);
 	Long deactivate(Long id);
 	Long activate(Long id);
 }

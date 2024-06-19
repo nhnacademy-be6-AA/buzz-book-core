@@ -9,10 +9,9 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.transaction.annotation.Transactional;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
-import store.buzzbook.core.repository.account.GradeRepository;
-import store.buzzbook.core.repository.account.UserRepository;
 import store.buzzbook.core.repository.point.PointLogRepository;
 
 import java.math.BigDecimal;
@@ -45,7 +44,7 @@ class PointLogRepositoryTest {
 	public void setUp() {
 		testGrade = Grade.builder()
 			.benefit(2.5)
-			.name("플래티넘")
+			.name(GradeName.NORMAL)
 			.standard(200000)
 			.build();
 
