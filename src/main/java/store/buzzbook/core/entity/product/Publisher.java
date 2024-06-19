@@ -1,14 +1,14 @@
 package store.buzzbook.core.entity.product;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Entity
+@NoArgsConstructor
 public class Publisher {
 
     @Id
@@ -21,15 +21,7 @@ public class Publisher {
     @OneToMany(mappedBy = "publisher")
     private List<Book> books;
 
-    public Publisher() {}
-
-    @JsonCreator
     public Publisher(String name) {
         this.name = name;
-    }
-
-    @JsonValue
-    public String getName() {
-        return name;
     }
 }

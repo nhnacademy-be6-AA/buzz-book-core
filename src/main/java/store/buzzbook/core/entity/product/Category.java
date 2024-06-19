@@ -1,12 +1,16 @@
 package store.buzzbook.core.entity.product;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "category")
 public class Category {
 
@@ -27,4 +31,9 @@ public class Category {
     @OneToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    public Category(String name, Category parentCategory) {
+        this.name = name;
+        this.parentCategory = parentCategory;
+    }
 }
