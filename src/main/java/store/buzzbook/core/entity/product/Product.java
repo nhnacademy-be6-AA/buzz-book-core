@@ -17,13 +17,13 @@ import lombok.NoArgsConstructor;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(nullable = false)
     private int stock;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private int price;
 
     private ZonedDateTime forward_date;
 
@@ -44,7 +44,7 @@ public class Product {
     private Book book;
 
     @Builder
-    public Product(int stock, BigDecimal price, String forward_date,
+    public Product(int stock, int price, String forward_date,
             int score, String thumbnail_path, Category category,Book book)
     {
         this.stock = stock;

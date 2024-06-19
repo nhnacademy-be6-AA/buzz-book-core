@@ -1,27 +1,29 @@
 package store.buzzbook.core.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Entity
 @NoArgsConstructor
-public class Publisher {
+public class Publisher implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(nullable = false, length = 50)
     private String name;
 
-    @OneToMany(mappedBy = "publisher")
-    private List<Book> books;
-
+    @JsonCreator
     public Publisher(String name) {
         this.name = name;
     }
+
+
 }
