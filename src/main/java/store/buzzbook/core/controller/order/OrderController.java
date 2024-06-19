@@ -31,8 +31,8 @@ public class OrderController {
 	}
 
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
-	@GetMapping("/{orderId}")
-	public ResponseEntity<List<OrderDetailResponse>> getOrderDetails(@PathVariable("orderId") Long orderId) {
+	@GetMapping("/{id}/detail")
+	public ResponseEntity<List<OrderDetailResponse>> getOrderDetails(@PathVariable Long orderId) {
 		return null;
 	}
 
