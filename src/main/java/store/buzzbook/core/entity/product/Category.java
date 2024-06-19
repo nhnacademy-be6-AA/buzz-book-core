@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "category")
 public class Category {
 
@@ -27,11 +28,8 @@ public class Category {
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
 
-    @OneToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
-
-    public Category(String name, Category parentCategory) {}
-
-
+    public Category(String name, Category parentCategory) {
+        this.name = name;
+        this.parentCategory = parentCategory;
+    }
 }

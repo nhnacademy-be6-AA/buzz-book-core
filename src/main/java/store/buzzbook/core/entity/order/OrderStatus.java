@@ -31,7 +31,4 @@ public class OrderStatus {
 	private String name;
 	@LastModifiedDate
 	private ZonedDateTime updateDate;
-
-	@OneToOne(mappedBy = "orderStatus")
-	private OrderDetail orderDetail;
 }

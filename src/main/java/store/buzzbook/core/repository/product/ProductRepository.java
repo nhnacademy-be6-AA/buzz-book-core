@@ -5,6 +5,6 @@ import store.buzzbook.core.entity.product.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Product findByBookId(Long bookId);
+    Product findByBookId(int bookId);
 
 }
