@@ -2,6 +2,8 @@ package store.buzzbook.core.controller.order;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,29 +12,44 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
-import store.buzzbook.core.dto.order.OrderResponse;
+import store.buzzbook.core.dto.order.OrderReadResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
+import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.order.OrderService;
 
 @Tag(name = "Orders API", description = "주문 관련 API")
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderController {
+	private final OrderService orderService;
+	private final UserRepository userRepository;
+
+	@Operation(summary = "주문 조회", description = "주문 조회")
+	@GetMapping("/{login-id}")
+	public ResponseEntity<Page<OrderReadResponse>> getOrder(@PathVariable("login-id") long loginId, Pageable pageable) {
+		// long userId = userRepository.findByLoginId(loginId).get().getId();
+		return ResponseEntity.ok(orderService.readMyOrders(loginId, pageable));
+	}
+
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@GetMapping("/{id}")
-	public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
+	public ResponseEntity<OrderReadResponse> getOrder(@PathVariable Long id, @RequestParam("userId") long userId) {
 		return null;
 	}
 
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
 	@GetMapping("/{id}/detail")
-	public ResponseEntity<List<OrderDetailResponse>> getOrderDetails(@PathVariable Long orderId) {
+	public ResponseEntity<List<OrderDetailResponse>> getOrderDetails(@PathVariable Long id) {
 		return null;
 	}
 

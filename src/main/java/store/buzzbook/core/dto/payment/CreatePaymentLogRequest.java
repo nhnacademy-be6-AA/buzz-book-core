@@ -9,7 +9,7 @@ import store.buzzbook.core.entity.payment.BillLog;
 @AllArgsConstructor
 @Getter
 public class CreatePaymentLogRequest {
-	private BillLog billLog;
+	private long billLogId;
 
 	private String name;
 	private int price;
