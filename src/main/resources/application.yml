@@ -3,7 +3,14 @@ spring:
     name: core
 
   profiles:
-    active: dev
+    active: test
+
+  datasource:
+    type: org.apache.commons.dbcp2.BasicDataSource
+    initial-size: 20
+    max-total: 40
+    max-idle: 15
+    min-idle: 10
 
   jackson:
     serialization:

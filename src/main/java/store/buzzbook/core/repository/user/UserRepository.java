@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByLoginId(String loginId);
     Optional<User> findByLoginId(String loginId);
-    boolean updateLastLoginDateById(Long id, ZonedDateTime lastLoginDate);
+    //boolean updateLastLoginDateById(Long id, ZonedDateTime lastLoginDate);
 }

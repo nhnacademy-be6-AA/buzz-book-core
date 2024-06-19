@@ -53,16 +53,16 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserInfo successLogin(Long id) {
 		//todo 뭔가 보안을 위한 토큰 같은게 필요할까요?
-		boolean isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
-		if (!isUpdated) {
-			//한번 더 시도
-			isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
-		}
+		// boolean isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
+		// if (!isUpdated) {
+		// 	//한번 더 시도
+		// 	isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
+		// }
 
-		if (!isUpdated) {
-			log.warn("로그인 성공 처리 실패 : 알 수 없는 오류");
-			throw new UnknownUserException("로그인 성공처리 업데이트 실패");
-		}
+		// if (!isUpdated) {
+		// 	log.warn("로그인 성공 처리 실패 : 알 수 없는 오류");
+		// 	throw new UnknownUserException("로그인 성공처리 업데이트 실패");
+		// }
 
 		User user = userRepository.findById(id).orElseThrow(
 			() -> new UserNotFoundException(String.format("long id %d", id)));
