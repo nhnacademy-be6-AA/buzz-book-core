@@ -5,11 +5,24 @@ spring:
   profiles:
     active: dev
 
+    type: org.apache.commons.dbcp2.BasicDataSource
+    initial-size: 20
+    max-total: 40
+    max-idle: 15
+    min-idle: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
 aladin:
   api:
     key: ttbheej19982032001
-
 
 
 springdoc:

@@ -13,10 +13,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/books/search")
 @RequiredArgsConstructor
+
 @Tag(name = "Book Search API", description = "도서 검색 API")
 public class BookSearchController {
 
-    private BookSearchService bookSearchService;
+    private final BookSearchService bookSearchService;
 
     @GetMapping
     @Operation(summary = "Search books from Aladin API", description = "Aladin API에서 도서를 검색함")
@@ -29,6 +30,4 @@ public class BookSearchController {
     public void searchAndSaveBooks(@RequestParam(required = false, defaultValue = "") String query) {
         bookSearchService.searchAndSaveBooks(query);
     }
-
-
 }
