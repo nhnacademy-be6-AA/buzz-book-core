@@ -11,8 +11,8 @@ import store.buzzbook.core.service.product.BookService;
 @AutoConfigureMockMvc
 public class BookControllerTest {
 
-    private MockMvc mockMvc;
-    private BookService bookService;
+    //private MockMvc mockMvc;
+    //private BookService bookService;
 
 //    @Test
 //    public void createBookTest() throws Exception {
