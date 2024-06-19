@@ -27,7 +27,4 @@ public class DeliveryPolicy {
 	private String name;
 	private int standardPrice;
 	private int policyPrice;
-
-	@OneToMany(mappedBy = "deliveryPolicy", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<Order> orders;
 }

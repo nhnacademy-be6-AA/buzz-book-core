@@ -26,7 +26,4 @@ public class Wrapping {
 	private int id;
 	private String paper;
 	private int price;
-
-	@OneToMany(mappedBy = "wrapping", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<OrderDetail> orderDetails;
 }

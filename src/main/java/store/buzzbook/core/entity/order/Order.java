@@ -46,10 +46,4 @@ public class Order {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = false)
 	private User user;
-
-	@OneToOne(mappedBy = "order", orphanRemoval = true, cascade = CascadeType.ALL)
-	private BillLog billLog;
-
-	@OneToMany(mappedBy = "order", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<OrderDetail> orderDetails;
 }

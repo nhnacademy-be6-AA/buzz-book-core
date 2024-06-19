@@ -45,9 +45,6 @@ public class BillLog {
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
 
-	@OneToMany(mappedBy = "billLog", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<PaymentLog> paymentLogs;
-
 	private BillStatus status;
 
 	private UUID paymentKey;
