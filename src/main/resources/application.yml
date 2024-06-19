@@ -5,13 +5,6 @@ spring:
   profiles:
     active: dev
 
-    type: org.apache.commons.dbcp2.BasicDataSource
-    initial-size: 20
-    max-total: 40
-    max-idle: 15
-    min-idle: 10
-
-
   jackson:
     serialization:
       write-dates-as-timestamps: false

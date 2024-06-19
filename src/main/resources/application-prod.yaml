@@ -3,7 +3,7 @@ spring:
         name: core
 
     datasource:
-        url: jdbc:mysql://133.186.241.167:3306/be6_aa_dev?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+        url: jdbc:mysql://133.186.241.167:3306/be6_aa_prod?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
         username: be6_aa
         password: 6@H(77fpCZDiC6!!
         driver-class-name: com.mysql.cj.jdbc.Driver
