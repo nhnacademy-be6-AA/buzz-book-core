@@ -137,7 +137,7 @@ public class BookSearchService {
                 // 새로운 Product 생성 및 저장
                 Product product = Product.builder()
                         .stock(stock)
-                        .price(new BigDecimal(item.getPricesales()))
+                        .price(item.getPricesales())
                         .forward_date(item.getPubDate())
                         .score(item.getCustomerReviewRank())
                         .thumbnail_path(item.getCover())
@@ -161,7 +161,7 @@ public class BookSearchService {
                     authorRepository.save(author);
                 }
 
-                BookAuthor bookAuthor = new BookAuthor(null, author, book);
+                BookAuthor bookAuthor = BookAuthor.builder().author(author).book(book).build();
                 bookAuthorRepository.save(bookAuthor);
             }
         }
