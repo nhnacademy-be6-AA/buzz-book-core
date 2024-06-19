@@ -2,11 +2,8 @@ package store.buzzbook.core.repository;// package store.buzzbook.core.repository
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -14,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
+import jakarta.persistence.EntityManager;
 import store.buzzbook.core.CoreApplication;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
@@ -53,6 +51,9 @@ class OrderDetailRepositoryTest {
 	@Autowired
 	private CategoryRepository categoryRepository;
 
+	@Autowired
+	private EntityManager entityManager;
+
 	private Order order;
 	private User user;
 	private DeliveryPolicy deliveryPolicy;
@@ -65,68 +66,70 @@ class OrderDetailRepositoryTest {
 	private Category category;
 
 
-	@BeforeEach
-	public void setUp() {
-		user = User.builder().build();
-		category = Category.builder().name("IT").build();
-		product1 = Product.builder().forward_date("2024-01-01").category(category).score(1).stock(1).price(new BigDecimal("1000")).build();
-		product2 = Product.builder().forward_date("2024-01-02").category(category).score(1).stock(1).price(new BigDecimal("2000")).build();
-		deliveryPolicy = DeliveryPolicy.builder()
-			.name("정책1")
-			.standardPrice(1000)
-			.policyPrice(1000)
-			.build();
-		order = Order.builder()
-			.address("광주")
-			.addressDetail("조선대학교")
-			.price(1000)
-			.deliveryPolicy(deliveryPolicy)
-			.receiver("PS")
-			.request("감사합니다.")
-			.zipcode(00000)
-			.user(user)
-			.build();
-		orderStatus = OrderStatus.builder()
-			.updateDate(ZonedDateTime.now())
-			.name("환불")
-			.build();
-		wrapping = Wrapping.builder()
-			.price(1000)
-			.paper("신문지")
-			.build();
-
-		orderDetail1 = OrderDetail.builder()
-			.orderStatus(orderStatus)
-			.order(order)
-			.wrap(true)
-			.createdDate(ZonedDateTime.now())
-			.price(10000)
-			.product(product1)
-			.quantity(1)
-			.wrapping(wrapping)
-			.build();
-		orderDetail2 = OrderDetail.builder()
-			.orderStatus(orderStatus)
-			.order(order)
-			.wrap(false)
-			.createdDate(ZonedDateTime.now())
-			.price(2000)
-			.product(product2)
-			.quantity(1)
-			.wrapping(wrapping)
-			.build();
-
-		categoryRepository.save(category);
-		wrappingRepository.save(wrapping);
-		orderStatusRepository.save(orderStatus);
-		userRepository.save(user);
-		productRepository.save(product1);
-		productRepository.save(product2);
-		deliveryPolicyRepository.save(deliveryPolicy);
-		orderRepository.save(order);
-		orderDetailRepository.save(orderDetail1);
-		orderDetailRepository.save(orderDetail2);
-	}
+	// @BeforeEach
+	// public void setUp() {
+	// 	user = User.builder().build();
+	// 	category = Category.builder().name("IT").build();
+	// 	product1 = Product.builder().forward_date("2024-01-01").category(category).score(1).stock(1).price(new BigDecimal("1000")).build();
+	// 	product2 = Product.builder().forward_date("2024-01-02").category(category).score(1).stock(1).price(new BigDecimal("2000")).build();
+	// 	deliveryPolicy = DeliveryPolicy.builder()
+	// 		.name("정책1")
+	// 		.standardPrice(1000)
+	// 		.policyPrice(1000)
+	// 		.build();
+	// 	order = Order.builder()
+	// 		.address("광주")
+	// 		.addressDetail("조선대학교")
+	// 		.price(1000)
+	// 		.deliveryPolicy(deliveryPolicy)
+	// 		.receiver("PS")
+	// 		.request("감사합니다.")
+	// 		.zipcode(00000)
+	// 		.user(user)
+	// 		.build();
+	// 	orderStatus = OrderStatus.builder()
+	// 		.updateDate(ZonedDateTime.now())
+	// 		.name("환불")
+	// 		.build();
+	// 	wrapping = Wrapping.builder()
+	// 		.price(1000)
+	// 		.paper("신문지")
+	// 		.build();
+	//
+	// 	orderDetail1 = OrderDetail.builder()
+	// 		.orderStatus(orderStatus)
+	// 		.order(order)
+	// 		.wrap(true)
+	// 		.createdDate(ZonedDateTime.now())
+	// 		.price(10000)
+	// 		.product(product1)
+	// 		.quantity(1)
+	// 		.wrapping(wrapping)
+	// 		.build();
+	// 	orderDetail2 = OrderDetail.builder()
+	// 		.orderStatus(orderStatus)
+	// 		.order(order)
+	// 		.wrap(false)
+	// 		.createdDate(ZonedDateTime.now())
+	// 		.price(2000)
+	// 		.product(product2)
+	// 		.quantity(1)
+	// 		.wrapping(wrapping)
+	// 		.build();
+	//
+	// 	categoryRepository.save(category);
+	// 	wrappingRepository.save(wrapping);
+	// 	orderStatusRepository.save(orderStatus);
+	// 	userRepository.save(user);
+	// 	productRepository.save(product1);
+	// 	entityManager.clear();
+	//
+	// 	productRepository.save(product2);
+	// 	deliveryPolicyRepository.save(deliveryPolicy);
+	// 	orderRepository.save(order);
+	// 	orderDetailRepository.save(orderDetail1);
+	// 	orderDetailRepository.save(orderDetail2);
+	// }
 
 	// @Sql(scripts = "classpath:sql/OrderDetailRepositoryTest_sql.sql")
 	@Test
@@ -141,7 +144,7 @@ class OrderDetailRepositoryTest {
 
 	@Test
 	void findAllByOrder_IdAndOrderStatus_Test() {
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrderStatus_Id(1L, 1L);
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrderStatus_Id(1L, 1);
 		assertAll(
 			() -> assertEquals(orderDetails.getFirst().getPrice(), 10000),
 			() -> assertFalse(orderDetails.get(1).isWrap())

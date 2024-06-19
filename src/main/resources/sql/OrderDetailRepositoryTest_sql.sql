@@ -1,44 +1,61 @@
 INSERT INTO `user` (
-    id
+    name
 ) values (
-    1
+    'ps'
 );
 
 INSERT INTO `category` (
-    id,
     name
 ) values (
-    1, 'IT'
+    'IT'
 );
 
 INSERT INTO `delivery_policy` (
-    id,
     name,
     standard_price,
     policy_price
 ) values (
-          1, '정책1', 1000, 1000
+          '정책1', 1000, 1000
          );
 
 INSERT INTO `order_status` (
-    id, update_date, name
+    update_date, name
 ) values (
-    1, '2024-01-01T12:00:00Z', '환불'
+    '2024-01-01', '환불'
 );
 
 INSERT INTO `wrapping` (
-    id, paper, price
+    paper, price
 ) values (
-    1, '신문지', 1000
+    '신문지', 1000
 );
+
+INSERT INTO product (
+    stock,
+    price,
+    forward_date,
+    score,
+    thumbnail_path,
+    category_id,
+                     book_id
+) VALUES (
+             1,
+             1000.00,
+             '2024-01-01',
+             1,
+             'path/to/thumbnail.jpg',
+             2,
+          1
+         );
+
 
 INSERT INTO `order` (
     price,
     request,
     address,
-    addressDetail,
+    address_detail,
     zipcode,
-    desiredDeliveryDate,
+    desired_delivery_date,
     receiver,
     delivery_policy_id,
     user_id
@@ -48,7 +65,7 @@ INSERT INTO `order` (
              '광주',
              '조선대학교',
              00000,
-             '2024-01-01T12:00:00Z',
+             '2024-01-01',
              'PS',
              (SELECT id FROM delivery_policy WHERE name = '정책1' LIMIT 1),
              (SELECT id FROM user WHERE id = 1 LIMIT 1)
@@ -58,7 +75,7 @@ INSERT INTO order_detail (
     price,
     quantity,
     wrap,
-    createdDate,
+    create_date,
     order_status_id,
     wrapping_id,
     product_id,
@@ -67,10 +84,19 @@ INSERT INTO order_detail (
              10000,
              1,
              TRUE,
-             '2024-01-01T12:00:00Z',
+             STR_TO_DATE('2024-01-01', '%Y-%m-%d'),
              (SELECT id FROM order_status WHERE name = '환불' LIMIT 1),
              (SELECT id FROM wrapping WHERE paper = '신문지' LIMIT 1),
-             (SELECT id FROM product WHERE book_id = 'book1' LIMIT 1),
-             (SELECT id FROM `order` WHERE address = '광주' AND addressDetail = '조선대학교' LIMIT 1)
+             (SELECT id FROM product WHERE id = 1 LIMIT 1),
+             (SELECT id FROM `order` WHERE address = '광주' AND address_detail = '조선대학교' LIMIT 1)
+         ),
+         (
+             20000,
+             1,
+             FALSE,
+             STR_TO_DATE('2024-01-01', '%Y-%m-%d'),
+             (SELECT id FROM order_status WHERE name = '환불' LIMIT 1),
+             (SELECT id FROM wrapping WHERE paper = '신문지' LIMIT 1),
+             (SELECT id FROM product WHERE id = 1 LIMIT 1),
+             (SELECT id FROM `order` WHERE address = '광주' AND address_detail = '조선대학교' LIMIT 1)
          );
-

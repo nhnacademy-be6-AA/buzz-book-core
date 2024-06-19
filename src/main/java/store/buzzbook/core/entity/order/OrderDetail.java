@@ -39,7 +39,7 @@ public class OrderDetail {
 	private boolean wrap;
 
 	@CreatedDate
-	private ZonedDateTime createdDate;
+	private ZonedDateTime createDate;
 
 	@OneToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)

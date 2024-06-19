@@ -10,6 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,6 +47,7 @@ public class BillLog {
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
 
+	@Enumerated(value = EnumType.STRING)
 	private BillStatus status;
 
 	private UUID paymentKey;
