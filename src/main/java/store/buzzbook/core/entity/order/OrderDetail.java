@@ -46,7 +46,7 @@ public class OrderDetail {
 	private OrderStatus orderStatus;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(referencedColumnName = "id", name = "wrapping_id", nullable = false)
+	@JoinColumn(referencedColumnName = "id", name = "wrapping_id")
 	private Wrapping wrapping;
 
 	@ManyToOne

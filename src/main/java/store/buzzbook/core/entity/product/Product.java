@@ -39,8 +39,8 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private List<Review> reviews;
 
-    @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "book_id")
     private Book book;
 
     @Builder

@@ -9,6 +9,5 @@ import store.buzzbook.core.entity.order.OrderStatus;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 	List<OrderDetail> findAllByOrder_Id(Long orderId);
-	List<OrderDetail> findAllByOrder_IdAndOrderStatus(Long orderId, OrderStatus orderStatus);
-
+	List<OrderDetail> findAllByOrder_IdAndOrderStatus_Id(long orderId, long orderStatusId);
 }
