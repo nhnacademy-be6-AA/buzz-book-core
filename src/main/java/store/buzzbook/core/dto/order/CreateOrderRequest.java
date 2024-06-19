@@ -1,10 +1,12 @@
 package store.buzzbook.core.dto.order;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.entity.user.User;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,5 +20,6 @@ public class CreateOrderRequest {
 	private ZonedDateTime desiredDeliveryDate;
 	private String receiver;
 	private int deliveryPolicyId;
-	private long userId;
+	private User user;
+	private List<CreateOrderDetailRequest> details;
 }

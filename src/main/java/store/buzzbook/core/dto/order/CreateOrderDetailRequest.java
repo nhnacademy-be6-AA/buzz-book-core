@@ -14,8 +14,8 @@ public class CreateOrderDetailRequest {
 	private int quantity;
 	private boolean wrap;
 	private ZonedDateTime createDate;
-	private long orderStatusId;
-	private Long wrappingId;
-	private long productId;
+	private int orderStatusId;
+	private Integer wrappingId;
+	private int productId;
 	private long orderId;
 }
