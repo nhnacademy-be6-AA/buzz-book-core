@@ -39,14 +39,14 @@ public class OrderDetail {
 	private boolean wrap;
 
 	@CreatedDate
-	private ZonedDateTime createdDate;
+	private ZonedDateTime createDate;
 
 	@OneToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(referencedColumnName = "id", name = "wrapping_id", nullable = false)
+	@JoinColumn(referencedColumnName = "id", name = "wrapping_id")
 	private Wrapping wrapping;
 
 	@ManyToOne

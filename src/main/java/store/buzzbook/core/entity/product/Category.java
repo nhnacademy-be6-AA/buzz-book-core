@@ -2,6 +2,7 @@ package store.buzzbook.core.entity.product;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "category")
 public class Category {
 
@@ -24,13 +26,6 @@ public class Category {
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
-
-    @OneToMany(mappedBy = "parentCategory")
-    private List<Category> subCategories;
-
-    @OneToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
 
     public Category(String name, Category parentCategory) {
         this.name = name;
