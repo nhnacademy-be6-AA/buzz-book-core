@@ -11,4 +11,6 @@ public interface UserService {
 	RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest);
 	Long deactivate(Long id, String reason);
 	Long activate(Long id);
+	UserInfo getUserInfoByLoginId(String loginId);
+
 }

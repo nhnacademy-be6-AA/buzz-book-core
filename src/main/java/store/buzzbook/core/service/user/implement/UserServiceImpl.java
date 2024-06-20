@@ -118,6 +118,13 @@ public class UserServiceImpl implements UserService {
 		return 0L;
 	}
 
+	@Override
+	public UserInfo getUserInfoByLoginId(String loginId) {
+
+
+		return null;
+	}
+
 	private User convertToUser(RegisterUserRequest request) {
 		Grade grade = gradeRepository.findByName(GradeName.NORMAL)
 			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
