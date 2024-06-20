@@ -34,10 +34,10 @@ public class BookController {
         BookResponse book = bookService.getBookById(id);
         return ResponseEntity.ok(book);
     }
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBookById(@PathVariable int id) {
-        bookService.deleteBookById(id);
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteBookById(@PathVariable int id) {
+//        bookService.deleteBookById(id);
+//        return ResponseEntity.noContent().build();
+//    }
 
 }

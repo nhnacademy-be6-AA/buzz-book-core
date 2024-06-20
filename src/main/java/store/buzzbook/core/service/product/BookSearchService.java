@@ -120,13 +120,13 @@ public class BookSearchService {
 
                 book = bookRepository.save(book);
             } catch (Exception e) {
-                log.error("도서 저장 중 오류 발생: " + item.getTitle());
+                log.error("'도서' 저장 중 오류 발생: " + item.getTitle());
                 continue;
             }
 
             // 상품 정보 저장 및 도서와 연결
             try {
-                int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 0;
+                int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;
                 Category category = subCategory2 != null ? subCategory2 : subCategory1;
 
                 // 기존 Product 확인 및 삭제
@@ -144,13 +144,13 @@ public class BookSearchService {
                         .thumbnail_path(item.getCover())
                         .category(category)
                         .book(book)
+                        .stockStatus(Product.StockStatus.SALE)
                         .build();
 
                 productRepository.save(product);
 
             } catch (Exception e) {
-                System.err.println("상품 정보 저장 중 오류 발생: " + item.getTitle());
-                e.printStackTrace();
+                log.error("'상품' 정보 저장 중 오류 발생: {}",item.getTitle());
                 continue;
             }
 
