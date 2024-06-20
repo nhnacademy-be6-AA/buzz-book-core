@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.user;
 
+import java.time.ZonedDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,8 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
-
 @Getter
 @Builder
 @Entity
@@ -24,7 +24,6 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @Table(name = "user_auth")
 public class UserAuth {
-	//todo userAuth 물어보기
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -35,21 +34,15 @@ public class UserAuth {
 	private User user;
 
 	@NotNull
-	@Column(name = "auth_provider")
-	private String authProvider;
+	@Column(name = "provider")
+	private String provider;
 
 	@NotNull
-    @Column(name = "auth_id")
-    private String authId;
-
-	@NotNull
-	@Column(name = "auth_token")
+	@Column(name = "token")
 	private String authToken;
 
 	@NotNull
-	@Column(name = "auth_create_date")
+	@Column(name = "create_date")
 	private ZonedDateTime authCreateDate;
-
-
 
 }

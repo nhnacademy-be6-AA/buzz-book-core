@@ -22,11 +22,10 @@ import store.buzzbook.core.entity.user.User;
 @Entity
 @Builder
 public class Wishlist {
-	//todo wishlist id 만듬 이렇게 해도 되나여? ㅋㅋㅋㅋㅋㅋ
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "wishlist_id")
-	private long wishlistId;
+	@Column(name = "id")
+	private long id;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)

@@ -7,19 +7,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import jakarta.persistence.EntityManager;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.cart.Wishlist;
+import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.product.Publisher;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class CartWishlistRepositoryTest {
 	@Autowired
@@ -32,6 +36,7 @@ class CartWishlistRepositoryTest {
 	@Autowired
 	private UserRepository userRepository;
 
+	private Book book;
 	private Cart cart;
 	private Grade grade;
 	private User user;
@@ -41,6 +46,7 @@ class CartWishlistRepositoryTest {
 	private WishlistRepository wishlistRepository;
 
 	private Product product;
+	private Publisher publisher;
 
 	@BeforeEach
 	void setUp() {
@@ -69,15 +75,29 @@ class CartWishlistRepositoryTest {
 
 		cart = Cart.builder()
 			.user(user)
-			.cartUpdatedDate(ZonedDateTime.now()).build();
+			.updateDate(ZonedDateTime.now()).build();
 
 		Category category = Category.builder().name("test").build();
 
 		entityManager.persist(category);
 
+		publisher = new Publisher("pub name");
+
+		entityManager.persist(publisher);
+
+		book = Book.builder()
+			.title("OO")
+			.isbn("1234567890123")
+			.publishDate("2012-01-01")
+			.publisher(publisher)
+			.description("desc").build();
+
+		entityManager.persist(book);
+
 		product = Product.builder().score(10)
 			.stock(100)
 			.price(10000)
+			.book(book)
 			.category(category)
 			.forward_date("2013-01-10").build();
 
@@ -95,6 +115,7 @@ class CartWishlistRepositoryTest {
 
 	}
 
+	//book fk 필요
 	@Test
 	@DisplayName("장바구니 상품 추가 테스트")
 	void testCreateCartDetail() {
@@ -150,7 +171,7 @@ class CartWishlistRepositoryTest {
 		entityManager.persist(product);
 
 		wishlistRepository.save(wishlist);
-		Wishlist result = wishlistRepository.findById(wishlist.getWishlistId()).orElse(null);
+		Wishlist result = wishlistRepository.findById(wishlist.getId()).orElse(null);
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(wishlist.getProduct().getId(), product.getId());
 

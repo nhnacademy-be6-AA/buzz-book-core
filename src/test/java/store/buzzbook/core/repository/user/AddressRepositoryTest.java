@@ -1,21 +1,24 @@
 package store.buzzbook.core.repository.user;
 
-import jakarta.persistence.EntityManager;
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import jakarta.persistence.EntityManager;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class AddressRepositoryTest {
 	@Autowired
@@ -31,7 +34,6 @@ class AddressRepositoryTest {
 	private Grade grade;
 	private User user;
 	private Address address;
-
 
 	@BeforeEach
 	void setUp() {
@@ -103,7 +105,6 @@ class AddressRepositoryTest {
 			.zipcode(50002)
 			.nation("남한").build();
 
-
 		addressRepository.save(anotherAddress);
 		result = addressRepository.findAllByUserId(user.getId()).orElse(null);
 		Assertions.assertNotNull(result);
@@ -121,7 +122,6 @@ class AddressRepositoryTest {
 			.detail("은미아파트 105동 108호")
 			.zipcode(50002)
 			.nation("남한").build();
-
 
 		addressRepository.save(anotherAddress);
 		List<Address> result = addressRepository.findAllByUserId(user.getId()).orElse(null);

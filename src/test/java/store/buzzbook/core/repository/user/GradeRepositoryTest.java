@@ -5,10 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class GradeRepositoryTest {
 	@Autowired
@@ -28,7 +31,7 @@ class GradeRepositoryTest {
 
 	@Test
 	@DisplayName("유저 등급 레포지토리 저장 테스트")
-	void testSaveAndFind(){
+	void testSaveAndFind() {
 		Grade resultGrade = gradeRepository.findById(grade.getId()).orElse(null);
 
 		Assertions.assertNotNull(resultGrade);
@@ -37,7 +40,5 @@ class GradeRepositoryTest {
 		Assertions.assertEquals(grade.getStandard(), resultGrade.getStandard());
 		Assertions.assertEquals(grade.getBenefit(), resultGrade.getBenefit());
 	}
-
-
 
 }

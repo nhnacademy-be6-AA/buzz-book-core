@@ -9,10 +9,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     type: org.apache.commons.dbcp2.BasicDataSource
-    initial-size: 20
-    max-total: 40
-    max-idle: 15
-    min-idle: 10
+    initial-size: 3
+    max-total: 5
+    max-idle: 3
+    min-idle: 1
+
 
   jpa:
     hibernate:

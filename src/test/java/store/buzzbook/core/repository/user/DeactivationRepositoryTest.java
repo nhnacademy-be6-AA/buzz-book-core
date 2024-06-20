@@ -1,20 +1,23 @@
 package store.buzzbook.core.repository.user;
 
-import jakarta.persistence.EntityManager;
+import java.time.ZonedDateTime;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import jakarta.persistence.EntityManager;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
-import java.time.ZonedDateTime;
-
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class DeactivationRepositoryTest {
 	@Autowired
@@ -58,11 +61,11 @@ class DeactivationRepositoryTest {
 
 		deactivation =
 			Deactivation
-			.builder()
-			.user(user)
-			.reason("기타")
-			.deactivationDate(ZonedDateTime.now())
-			.build();
+				.builder()
+				.user(user)
+				.reason("기타")
+				.deactivationDate(ZonedDateTime.now())
+				.build();
 	}
 
 	@Test

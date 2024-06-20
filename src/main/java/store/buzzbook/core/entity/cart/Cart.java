@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.cart;
 
+import java.time.ZonedDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,8 +16,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.user.User;
-
-import java.time.ZonedDateTime;
 
 @Getter
 @Builder
@@ -32,6 +32,6 @@ public class Cart {
 	private User user;
 
 	@NotNull
-	@Column(name = "cart_updated_date")
-	private ZonedDateTime cartUpdatedDate;
+	@Column(name = "update_date")
+	private ZonedDateTime updateDate;
 }

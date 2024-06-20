@@ -29,7 +29,7 @@ public class CartDetail {
 	private long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name ="cart_id", nullable = false)
+	@JoinColumn(name = "cart_id", nullable = false)
 	private Cart cart;
 
 	@NotNull

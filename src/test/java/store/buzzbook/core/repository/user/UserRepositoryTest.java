@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import store.buzzbook.core.entity.user.Grade;
@@ -14,6 +15,7 @@ import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 class UserRepositoryTest {
 	@Autowired
@@ -30,12 +32,11 @@ class UserRepositoryTest {
 			.standard(200000)
 			.build();
 
-
 	}
 
 	@Test
 	@DisplayName("유저 생성 및 조회와 등급")
-	void testCreateUser(){
+	void testCreateUser() {
 		gradeRepository.save(grade);
 		Grade resultGrade = gradeRepository.findById(grade.getId()).orElse(null);
 
@@ -45,21 +46,19 @@ class UserRepositoryTest {
 		Assertions.assertEquals(grade.getStandard(), resultGrade.getStandard());
 		Assertions.assertEquals(grade.getBenefit(), resultGrade.getBenefit());
 
-
 		User user = User.builder()
-				.loginId("asd123")
-				.name("john doe")
-				.grade(grade)
-				.email("email123@nhn.com")
-				.contactNumber("010-0000-1111")
-				.birthday(ZonedDateTime.now())
-				.modifyDate(ZonedDateTime.now())
+			.loginId("asd123")
+			.name("john doe")
+			.grade(grade)
+			.email("email123@nhn.com")
+			.contactNumber("010-0000-1111")
+			.birthday(ZonedDateTime.now())
+			.modifyDate(ZonedDateTime.now())
 			.createDate(ZonedDateTime.now())
 			.password("encrytedsolongpassword123345")
 			.lastLoginDate(ZonedDateTime.now())
-				.isAdmin(false)
+			.isAdmin(false)
 			.status(UserStatus.ACTIVE).build();
-
 
 		userRepository.save(user);
 		User result = userRepository.findById(user.getId()).orElse(null);
