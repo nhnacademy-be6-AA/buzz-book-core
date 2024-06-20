@@ -3,7 +3,7 @@ spring:
     name: core
 
   profiles:
-    active: test
+    active: dev
 
   datasource:
     type: org.apache.commons.dbcp2.BasicDataSource
@@ -15,16 +15,6 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
-
 
 aladin:
   api:

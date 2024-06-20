@@ -1,12 +1,15 @@
 package store.buzzbook.core.repository.user;
 
-import jakarta.persistence.EntityManager;
+import java.time.ZonedDateTime;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import jakarta.persistence.EntityManager;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.cart.Wishlist;
@@ -16,9 +19,6 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
 @DataJpaTest
 class CartWishlistRepositoryTest {
@@ -77,11 +77,11 @@ class CartWishlistRepositoryTest {
 
 		product = Product.builder().score(10)
 			.stock(100)
-			.price(BigDecimal.valueOf(10000L))
-			.category(category).build();
+			.price(10000)
+			.category(category)
+			.forward_date("2013-01-10").build();
 
 	}
-
 
 	@Test
 	@DisplayName("장바구니 생성 테스트")
@@ -93,36 +93,11 @@ class CartWishlistRepositoryTest {
 		Assertions.assertEquals(cart.getId(), resultCart.getId());
 		Assertions.assertEquals(cart.getUser().getId(), resultCart.getUser().getId());
 
-
-
 	}
 
 	@Test
 	@DisplayName("장바구니 상품 추가 테스트")
-	void testCreateCartDetail(){
-		cartRepository.save(cart);
-
-		entityManager.persist(product);
-
-		CartDetail cartDetail = CartDetail.builder()
-				.cart(cart).product(product)
-				.quantity(10).build();
-
-
-		cartDetailRepository.save(cartDetail);
-
-
-		CartDetail result = cartDetailRepository.findById(cartDetail.getId()).orElse(null);
-		Assertions.assertNotNull(result);
-		Assertions.assertEquals(cartDetail.getId(), result.getId());
-		Assertions.assertEquals(cartDetail.getProduct().getId(), product.getId());
-		Assertions.assertEquals(cartDetail.getQuantity(), result.getQuantity());
-	}
-
-
-	@Test
-	@DisplayName("장바구니 상품 삭제 테스트")
-	void testCreateAndDeleteDetail(){
+	void testCreateCartDetail() {
 		cartRepository.save(cart);
 
 		entityManager.persist(product);
@@ -131,9 +106,27 @@ class CartWishlistRepositoryTest {
 			.cart(cart).product(product)
 			.quantity(10).build();
 
-
 		cartDetailRepository.save(cartDetail);
 
+		CartDetail result = cartDetailRepository.findById(cartDetail.getId()).orElse(null);
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(cartDetail.getId(), result.getId());
+		Assertions.assertEquals(cartDetail.getProduct().getId(), product.getId());
+		Assertions.assertEquals(cartDetail.getQuantity(), result.getQuantity());
+	}
+
+	@Test
+	@DisplayName("장바구니 상품 삭제 테스트")
+	void testCreateAndDeleteDetail() {
+		cartRepository.save(cart);
+
+		entityManager.persist(product);
+
+		CartDetail cartDetail = CartDetail.builder()
+			.cart(cart).product(product)
+			.quantity(10).build();
+
+		cartDetailRepository.save(cartDetail);
 
 		CartDetail result = cartDetailRepository.findById(cartDetail.getId()).orElse(null);
 		Assertions.assertNotNull(result);
@@ -149,10 +142,10 @@ class CartWishlistRepositoryTest {
 
 	@Test
 	@DisplayName("위시리스트 추가 테스트")
-	void testCreateWishList(){
+	void testCreateWishList() {
 		Wishlist wishlist = Wishlist.builder()
-				.product(product)
-				.user(user).build();
+			.product(product)
+			.user(user).build();
 
 		entityManager.persist(product);
 
