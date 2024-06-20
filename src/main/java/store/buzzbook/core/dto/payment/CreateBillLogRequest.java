@@ -16,9 +16,7 @@ public class CreateBillLogRequest {
 	private String payment;
 	private int price;
 	private ZonedDateTime paymentDate;
-
 	private BillStatus status;
-
 	private UUID paymentKey;
 	private Order order;
 }
