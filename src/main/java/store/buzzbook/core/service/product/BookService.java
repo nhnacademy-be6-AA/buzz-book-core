@@ -2,10 +2,12 @@ package store.buzzbook.core.service.product;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import store.buzzbook.core.dto.product.response.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.repository.product.BookRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookService {
@@ -17,13 +19,28 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public List<Book> getAllBooks()
-    {
-        return bookRepository.findAll();
+    public List<BookResponse> getAllBooks() {
+        return bookRepository.findAll().stream()
+                .map(BookResponse::convertToBookResponse)
+                .collect(Collectors.toList());
     }
 
-    public Book getBookById(Long id) {
-        return bookRepository.findById(id).orElse(null);
+    public BookResponse getBookById(int id) {
+        Book book = bookRepository.findById(id).orElse(null);
+        BookResponse bookResponse = BookResponse.builder()
+                .id(book.getId())
+                .title(book.getTitle())
+                .description(book.getDescription())
+                .isbn(book.getIsbn())
+                .publisher(book.getPublisher())
+                .publishDate(book.getPublishDate())
+                .build();
+        return bookResponse;
     }
+
+    public void deleteBookById(int id) {
+        bookRepository.deleteById(id);
+    }
+
 
 }

@@ -3,6 +3,7 @@ package store.buzzbook.core.dto.order;
 import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.order.Order;
@@ -10,6 +11,7 @@ import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

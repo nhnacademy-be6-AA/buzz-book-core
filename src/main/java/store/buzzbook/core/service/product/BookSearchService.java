@@ -1,13 +1,14 @@
 package store.buzzbook.core.service.product;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import store.buzzbook.core.dto.product.response.BookApiResponse;
+import store.buzzbook.core.dto.product.response.BookApiRequest;
 import store.buzzbook.core.entity.product.*;
 import store.buzzbook.core.repository.product.*;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BookSearchService {
 
     @Value("${aladin.api.key}")
@@ -30,7 +32,7 @@ public class BookSearchService {
     private final BookAuthorRepository bookAuthorRepository;
     private final CategoryRepository categoryRepository;
 
-    public List<BookApiResponse.Item> searchBooks(String query) {
+    public List<BookApiRequest.Item> searchBooks(String query) {
         String url = UriComponentsBuilder.fromHttpUrl("https://www.aladin.co.kr/ttb/api/ItemSearch.aspx")
                 .queryParam("ttbkey", aladinApiKey)
                 .queryParam("Query", query)
@@ -40,7 +42,7 @@ public class BookSearchService {
                 .toUriString();
 
         try {
-            BookApiResponse apiResponse = restTemplate.getForObject(url, BookApiResponse.class);
+            BookApiRequest apiResponse = restTemplate.getForObject(url, BookApiRequest.class);
             return apiResponse != null ? apiResponse.getItems() : List.of();
         } catch (RestClientException e) {
             e.printStackTrace();
@@ -49,13 +51,13 @@ public class BookSearchService {
     }
 
     public void searchAndSaveBooks(String query) {
-        List<BookApiResponse.Item> items = searchBooks(query);
+        List<BookApiRequest.Item> items = searchBooks(query);
         saveBooksToDatabase(items);
     }
 
     @Transactional
-    public void saveBooksToDatabase(List<BookApiResponse.Item> items) {
-        for (BookApiResponse.Item item : items) {
+    public void saveBooksToDatabase(List<BookApiRequest.Item> items) {
+        for (BookApiRequest.Item item : items) {
             // 카테고리 저장
             String fullCategoryName = item.getCategory();
             if (fullCategoryName == null || fullCategoryName.isEmpty()) {
@@ -118,8 +120,7 @@ public class BookSearchService {
 
                 book = bookRepository.save(book);
             } catch (Exception e) {
-                System.err.println("도서 저장 중 오류 발생: " + item.getTitle());
-                e.printStackTrace();
+                log.error("도서 저장 중 오류 발생: " + item.getTitle());
                 continue;
             }
 
@@ -137,7 +138,7 @@ public class BookSearchService {
                 // 새로운 Product 생성 및 저장
                 Product product = Product.builder()
                         .stock(stock)
-                        .price(new BigDecimal(item.getPricesales()))
+                        .price(item.getPricesales())
                         .forward_date(item.getPubDate())
                         .score(item.getCustomerReviewRank())
                         .thumbnail_path(item.getCover())
@@ -161,7 +162,7 @@ public class BookSearchService {
                     authorRepository.save(author);
                 }
 
-                BookAuthor bookAuthor = new BookAuthor(null, author, book);
+                BookAuthor bookAuthor = new BookAuthor(author, book);
                 bookAuthorRepository.save(bookAuthor);
             }
         }
