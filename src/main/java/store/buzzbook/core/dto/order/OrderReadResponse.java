@@ -23,6 +23,6 @@ public class OrderReadResponse {
 	private int zipcode;
 	private ZonedDateTime desiredDeliveryDate;
 	private String receiver;
-	private DeliveryPolicy deliveryPolicy;
+	private DeliveryPolicyResponse deliveryPolicy;
 	private List<OrderDetailResponse> details;
 }
