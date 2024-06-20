@@ -26,4 +26,8 @@ public class BookAuthor {
     private Book book;
 
 
+    public BookAuthor(Author author, Book book) {
+        this.author = author;
+        this.book = book;
+    }
 }

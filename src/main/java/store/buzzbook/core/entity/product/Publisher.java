@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Publisher {
+public class Publisher implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +18,7 @@ public class Publisher {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @OneToMany(mappedBy = "publisher")
-    private List<Book> books;
-
+    @JsonCreator
     public Publisher(String name) {
         this.name = name;
     }

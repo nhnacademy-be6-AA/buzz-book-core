@@ -1,7 +1,6 @@
 package store.buzzbook.core.entity.product;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -25,12 +24,14 @@ public class Product {
     @Column(nullable = false)
     private int price;
 
-    private ZonedDateTime forward_date;
+    @Column(name = "forward_date")
+    private ZonedDateTime forwardDate;
 
     @Column(nullable = false)
     private int score;
 
-    private String thumbnail_path;
+    @Column(name = "thumbnail_path")
+    private String thumbnailPath;
 
     @OneToOne
     @JoinColumn(name = "category_id", nullable = false, referencedColumnName = "id")
@@ -47,9 +48,9 @@ public class Product {
         this.stock = stock;
         this.price = price;
         LocalDate localDate = LocalDate.parse(forward_date);
-        this.forward_date = localDate.atStartOfDay(ZoneId.systemDefault());
+        this.forwardDate = localDate.atStartOfDay(ZoneId.systemDefault());
         this.score = score;
-        this.thumbnail_path = thumbnail_path;
+        this.thumbnailPath = thumbnail_path;
         this.category = category;
         this.book = book;
     }
