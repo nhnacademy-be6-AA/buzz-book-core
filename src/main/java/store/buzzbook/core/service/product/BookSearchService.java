@@ -13,6 +13,12 @@ import store.buzzbook.core.entity.product.*;
 import store.buzzbook.core.repository.product.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -57,6 +63,7 @@ public class BookSearchService {
 
     @Transactional
     public void saveBooksToDatabase(List<BookApiRequest.Item> items) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (BookApiRequest.Item item : items) {
             // 카테고리 저장
             String fullCategoryName = item.getCategory();
@@ -127,10 +134,23 @@ public class BookSearchService {
             // 상품 정보 저장 및 도서와 연결
             try {
                 int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;
+                String productName = item.getTitle();
+                int price = item.getPricestandard();
+                ZonedDateTime forwardDate;
+                try {
+                    LocalDate localDate = LocalDate.parse(item.getPubDate(), dateFormatter);
+                    forwardDate = localDate.atStartOfDay(ZoneId.systemDefault());
+                } catch (DateTimeParseException e) {
+                    log.error("날짜 파싱 오류: " + item.getPubDate(), e);
+                    continue;
+                }
+                int score = item.getCustomerReviewRank();
+                String thumbnailPath = item.getCover();
                 Category category = subCategory2 != null ? subCategory2 : subCategory1;
+                List<Tag> tags = new ArrayList<>();
 
-                // 기존 Product 확인 및 삭제
-                Product existingProduct = productRepository.findByBookId(book.getId());
+                    // 기존 Product 확인 및 삭제
+                Product existingProduct = productRepository.findByThumbnailPath(thumbnailPath);
                 if (existingProduct != null) {
                     productRepository.delete(existingProduct);
                 }
@@ -138,19 +158,21 @@ public class BookSearchService {
                 // 새로운 Product 생성 및 저장
                 Product product = Product.builder()
                         .stock(stock)
-                        .price(item.getPricesales())
-                        .forward_date(item.getPubDate())
-                        .score(item.getCustomerReviewRank())
-                        .thumbnail_path(item.getCover())
-                        .category(category)
-                        .book(book)
+                        .productName(productName)
+                        .price(price)
+                        .forwardDate(forwardDate)
+                        .score(score)
+                        .thumbnailPath(thumbnailPath)
                         .stockStatus(Product.StockStatus.SALE)
+                        .category(category)
                         .build();
 
                 productRepository.save(product);
 
+                book.setProduct(product);
+                book = bookRepository.save(book);
             } catch (Exception e) {
-                log.error("'상품' 정보 저장 중 오류 발생: {}",item.getTitle());
+                log.error("'상품' 정보 저장 중 오류 발생: {}",item.getTitle(),e);
                 continue;
             }
 

@@ -6,13 +6,11 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +18,9 @@ public class Product {
 
     @Column(nullable = false)
     private int stock;
+
+    @Column(nullable = false,length = 255)
+    private String productName;
 
     @Column(nullable = false)
     private int price;
@@ -33,31 +34,32 @@ public class Product {
     @Column(name = "thumbnail_path")
     private String thumbnailPath;
 
-    @OneToOne
-    @JoinColumn(name = "category_id", nullable = false, referencedColumnName = "id")
-    private Category category;
-
-    @OneToOne
-    @JoinColumn(name = "book_id")
-    private Book book;
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private StockStatus stockStatus;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @ManyToMany
+    @JoinTable(name = "product_tag",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private List<Tag> tags;
+
     @Builder
-    public Product(int stock, int price, String forward_date,
-            int score, String thumbnail_path, Category category,Book book,StockStatus stockStatus)
-    {
+    public Product(int stock, String productName, int price, ZonedDateTime forwardDate,
+                   int score, String thumbnailPath, StockStatus stockStatus,
+                   Category category) {
         this.stock = stock;
+        this.productName = productName;
         this.price = price;
-        LocalDate localDate = LocalDate.parse(forward_date);
-        this.forwardDate = localDate.atStartOfDay(ZoneId.systemDefault());
+        this.forwardDate = forwardDate;
         this.score = score;
-        this.thumbnailPath = thumbnail_path;
-        this.category = category;
-        this.book = book;
+        this.thumbnailPath = thumbnailPath;
         this.stockStatus = stockStatus;
+        this.category = category;
     }
 
     public enum StockStatus{
