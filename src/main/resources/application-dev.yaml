@@ -8,6 +8,8 @@ spring:
     password: 6@H(77fpCZDiC6!!
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+
+
     type: org.apache.commons.dbcp2.BasicDataSource
     initial-size: 20
     max-total: 40
@@ -22,3 +24,4 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQL5Dialect
