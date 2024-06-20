@@ -6,9 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.core.entity.order.Order;
-import store.buzzbook.core.entity.order.OrderStatus;
-import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 
 @Builder
@@ -21,8 +18,7 @@ public class OrderDetailResponse {
 	private int quantity;
 	private boolean wrap;
 	private ZonedDateTime createdDate;
-	private OrderStatus orderStatus;
-	private Wrapping wrapping;
+	private OrderStatusResponse orderStatus;
+	private WrappingResponse wrapping;
 	private Product product;
-	private Order order;
 }
