@@ -3,6 +3,7 @@ package store.buzzbook.core.controller.order;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,11 +37,17 @@ public class OrderController {
 	private final OrderService orderService;
 	private final UserRepository userRepository;
 
-	@Operation(summary = "내 주문 리스트 조회", description = "내 주문 리스트 조회")
+	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@GetMapping("/{login-id}")
-	public ResponseEntity<Page<ReadOrderResponse>> getOrder(@PathVariable("login-id") long loginId, Pageable pageable) {
-		// long userId = userRepository.findByLoginId(loginId).get().getId();
-		return ResponseEntity.ok(orderService.readMyOrders(loginId, pageable));
+	public ResponseEntity<Page<ReadOrderResponse>> getOrder(@PathVariable("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
+		Page<ReadOrderResponse> readOrderResponses = null;
+		if (isAdmin) {
+			readOrderResponses = orderService.readOrders(pageable);
+		} else {
+			long userId = userRepository.findByLoginId(loginId).get().getId();
+			readOrderResponses = orderService.readMyOrders(userId, pageable);
+		}
+		return ResponseEntity.ok(readOrderResponses);
 	}
 
 	@Operation(summary = "주문 등록", description = "주문하기")

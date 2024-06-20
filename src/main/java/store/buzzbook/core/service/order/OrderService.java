@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
@@ -44,6 +45,23 @@ public class OrderService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 
+	public Page<ReadOrderResponse> readOrders(Pageable pageable) {
+		Page<Order> orders = orderRepository.findAll(pageable);
+		List<ReadOrderResponse> responses = new ArrayList<>();
+
+		for (Order order : orders) {
+			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+			List<OrderDetailResponse> details = new ArrayList<>();
+
+			for (OrderDetail orderDetail : orderDetails) {
+				details.add(OrderDetailMapper.toDto(orderDetail));
+			}
+			responses.add(OrderMapper.toDto(order, details));
+		}
+
+		return new PageImpl<>(responses, pageable, orders.getTotalElements());
+	}
+
 	public Page<ReadOrderResponse> readMyOrders(long userId, Pageable pageable) {
 		userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -64,6 +82,7 @@ public class OrderService {
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
 	}
 
+	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(createOrderRequest
 			.getDeliveryPolicyId()).orElseThrow(()-> new IllegalArgumentException("Delivery Policy not found"));
