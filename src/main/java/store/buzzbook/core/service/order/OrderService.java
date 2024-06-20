@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.order;
 
+import static java.util.stream.Collectors.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,8 @@ import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
+import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -54,7 +58,6 @@ public class OrderService {
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
 			}
-
 			responses.add(OrderMapper.toDto(order, details));
 		}
 
@@ -88,6 +91,21 @@ public class OrderService {
 		return OrderMapper.toDto(order, orderDetailResponses);
 	}
 
+	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
+		Order order = orderRepository.findById(updateOrderRequest.getId())
+			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(updateOrderRequest.getId());
+		List<OrderDetailResponse> orderDetailResponses = new ArrayList<>();
 
+		for (OrderDetail orderDetail : orderDetails) {
+			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getId() == updateOrderRequest.getId()).map(
+				UpdateOrderDetailRequest::getOrderStatusId).toList()) {
+				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).get());
+				orderDetailResponses.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
+			}
+		}
+
+		return OrderMapper.toDto(order, orderDetailResponses);
+	}
 
 }

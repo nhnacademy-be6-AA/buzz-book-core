@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
@@ -48,6 +49,11 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 
+	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
+	@PostMapping
+	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest) {
+		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
+	}
 
 	//////////
 	@Operation(summary = "주문 조회", description = "주문 조회")

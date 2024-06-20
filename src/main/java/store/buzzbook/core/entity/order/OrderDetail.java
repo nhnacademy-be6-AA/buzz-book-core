@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import store.buzzbook.core.entity.product.Product;
 
 @Builder
@@ -41,6 +42,7 @@ public class OrderDetail {
 	@CreatedDate
 	private ZonedDateTime createDate;
 
+	@Setter
 	@OneToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
