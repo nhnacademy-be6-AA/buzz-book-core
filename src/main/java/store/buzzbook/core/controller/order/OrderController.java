@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
-import store.buzzbook.core.dto.order.OrderReadResponse;
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
@@ -37,14 +37,14 @@ public class OrderController {
 
 	@Operation(summary = "내 주문 리스트 조회", description = "내 주문 리스트 조회")
 	@GetMapping("/{login-id}")
-	public ResponseEntity<Page<OrderReadResponse>> getOrder(@PathVariable("login-id") long loginId, Pageable pageable) {
+	public ResponseEntity<Page<ReadOrderResponse>> getOrder(@PathVariable("login-id") long loginId, Pageable pageable) {
 		// long userId = userRepository.findByLoginId(loginId).get().getId();
 		return ResponseEntity.ok(orderService.readMyOrders(loginId, pageable));
 	}
 
 	@Operation(summary = "주문 등록", description = "주문하기")
 	@PostMapping
-	public ResponseEntity<OrderReadResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
 		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 
@@ -52,7 +52,7 @@ public class OrderController {
 	//////////
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@GetMapping("/{id}")
-	public ResponseEntity<OrderReadResponse> getOrder(@PathVariable Long id, @RequestParam("userId") long userId) {
+	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable Long id, @RequestParam("userId") long userId) {
 		return null;
 	}
 

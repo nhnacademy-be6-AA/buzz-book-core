@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
-import store.buzzbook.core.dto.order.OrderReadResponse;
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -40,12 +40,12 @@ public class OrderService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 
-	public Page<OrderReadResponse> readMyOrders(long userId, Pageable pageable) {
+	public Page<ReadOrderResponse> readMyOrders(long userId, Pageable pageable) {
 		userRepository.findById(userId)
 			.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
 		Page<Order> orders = orderRepository.findByUser_Id(userId, pageable);
-		List<OrderReadResponse> responses = new ArrayList<>();
+		List<ReadOrderResponse> responses = new ArrayList<>();
 
 		for (Order order : orders) {
 			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -61,7 +61,7 @@ public class OrderService {
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
 	}
 
-	public OrderReadResponse createOrder(CreateOrderRequest createOrderRequest) {
+	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(createOrderRequest
 			.getDeliveryPolicyId()).orElseThrow(()-> new IllegalArgumentException("Delivery Policy not found"));
 
