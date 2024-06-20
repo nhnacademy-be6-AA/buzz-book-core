@@ -15,11 +15,11 @@ public class OrderDetailMapper {
 			.price(orderDetail.getPrice())
 			.wrap(orderDetail.isWrap())
 			.createdDate(orderDetail.getCreateDate())
-			.orderStatus(orderDetail.getOrderStatus())
+			.orderStatus(OrderStatusMapper.toDto(orderDetail.getOrderStatus()))
 			.quantity(orderDetail.getQuantity())
 			.product(orderDetail.getProduct())
-			.wrapping(orderDetail.getWrapping())
-			.order(orderDetail.getOrder())
+			.wrapping(WrappingMapper.toDto(orderDetail.getWrapping()))
+			// .order(orderDetail.getOrder())
 			.build();
 	}
 
