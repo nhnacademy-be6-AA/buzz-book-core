@@ -1,0 +1,8 @@
+POST http://localhost:8080/api/account/register
+Content-Type: application/json
+
+{
+  "loginId": "asd"
+}
+
+###
