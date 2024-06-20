@@ -41,9 +41,13 @@ public class Product {
     @JoinColumn(name = "book_id")
     private Book book;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StockStatus stockStatus;
+
     @Builder
     public Product(int stock, int price, String forward_date,
-            int score, String thumbnail_path, Category category,Book book)
+            int score, String thumbnail_path, Category category,Book book,StockStatus stockStatus)
     {
         this.stock = stock;
         this.price = price;
@@ -53,5 +57,10 @@ public class Product {
         this.thumbnailPath = thumbnail_path;
         this.category = category;
         this.book = book;
+        this.stockStatus = stockStatus;
     }
+
+    public enum StockStatus{
+        SALE,SOLD_OUT,OUT_OF_STOCK
+        }
 }

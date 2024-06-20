@@ -1,12 +1,11 @@
 package store.buzzbook.core.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 @Getter
 @Entity
