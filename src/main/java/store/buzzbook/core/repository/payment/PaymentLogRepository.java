@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import store.buzzbook.core.entity.payment.PaymentLog;
 
-public interface PaymentLogRepository extends JpaRepository<PaymentLog, Long> {
+public interface PaymentLogRepository extends JpaRepository<PaymentLog, Integer> {
 }

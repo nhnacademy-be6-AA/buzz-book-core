@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 
-public class BookApiResponse {
+public class BookApiRequest {
     @JsonProperty("item")
     private List<Item> items;
 
@@ -38,9 +38,6 @@ public class BookApiResponse {
 
         @JsonProperty("cover")
         private String cover;
-
-        @JsonProperty("salesPoint")
-        private String salesPoint;
 
         @JsonProperty("customerReviewRank")
         private int customerReviewRank;

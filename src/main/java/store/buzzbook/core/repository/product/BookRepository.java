@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import store.buzzbook.core.entity.product.Book;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Integer> {
 }

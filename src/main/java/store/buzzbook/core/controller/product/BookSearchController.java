@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import store.buzzbook.core.dto.product.response.BookApiResponse;
+import store.buzzbook.core.dto.product.response.BookApiRequest;
 import store.buzzbook.core.service.product.BookSearchService;
 
 import java.util.List;
@@ -21,7 +21,7 @@ public class BookSearchController {
 
     @GetMapping
     @Operation(summary = "Search books from Aladin API", description = "Aladin API에서 도서를 검색함")
-    public List<BookApiResponse.Item> searchBooks(@RequestParam(required = false, defaultValue = "") String query) {
+    public List<BookApiRequest.Item> searchBooks(@RequestParam(required = false, defaultValue = "") String query) {
         return bookSearchService.searchBooks(query);
     }
 

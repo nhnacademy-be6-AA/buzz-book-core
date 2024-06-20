@@ -2,6 +2,7 @@ package store.buzzbook.core.entity.product;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,11 +10,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BookAuthor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -24,4 +26,8 @@ public class BookAuthor {
     private Book book;
 
 
+    public BookAuthor(Author author, Book book) {
+        this.author = author;
+        this.book = book;
+    }
 }

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.buzzbook.core.dto.product.response.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.service.product.BookService;
 
@@ -24,16 +25,19 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
-        List<Book> books = bookService.getAllBooks();
-
-        return ResponseEntity.ok(books);
+    public ResponseEntity<List<BookResponse>> getAllBooks() {
+        return ResponseEntity.ok(bookService.getAllBooks());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-        Book book = bookService.getBookById(id);
+    public ResponseEntity<BookResponse> getBookById(@PathVariable int id) {
+        BookResponse book = bookService.getBookById(id);
         return ResponseEntity.ok(book);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBookById(@PathVariable int id) {
+        bookService.deleteBookById(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

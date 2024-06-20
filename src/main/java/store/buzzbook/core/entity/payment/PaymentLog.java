@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class PaymentLog {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private int id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "bill_id", nullable = false)
