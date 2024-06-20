@@ -4,13 +4,13 @@ import java.util.List;
 
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
-import store.buzzbook.core.dto.order.OrderReadResponse;
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 
 public class OrderMapper {
-	public static OrderReadResponse toDto(Order order, List<OrderDetailResponse> details) {
-		return OrderReadResponse.builder()
+	public static ReadOrderResponse toDto(Order order, List<OrderDetailResponse> details) {
+		return ReadOrderResponse.builder()
 			.id(order.getId())
 			.details(details)
 			.price(order.getPrice())

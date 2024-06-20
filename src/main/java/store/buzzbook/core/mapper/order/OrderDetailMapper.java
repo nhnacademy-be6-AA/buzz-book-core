@@ -2,6 +2,7 @@ package store.buzzbook.core.mapper.order;
 
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
+import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
@@ -34,6 +35,13 @@ public class OrderDetailMapper {
 			.wrapping(wrapping)
 			.product(product)
 			.quantity(createOrderDetailRequest.getQuantity())
+			.build();
+	}
+
+	public static OrderDetail toEntity(UpdateOrderDetailRequest updateOrderDetailRequest, OrderStatus orderStatus) {
+		return OrderDetail.builder()
+			.id(updateOrderDetailRequest.getId())
+			.orderStatus(orderStatus)
 			.build();
 	}
 }
