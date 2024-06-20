@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 @Table(name = "book")
 @Entity
 @NoArgsConstructor
-@Getter
+@Getter @Setter
 public class Book {
 
     @Id
@@ -32,6 +32,10 @@ public class Book {
     @Column(nullable = false)
     @JsonProperty("pubdate")
     private ZonedDateTime publishDate;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @Builder
     public Book(String title, String description, String isbn, Publisher publisher, String publishDate) {

@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Getter
 @Table(name = "author")
 @Entity
@@ -19,11 +17,6 @@ public class Author {
     private int id;
     @Column(nullable = false)
     private String name;
-    @Column(length = 10,nullable = true)
-    private String role;
-
-    @OneToMany(mappedBy = "author")
-    private List<BookAuthor> bookAuthors;
 
     public Author(String trim) {
 

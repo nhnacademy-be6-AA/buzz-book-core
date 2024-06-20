@@ -5,6 +5,6 @@ import store.buzzbook.core.entity.product.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
-    Product findByBookId(int bookId);
+    Product findByThumbnailPath(String thumbnailPath);
 
 }
