@@ -37,9 +37,6 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false, referencedColumnName = "id")
     private Category category;
 
-    @OneToMany(mappedBy = "product")
-    private List<Review> reviews;
-
     @OneToOne
     @JoinColumn(name = "book_id")
     private Book book;

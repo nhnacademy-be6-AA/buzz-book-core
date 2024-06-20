@@ -12,6 +12,7 @@ import store.buzzbook.core.dto.product.response.BookApiRequest;
 import store.buzzbook.core.entity.product.*;
 import store.buzzbook.core.repository.product.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
