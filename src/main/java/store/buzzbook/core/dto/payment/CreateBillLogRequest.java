@@ -3,13 +3,14 @@ package store.buzzbook.core.dto.payment;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillStatus;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
 public class CreateBillLogRequest {

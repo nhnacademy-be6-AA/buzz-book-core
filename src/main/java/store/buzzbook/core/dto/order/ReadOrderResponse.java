@@ -7,14 +7,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.core.entity.order.DeliveryPolicy;
-import store.buzzbook.core.entity.payment.BillLog;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
-public class OrderReadResponse {
+public class ReadOrderResponse {
 	private long id;
 	private int price;
 	private String request;
