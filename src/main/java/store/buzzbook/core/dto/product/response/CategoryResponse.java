@@ -1,8 +1,10 @@
 package store.buzzbook.core.dto.product.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import store.buzzbook.core.entity.product.Category;
 
+@Getter
 @AllArgsConstructor
 public class CategoryResponse {
 
@@ -10,7 +12,9 @@ public class CategoryResponse {
 	private String name;
 	private CategoryResponse parentCategory;
 
-	public static CategoryResponse convertToCategoryResponse(Category category){
-		return new CategoryResponse(category.getId(), category.getName(), convertToCategoryResponse(category));
+	public static CategoryResponse convertToCategoryResponse(Category category) {
+
+		return new CategoryResponse(category.getId(), category.getName(),
+			category.getParentCategory()==null ? null : CategoryResponse.convertToCategoryResponse(category.getParentCategory()));
 	}
 }
