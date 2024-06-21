@@ -1,8 +1,6 @@
 package store.buzzbook.core.entity.product;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
