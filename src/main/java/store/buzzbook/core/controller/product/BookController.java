@@ -12,9 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import store.buzzbook.core.dto.product.response.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.service.product.BookService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
