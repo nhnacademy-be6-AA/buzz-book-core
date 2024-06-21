@@ -52,10 +52,12 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserInfo successLogin(Long id) {
 		//todo 뭔가 보안을 위한 토큰 같은게 필요할까요?
-		// boolean isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
+
+		// boolean isUpdated = userRepository.updateLastLoginDateById(id, ZonedDateTime.now());
+		//
 		// if (!isUpdated) {
 		// 	//한번 더 시도
-		// 	isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
+		// 	isUpdated = userRepository.updateLastLoginDateById(id, ZonedDateTime.now());
 		// }
 
 		// if (!isUpdated) {
@@ -120,7 +122,6 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
-
 
 		return null;
 	}

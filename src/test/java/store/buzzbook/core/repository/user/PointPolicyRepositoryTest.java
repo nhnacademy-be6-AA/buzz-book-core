@@ -1,25 +1,26 @@
 package store.buzzbook.core.repository.user;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
+
+import store.buzzbook.core.common.config.QuerydslConfig;
 import store.buzzbook.core.entity.point.PointPolicy;
 import store.buzzbook.core.repository.point.PointPolicyRepository;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Transactional
+@Import(QuerydslConfig.class)
 class PointPolicyRepositoryTest {
 
 	@Autowired
@@ -74,7 +75,7 @@ class PointPolicyRepositoryTest {
 	void update() {
 		// given
 		String updatedName = "update";
-		BigDecimal updatedPoint = BigDecimal.valueOf(5000.00);
+		int updatedPoint = 5000;
 
 		// when
 		PointPolicy savedPointPolicy = pointPolicyRepository.findById(testPointPolicy.getId()).orElse(null);
@@ -83,8 +84,8 @@ class PointPolicyRepositoryTest {
 
 		PointPolicy newPointPolicy = PointPolicy.builder()
 			.id(savedPointPolicy.getId())
-			.point(savedPointPolicy.getPoint())
-			.name(savedPointPolicy.getName())
+			.point(updatedPoint)
+			.name(updatedName)
 			.rate(savedPointPolicy.getRate())
 			.build();
 
