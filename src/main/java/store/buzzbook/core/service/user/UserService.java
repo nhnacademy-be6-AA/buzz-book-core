@@ -8,13 +8,13 @@ import store.buzzbook.core.dto.user.UserInfo;
 public interface UserService {
 	LoginUserResponse requestLogin(String loginId);
 
-	UserInfo successLogin(Long id);
+	UserInfo successLogin(String loginId);
 
 	RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest);
 
-	Long deactivate(Long id, String reason);
+	boolean deactivate(String loginId, String reason);
 
-	Long activate(Long id);
+	void activate(String loginId);
 
 	UserInfo getUserInfoByLoginId(String loginId);
 
