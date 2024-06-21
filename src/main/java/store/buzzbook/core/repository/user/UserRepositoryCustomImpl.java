@@ -5,7 +5,6 @@ import static store.buzzbook.core.entity.user.QUser.*;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.core.types.Projections;
@@ -17,7 +16,6 @@ import store.buzzbook.core.dto.user.UserInfo;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserRepositoryCustomImpl implements UserRepositoryCustom {
-	@Autowired
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
