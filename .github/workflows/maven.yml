@@ -80,5 +80,5 @@ jobs:
           docker pull heldenar/book-core-api:latest
           docker stop core_api || true
           docker rm core_api || true
-          docker run -d --name core_api --network api_network  -p 8090:8090 heldenar/book-core-api:latest
+          docker run -d --name core_api --network api_network  -p 8080:8080 heldenar/book-core-api:latest
 
