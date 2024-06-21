@@ -9,8 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.EntityManager;
+import store.buzzbook.core.common.config.QuerydslConfig;
+import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.cart.Wishlist;
@@ -24,6 +27,7 @@ import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(QuerydslConfig.class)
 @DataJpaTest
 class CartWishlistRepositoryTest {
 	@Autowired
@@ -60,7 +64,7 @@ class CartWishlistRepositoryTest {
 		gradeRepository.save(grade);
 
 		user = User.builder()
-			.loginId("asd123")
+			.loginId("dfsajkh23489y")
 			.name("john doe")
 			.grade(grade)
 			.email("email123@nhn.com")
@@ -95,12 +99,12 @@ class CartWishlistRepositoryTest {
 		entityManager.persist(book);
 
 		product = Product.builder().score(10)
+			.productName("testBook")
 			.stock(100)
 			.price(10000)
-			.book(book)
 			.category(category)
-			.forward_date("2013-01-10").build();
-
+			.stockStatus(Product.StockStatus.SALE)
+			.forwardDate(ZonedDateTimeParser.toDate("2013-01-10")).build();
 	}
 
 	@Test

@@ -3,11 +3,13 @@ package store.buzzbook.core.service.user.implement;
 import java.time.ZonedDateTime;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
+import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.util.ZonedDateTimeParser;
@@ -33,13 +35,11 @@ public class UserServiceImpl implements UserService {
 	private final GradeRepository gradeRepository;
 	private final DeactivationRepository deactivationRepository;
 
-	private final String SUCCESS_REGISTER = "회원가입 성공";
-
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
-		boolean isDeactivate = deactivationRepository.existsByUserId(user.getId());
+		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
 		if (isDeactivate) {
 			log.warn("로그인 실패 : 탈퇴한 유저의 아이디({})입니다.", user.getId());
@@ -50,37 +50,21 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserInfo successLogin(Long id) {
-		//todo 뭔가 보안을 위한 토큰 같은게 필요할까요?
-		// boolean isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
-		// if (!isUpdated) {
-		// 	//한번 더 시도
-		// 	isUpdated = userRepository.updateLastLoginDateById(id,ZonedDateTime.now());
-		// }
+	public UserInfo successLogin(String loginId) {
+		log.info("최근 로그인 일자 업데이트 : {} ", loginId);
 
-		// if (!isUpdated) {
-		// 	log.warn("로그인 성공 처리 실패 : 알 수 없는 오류");
-		// 	throw new UnknownUserException("로그인 성공처리 업데이트 실패");
-		// }
+		if (!userRepository.updateLoginDate(loginId)) {
+			log.warn("최근 로그인 일자 변경 재시도");
+			userRepository.updateLoginDate(loginId);
+		}
 
-		User user = userRepository.findById(id).orElseThrow(
-			() -> new UserNotFoundException(String.format("long id %d", id)));
-
-		return UserInfo.builder()
-			.loginId(user.getLoginId())
-			.id(user.getId())
-			.name(user.getName())
-			.email(user.getEmail())
-			.grade(user.getGrade())
-			.birthday(user.getBirthday())
-			.contactNumber(user.getContactNumber())
-			.isAdmin(user.isAdmin()).build();
-
+		return getUserInfoByLoginId(loginId);
 	}
 
 	@Override
 	public RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest) {
 		String loginId = registerUserRequest.loginId();
+		String successRegister = "회원가입 성공";
 
 		if (userRepository.existsByLoginId(loginId)) {
 			log.warn("유저 아이디 {} 중복 회원가입 실패 ", loginId);
@@ -94,35 +78,58 @@ public class UserServiceImpl implements UserService {
 			.name(requestUser.getName())
 			.loginId(requestUser.getLoginId())
 			.status(200)
-			.message(SUCCESS_REGISTER).build();
+			.message(successRegister).build();
 	}
 
+	@Transactional
 	@Override
-	public Long deactivate(Long id, String reason) {
-		//todo dto 바꾸기
-		User user = userRepository.findById(id)
-			.orElseThrow(() -> new UserNotFoundException(String.format("long id %d", id)));
+	public boolean deactivate(String loginId, String reason) {
+		User user = userRepository.findByLoginId(loginId)
+			.orElseThrow(() -> new UserNotFoundException(loginId));
 
 		Deactivation deactivation = Deactivation.builder()
 			.deactivationDate(ZonedDateTime.now())
 			.reason(reason)
 			.user(user).build();
 
-		deactivationRepository.save(deactivation);
+		Deactivation savedData = deactivationRepository.save(deactivation);
 
-		return 0L;
+		if (userRepository.updateStatus(loginId, UserStatus.DORMANT)) {
+			log.error("계정 상태 휴면화 중 오류가 발생했습니다. : {} ", loginId);
+			throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", loginId));
+		}
+
+		return savedData.getUser().getLoginId().equals(loginId);
 	}
 
 	@Override
-	public Long activate(Long id) {
-		return 0L;
+	public void activate(String loginId) {
+
+		if (!userRepository.existsByLoginId(loginId)) {
+			log.warn("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
+			throw new UserNotFoundException(loginId);
+		}
+
+		if (userRepository.updateStatus(loginId, UserStatus.ACTIVE)) {
+			log.error("계정 활성화 중 오류가 발생했습니다. : {}", loginId);
+			throw new UnknownUserException(String.format("계정 상태 활성화 중 오류가 발생했습니다. : %s ", loginId));
+		}
+
 	}
 
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
+		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
-
-		return null;
+		return UserInfo.builder()
+			.name(user.getName())
+			.loginId(user.getLoginId())
+			.birthday(user.getBirthday())
+			.isAdmin(user.isAdmin())
+			.grade(user.getGrade())
+			.contactNumber(user.getContactNumber())
+			.email(user.getEmail())
+			.build();
 	}
 
 	private User convertToUser(RegisterUserRequest request) {

@@ -10,8 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.EntityManager;
+import store.buzzbook.core.common.config.QuerydslConfig;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
@@ -19,6 +21,7 @@ import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(QuerydslConfig.class)
 @DataJpaTest
 class AddressRepositoryTest {
 	@Autowired
@@ -47,7 +50,7 @@ class AddressRepositoryTest {
 		gradeRepository.save(grade);
 
 		user = User.builder()
-			.loginId("asd123")
+			.loginId("iojerw398")
 			.name("john doe")
 			.grade(grade)
 			.email("email123@nhn.com")

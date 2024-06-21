@@ -2,7 +2,6 @@ package store.buzzbook.core.repository.user;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -13,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
+import store.buzzbook.core.common.config.QuerydslConfig;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
@@ -24,7 +25,8 @@ import store.buzzbook.core.repository.point.PointLogRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@Transactional
+@Transactional
+@Import(QuerydslConfig.class)
 class PointLogRepositoryTest {
 
 	@Autowired
@@ -49,7 +51,7 @@ class PointLogRepositoryTest {
 			.build();
 
 		testUser = User.builder()
-			.loginId("asd123")
+			.loginId("ewqur32847")
 			.name("john doe")
 			.grade(testGrade)
 			.email("email123@nhn.com")
