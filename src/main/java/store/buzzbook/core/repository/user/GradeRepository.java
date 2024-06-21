@@ -8,5 +8,9 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 
 public interface GradeRepository extends JpaRepository<Grade, Integer> {
+
 	Optional<Grade> findByName(GradeName name);
+
+	boolean existsByName(GradeName name);
+
 }

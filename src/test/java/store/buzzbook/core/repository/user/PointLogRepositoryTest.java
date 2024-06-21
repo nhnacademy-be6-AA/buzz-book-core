@@ -24,7 +24,7 @@ import store.buzzbook.core.repository.point.PointLogRepository;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Transactional
+//@Transactional
 class PointLogRepositoryTest {
 
 	@Autowired
@@ -65,9 +65,9 @@ class PointLogRepositoryTest {
 		testPointLog = PointLog.builder()
 			.createDate(ZonedDateTime.now())
 			.inquiry("book")
-			.delta(BigDecimal.valueOf(-10000.00))
+			.delta(-10000)
 			.user(testUser)
-			.balance(BigDecimal.valueOf(90000.00))
+			.balance(90000)
 			.build();
 
 		gradeRepository.save(testGrade);
@@ -82,9 +82,9 @@ class PointLogRepositoryTest {
 		PointLog newPointLog = PointLog.builder()
 			.createDate(ZonedDateTime.now())
 			.inquiry("book")
-			.delta(BigDecimal.valueOf(50000.00))
+			.delta(50000)
 			.user(testUser)
-			.balance(BigDecimal.valueOf(95000.00))
+			.balance(95000)
 			.build();
 
 		pointLogRepository.save(newPointLog);
@@ -104,9 +104,9 @@ class PointLogRepositoryTest {
 		PointLog newPointLog = PointLog.builder()
 			.createDate(ZonedDateTime.now())
 			.inquiry("book")
-			.delta(BigDecimal.valueOf(50000.00))
+			.delta(50000)
 			.user(testUser)
-			.balance(BigDecimal.valueOf(95000.00))
+			.balance(95000)
 			.build();
 
 		pointLogRepository.save(newPointLog);

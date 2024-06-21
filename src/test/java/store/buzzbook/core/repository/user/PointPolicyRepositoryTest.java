@@ -31,7 +31,7 @@ class PointPolicyRepositoryTest {
 	public void setUp() {
 		testPointPolicy = PointPolicy.builder()
 			.name("test")
-			.point(BigDecimal.valueOf(3000.00))
+			.point(3000)
 			.build();
 
 		pointPolicyRepository.save(testPointPolicy);
@@ -80,9 +80,15 @@ class PointPolicyRepositoryTest {
 		PointPolicy savedPointPolicy = pointPolicyRepository.findById(testPointPolicy.getId()).orElse(null);
 
 		assert savedPointPolicy != null;
-		savedPointPolicy.setName(updatedName);
-		savedPointPolicy.setPoint(updatedPoint);
-		pointPolicyRepository.save(savedPointPolicy);
+
+		PointPolicy newPointPolicy = PointPolicy.builder()
+			.id(savedPointPolicy.getId())
+			.point(savedPointPolicy.getPoint())
+			.name(savedPointPolicy.getName())
+			.rate(savedPointPolicy.getRate())
+			.build();
+
+		pointPolicyRepository.save(newPointPolicy);
 
 		PointPolicy updatedPointPolicy = pointPolicyRepository.findById(testPointPolicy.getId()).orElse(null);
 

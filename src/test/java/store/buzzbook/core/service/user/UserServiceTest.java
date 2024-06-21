@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
+import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.entity.user.Grade;
@@ -49,7 +50,7 @@ class UserServiceTest {
 			.email("asd123@nhn.com")
 			.contactNumber("010-0000-1111")
 			.loginId("asd123")
-			.birthday(ZonedDateTime.now())
+			.birthday(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
 			.password("328u1u90uiodhiosdafhioufo82^&%6712jbsja")
 			.build();
 
@@ -101,7 +102,7 @@ class UserServiceTest {
 		return User.builder()
 			.loginId(request.loginId())
 			.name(request.name())
-			.birthday(request.birthday())
+			.birthday(ZonedDateTimeParser.toDate(request.birthday()))
 			.createDate(ZonedDateTime.now())
 			.grade(grade)
 			.email(request.email())

@@ -6,7 +6,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,24 +25,31 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @Entity
+@Table(name = "point_log")
 public class PointLog {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
+	@NotNull
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
 	private User user;
 
-	@Column(nullable = false)
+	@NotNull
+	@Column(nullable = false, name = "create_date")
 	private ZonedDateTime createDate;
 
+	@NotNull
 	@Column(nullable = false)
 	private String inquiry;
 
+	@NotNull
 	@Column(nullable = false, precision = 10, scale = 2, columnDefinition = "default `0.00`")
-	private BigDecimal delta;
+	private int delta;
 
+	@NotNull
 	@Column(nullable = false, precision = 10, scale = 2, columnDefinition = "default `0.00`")
-	private BigDecimal balance;
+	private int balance;
 }

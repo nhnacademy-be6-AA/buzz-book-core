@@ -21,23 +21,18 @@ import java.math.BigDecimal;
 @Builder
 @Entity
 public class PointPolicy {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
-	@Setter
 	@Column(nullable = false)
 	private String name;
 
-	@Builder.Default
-	@Setter
-	@Column(nullable = false, precision = 10, scale = 2)
-	private BigDecimal point = BigDecimal.valueOf(0.00);
-
-	@Builder.Default
-	@Setter
 	@Column(nullable = false)
+	private int point;
+
+	@Column(nullable = false)
+	@Builder.Default
 	@ColumnDefault("1.0")
-	private double rate = 1.0;
+	private double rate = 1.0d;
 }
