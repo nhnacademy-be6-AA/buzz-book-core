@@ -21,9 +21,9 @@ import store.buzzbook.core.repository.product.ProductRepository;
 @Service
 public class ProductService {
 
-	private ProductRepository productRepository;
-    private CategoryRepository categoryRepository;
-    private BookRepository bookRepository;
+	private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final BookRepository bookRepository;
 
 	public Product saveProduct(ProductRequest productReq) {
         Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
