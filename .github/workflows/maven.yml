@@ -77,8 +77,8 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          docker pull heldenar/test:latest
-          docker stop test-app || true
-          docker rm test-app || true
-          docker run -d --name test-app -p 8081:8081 heldenar/test:latest
+          docker pull heldenar/book-core-api:latest
+          docker stop core_api || true
+          docker rm core_api || true
+          docker run -d core_api test-app -p 8090:8090 heldenar/book-core-api:latest
 
