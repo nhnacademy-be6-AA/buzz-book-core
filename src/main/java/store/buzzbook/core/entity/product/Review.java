@@ -16,6 +16,7 @@ public class Review {
     @Column(nullable = false, length = 255)
     private String content;
 
+    @Column(nullable = false)
     private String picturePath;
 
     @Column(nullable = false)

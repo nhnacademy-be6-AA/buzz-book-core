@@ -4,54 +4,69 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor
 public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
 
-    @Column(nullable = false)
-    private int stock;
+	@Column(nullable = false)
+	private int stock;
 
-    @Column(nullable = false)
-    private int price;
+	@Column(nullable = false, length = 255)
+	private String productName;
 
-    @Column(name = "forward_date")
-    private ZonedDateTime forwardDate;
+	@Column(nullable = false)
+	private int price;
 
-    @Column(nullable = false)
-    private int score;
+	@Column(name = "forward_date")
+	private ZonedDateTime forwardDate;
 
-    @Column(name = "thumbnail_path")
-    private String thumbnailPath;
+	@Column(nullable = false)
+	private int score;
 
-    @OneToOne
-    @JoinColumn(name = "category_id", nullable = false, referencedColumnName = "id")
-    private Category category;
+	@Column(name = "thumbnail_path")
+	private String thumbnailPath;
 
-    @OneToOne
-    @JoinColumn(name = "book_id")
-    private Book book;
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private StockStatus stockStatus;
 
-    @Builder
-    public Product(int stock, int price, String forward_date,
-            int score, String thumbnail_path, Category category,Book book)
-    {
-        this.stock = stock;
-        this.price = price;
-        LocalDate localDate = LocalDate.parse(forward_date);
-        this.forwardDate = localDate.atStartOfDay(ZoneId.systemDefault());
-        this.score = score;
-        this.thumbnailPath = thumbnail_path;
-        this.category = category;
-        this.book = book;
-    }
+	@ManyToOne
+	@JoinColumn(name = "category_id", nullable = false)
+	private Category category;
+
+	@Builder
+	public Product(int stock, String productName, int price, ZonedDateTime forwardDate,
+		int score, String thumbnailPath, StockStatus stockStatus,
+		Category category) {
+		this.stock = stock;
+		this.productName = productName;
+		this.price = price;
+		this.forwardDate = forwardDate;
+		this.score = score;
+		this.thumbnailPath = thumbnailPath;
+		this.stockStatus = stockStatus;
+		this.category = category;
+	}
+
+	public enum StockStatus {
+		SALE, SOLD_OUT, OUT_OF_STOCK
+	}
 }

@@ -33,6 +33,10 @@ public class Book {
     @JsonProperty("pubdate")
     private ZonedDateTime publishDate;
 
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
     @Builder
     public Book(String title, String description, String isbn, Publisher publisher, String publishDate) {
         this.title = title;
