@@ -31,6 +31,7 @@ public class ProductResponse {
 			.price(product.getPrice())
 			.forwardDate(product.getForwardDate())
 			.score(product.getScore())
+			.thumbnailPath(product.getThumbnailPath())
 			.stockStatus(product.getStockStatus())
 			.category(convertToCategoryResponse(product.getCategory()))
 			.build();
