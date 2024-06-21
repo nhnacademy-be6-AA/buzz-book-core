@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 	public LoginUserResponse requestLogin(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
-		boolean isDeactivate = deactivationRepository.existsByUserId(user.getId());
+		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
 		if (isDeactivate) {
 			log.warn("로그인 실패 : 탈퇴한 유저의 아이디({})입니다.", user.getId());
@@ -59,7 +59,6 @@ public class UserServiceImpl implements UserService {
 		}
 
 		return getUserInfoByLoginId(loginId);
-
 	}
 
 	@Override
@@ -95,7 +94,7 @@ public class UserServiceImpl implements UserService {
 
 		Deactivation savedData = deactivationRepository.save(deactivation);
 
-		if (!userRepository.updateStatus(loginId, UserStatus.DORMANT)) {
+		if (userRepository.updateStatus(loginId, UserStatus.DORMANT)) {
 			log.error("계정 상태 휴면화 중 오류가 발생했습니다. : {} ", loginId);
 			throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", loginId));
 		}
@@ -111,7 +110,7 @@ public class UserServiceImpl implements UserService {
 			throw new UserNotFoundException(loginId);
 		}
 
-		if (!userRepository.updateStatus(loginId, UserStatus.ACTIVE)) {
+		if (userRepository.updateStatus(loginId, UserStatus.ACTIVE)) {
 			log.error("계정 활성화 중 오류가 발생했습니다. : {}", loginId);
 			throw new UnknownUserException(String.format("계정 상태 활성화 중 오류가 발생했습니다. : %s ", loginId));
 		}

@@ -51,7 +51,7 @@ class PointLogRepositoryTest {
 			.build();
 
 		testUser = User.builder()
-			.loginId("asd123")
+			.loginId("ewqur32847")
 			.name("john doe")
 			.grade(testGrade)
 			.email("email123@nhn.com")

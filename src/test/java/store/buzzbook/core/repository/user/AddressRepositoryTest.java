@@ -50,7 +50,7 @@ class AddressRepositoryTest {
 		gradeRepository.save(grade);
 
 		user = User.builder()
-			.loginId("asd123")
+			.loginId("iojerw398")
 			.name("john doe")
 			.grade(grade)
 			.email("email123@nhn.com")

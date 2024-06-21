@@ -17,6 +17,7 @@ import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
@@ -94,6 +95,17 @@ class UserServiceTest {
 
 		Assertions.assertThrowsExactly(UserAlreadyExistsException.class,
 			() -> userService.requestRegister(registerUserRequest));
+
+	}
+
+	void testGetUserInfoByLoginId() {
+
+	}
+
+	void testSuccessLogin() {
+		UserInfo userInfo = userService.successLogin(registerUserRequest.loginId());
+
+		Assertions.assertNotNull(userInfo);
 
 	}
 

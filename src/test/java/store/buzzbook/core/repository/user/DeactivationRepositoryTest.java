@@ -49,7 +49,7 @@ class DeactivationRepositoryTest {
 		gradeRepository.save(grade);
 
 		user = User.builder()
-			.loginId("asd123")
+			.loginId("dafnjk238")
 			.name("john doe")
 			.grade(grade)
 			.email("email123@nhn.com")
@@ -81,5 +81,6 @@ class DeactivationRepositoryTest {
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(deactivation.getReason(), result.getReason());
 		Assertions.assertEquals(deactivation.getUser().getLoginId(), result.getUser().getLoginId());
+		Assertions.assertTrue(deactivationRepository.existsById(deactivation.getId()));
 	}
 }

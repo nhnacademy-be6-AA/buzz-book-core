@@ -63,7 +63,7 @@ class CartWishlistRepositoryTest {
 		gradeRepository.save(grade);
 
 		user = User.builder()
-			.loginId("asd123")
+			.loginId("dfsajkh23489y")
 			.name("john doe")
 			.grade(grade)
 			.email("email123@nhn.com")
