@@ -1,8 +1,5 @@
 package store.buzzbook.core.entity.product;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
@@ -14,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,8 +53,7 @@ public class Product {
 
 	@Builder
 	public Product(int stock, String productName, int price, ZonedDateTime forwardDate,
-		int score, String thumbnailPath, StockStatus stockStatus,
-		Category category) {
+		int score, String thumbnailPath, StockStatus stockStatus, Category category) {
 		this.stock = stock;
 		this.productName = productName;
 		this.price = price;
@@ -70,3 +68,4 @@ public class Product {
 		SALE, SOLD_OUT, OUT_OF_STOCK
 	}
 }
+
