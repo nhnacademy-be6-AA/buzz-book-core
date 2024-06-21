@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.EntityManager;
 import store.buzzbook.core.common.config.QuerydslConfig;
+import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.cart.Wishlist;
@@ -98,12 +99,12 @@ class CartWishlistRepositoryTest {
 		entityManager.persist(book);
 
 		product = Product.builder().score(10)
+			.productName("testBook")
 			.stock(100)
 			.price(10000)
-			.book(book)
 			.category(category)
-			.forward_date("2013-01-10").build();
-
+			.stockStatus(Product.StockStatus.SALE)
+			.forwardDate(ZonedDateTimeParser.toDate("2013-01-10")).build();
 	}
 
 	@Test

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,14 +14,18 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
+import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.util.ZonedDateTimeParser;
+import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.implement.UserServiceImpl;
@@ -31,6 +36,8 @@ class UserServiceTest {
 	private UserRepository userRepository;
 	@Mock
 	private GradeRepository gradeRepository;
+	@Mock
+	private DeactivationRepository deactivationRepository;
 
 	@InjectMocks
 	private UserServiceImpl userService;
@@ -50,7 +57,7 @@ class UserServiceTest {
 			.name("test")
 			.email("asd123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.loginId("asd123")
+			.loginId("ijodfs328")
 			.birthday(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
 			.password("328u1u90uiodhiosdafhioufo82^&%6712jbsja")
 			.build();
@@ -98,14 +105,114 @@ class UserServiceTest {
 
 	}
 
+	@Test
 	void testGetUserInfoByLoginId() {
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(registerUserRequest.loginId())) {
+					return Optional.of(convertToUser(registerUserRequest));
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		UserInfo responseInfo = userService.getUserInfoByLoginId(registerUserRequest.loginId());
+		Assertions.assertNotNull(responseInfo);
+		Assertions.assertEquals(registerUserRequest.loginId(), responseInfo.loginId());
+		Assertions.assertEquals(registerUserRequest.name(), responseInfo.name());
+		Assertions.assertEquals(registerUserRequest.email(), responseInfo.email());
+		Assertions.assertEquals(registerUserRequest.contactNumber(), responseInfo.contactNumber());
+		Assertions.assertEquals(registerUserRequest.birthday(),
+			ZonedDateTimeParser.toStringDate(responseInfo.birthday()));
 
 	}
 
-	void testSuccessLogin() {
-		UserInfo userInfo = userService.successLogin(registerUserRequest.loginId());
+	@Test
+	void testRequestLoginShouldOk() {
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString()))
+			.thenAnswer(invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+				if (loginId.equals(registerUserRequest.loginId())) {
+					return Optional.of(convertToUser(registerUserRequest));
+				}
 
-		Assertions.assertNotNull(userInfo);
+				return Optional.empty();
+			});
+
+		Mockito.when(deactivationRepository.existsById(Mockito.any()))
+			.thenReturn(false);
+
+		LoginUserResponse loginUserResponse = userService.requestLogin(registerUserRequest.loginId());
+		Assertions.assertNotNull(loginUserResponse);
+		Assertions.assertEquals(registerUserRequest.loginId(), loginUserResponse.loginId());
+		Assertions.assertEquals(registerUserRequest.password(), loginUserResponse.password());
+	}
+
+	@Test
+	@DisplayName("등록된 아이디가 없는 로그인 시도")
+	void testRequestLoginShouldThrowUserNotFoundException() {
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString()))
+			.thenAnswer(invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+				if (loginId.equals("UNKNOWN_ID")) {
+					return Optional.of(convertToUser(registerUserRequest));
+				}
+
+				return Optional.empty();
+			});
+
+		Assertions.assertThrowsExactly(UserNotFoundException.class,
+			() -> userService.requestLogin(registerUserRequest.loginId()));
+
+	}
+
+	@Test
+	@DisplayName("탈퇴한 유저 로그인 시도")
+	void testRequestLoginShouldThrowDeactivateUserxception() {
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString()))
+			.thenAnswer(invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+				if (loginId.equals(registerUserRequest.loginId())) {
+					return Optional.of(convertToUser(registerUserRequest));
+				}
+
+				return Optional.empty();
+			});
+
+		Mockito.when(deactivationRepository.existsById(Mockito.any()))
+			.thenReturn(true);
+
+		Assertions.assertThrowsExactly(DeactivateUserException.class,
+			() -> userService.requestLogin(registerUserRequest.loginId()));
+
+	}
+
+	@Test
+	void testSuccessLogin() {
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(registerUserRequest.loginId())) {
+					return Optional.of(convertToUser(registerUserRequest));
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		UserInfo responseInfo = userService.successLogin(registerUserRequest.loginId());
+
+		Assertions.assertNotNull(responseInfo);
+		Assertions.assertEquals(registerUserRequest.loginId(), responseInfo.loginId());
+		Assertions.assertEquals(registerUserRequest.name(), responseInfo.name());
+		Assertions.assertEquals(registerUserRequest.email(), responseInfo.email());
+		Assertions.assertEquals(registerUserRequest.contactNumber(), responseInfo.contactNumber());
+		Assertions.assertEquals(registerUserRequest.birthday(),
+			ZonedDateTimeParser.toStringDate(responseInfo.birthday()));
 
 	}
 
@@ -117,6 +224,7 @@ class UserServiceTest {
 			.birthday(ZonedDateTimeParser.toDate(request.birthday()))
 			.createDate(ZonedDateTime.now())
 			.grade(grade)
+			.password(request.password())
 			.email(request.email())
 			.modifyDate(null)
 			.contactNumber(request.contactNumber())
