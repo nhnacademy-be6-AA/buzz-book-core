@@ -1,29 +1,31 @@
 package store.buzzbook.core.entity.product;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Builder;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@Getter
 @Entity
+@Getter
 @NoArgsConstructor
-public class Tag {
+@RequiredArgsConstructor
+public class productTag {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@Column(nullable = false, length = 20)
-	private String name;
+	@ManyToOne
+	@JoinColumn(name = "product_id", nullable = false)
+	private Product product;
 
-	@Builder
-	public Tag(String name) {
-		this.name = name;
-	}
+	@ManyToOne
+	@JoinColumn(name = "tag_id", nullable = false)
+	private Tag tag;
 
 }
