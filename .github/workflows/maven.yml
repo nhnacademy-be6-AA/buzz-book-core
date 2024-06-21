@@ -59,7 +59,7 @@ jobs:
 
     - name: Build and push Docker image
       env:
-        IMAGE_NAME: heldenar/test
+        IMAGE_NAME: heldenar/book-core-api
         TAG: latest
       run: |
         docker build -t $IMAGE_NAME:$TAG .
