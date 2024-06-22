@@ -62,7 +62,7 @@ public class PaymentService {
 	}
 
 	public BillLogResponse readBillLog(long orderId) {
-		BillLog billLog = billLogRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+		BillLog billLog = billLogRepository.findByOrder_id(orderId);
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
