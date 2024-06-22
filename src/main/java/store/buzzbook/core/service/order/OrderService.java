@@ -133,7 +133,7 @@ public class OrderService {
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(updateOrderRequest.getId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndULoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().getLoginId());
 		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
