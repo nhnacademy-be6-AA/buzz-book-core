@@ -65,6 +65,9 @@ public class OrderController {
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
 	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest) {
+		if (updateOrderRequest.getUser().isAdmin()) {
+			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
+		}
 		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
 	}
 

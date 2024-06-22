@@ -130,6 +130,23 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailRespons);
 	}
 
+	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
+		Order order = orderRepository.findById(updateOrderRequest.getId())
+			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllById(updateOrderRequest.getId());
+		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
+
+		for (OrderDetail orderDetail : orderDetails) {
+			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getId() == updateOrderRequest.getId()).map(
+				UpdateOrderDetailRequest::getOrderStatusId).toList()) {
+				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
+				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
+			}
+		}
+
+		return OrderMapper.toDto(order, readOrderDetailRespons);
+	}
+
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
