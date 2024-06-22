@@ -12,10 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
+import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.OrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
+import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -24,6 +27,7 @@ import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
+import store.buzzbook.core.mapper.order.OrderStatusMapper;
 import store.buzzbook.core.repository.order.DeliveryPolicyRepository;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
@@ -144,4 +148,25 @@ public class OrderService {
 		return readOrderDetailRespons;
 	}
 
+	public OrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
+
+		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder().name(createOrderStatusRequest.getName()).build()));
+	}
+
+	public OrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
+
+		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder().id(updateOrderStatusRequest.getId()).name(updateOrderStatusRequest.getName()).build()));
+	}
+
+	public void deleteOrderStatus(int orderStatusId) {
+		orderStatusRepository.delete(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
+	}
+
+	public OrderStatusResponse readOrderStatusByName(String orderStatusName) {
+		return OrderStatusMapper.toDto(orderStatusRepository.findByName(orderStatusName));
+	}
+
+	public List<OrderStatusResponse> readAllOrderStatus() {
+		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
+	}
 }

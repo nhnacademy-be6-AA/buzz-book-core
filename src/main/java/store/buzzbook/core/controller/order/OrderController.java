@@ -19,11 +19,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
+import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.OrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
+import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
-import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.order.OrderService;
@@ -33,6 +35,8 @@ import store.buzzbook.core.service.order.OrderService;
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderController {
+	private static final String SUCCESS = "SUCCESS";
+
 	private final OrderService orderService;
 	private final UserRepository userRepository;
 
@@ -68,42 +72,43 @@ public class OrderController {
 	}
 
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
-	@GetMapping("/{id}/detail")
+	@GetMapping("/{id}/details")
 	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable long id) {
 		return ResponseEntity.ok(orderService.readOrderDetails(id));
 	}
 
-	////////////
 	@Operation(summary = "주문 상태 조회", description = "주문 상태 조회")
-	@GetMapping("status/{id}")
-	public ResponseEntity<OrderStatus> getOrderStatus(@PathVariable int id) {
-		return null;
+	@GetMapping("status/{name}")
+	public ResponseEntity<OrderStatusResponse> getOrderStatusByName(@PathVariable String name) {
+		return ResponseEntity.ok(orderService.readOrderStatusByName(name));
 	}
 
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
 	@GetMapping("status")
-	public ResponseEntity<List<OrderStatus>> getAllOrderStatus() {
-		return null;
+	public ResponseEntity<List<OrderStatusResponse>> getAllOrderStatus() {
+		return ResponseEntity.ok(orderService.readAllOrderStatus());
 	}
 
 	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
 	@PostMapping("status")
-	public ResponseEntity<OrderStatus> createOrderStatus(@RequestBody OrderStatus orderStatus) {
-		return null;
+	public ResponseEntity<OrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
+		return ResponseEntity.ok(orderService.createOrderStatus(request));
 	}
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("status")
-	public ResponseEntity<OrderStatus> updateOrderStatus(@RequestBody OrderStatus orderStatus) {
-		return null;
+	public ResponseEntity<OrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
+		return ResponseEntity.ok(orderService.updateOrderStatus(request));
 	}
 
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
 	@DeleteMapping("status/{id}")
 	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id) {
-		return null;
+		orderService.deleteOrderStatus(id);
+		return ResponseEntity.ok(SUCCESS);
 	}
 
+	///////////////
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")
 	@GetMapping("delivery-policy/{id}")
 	public ResponseEntity<DeliveryPolicy> getDeliveryPolicy(@PathVariable int id) {

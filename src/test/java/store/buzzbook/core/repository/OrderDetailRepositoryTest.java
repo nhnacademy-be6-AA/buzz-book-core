@@ -1,4 +1,4 @@
-package store.buzzbook.core.repository;// package store.buzzbook.core.repository;
+package store.buzzbook.core.repository;
 
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

@@ -1,15 +1,3 @@
-INSERT INTO `user` (
-    name
-) values (
-    'ps'
-);
-
-INSERT INTO `category` (
-    name
-) values (
-    'IT'
-);
-
 INSERT INTO `delivery_policy` (
     name,
     standard_price,
@@ -29,25 +17,6 @@ INSERT INTO `wrapping` (
 ) values (
     '신문지', 1000
 );
-
-INSERT INTO product (
-    stock,
-    price,
-    forward_date,
-    score,
-    thumbnail_path,
-    category_id,
-                     book_id
-) VALUES (
-             1,
-             1000.00,
-             '2024-01-01',
-             1,
-             'path/to/thumbnail.jpg',
-             2,
-          1
-         );
-
 
 INSERT INTO `order` (
     price,
