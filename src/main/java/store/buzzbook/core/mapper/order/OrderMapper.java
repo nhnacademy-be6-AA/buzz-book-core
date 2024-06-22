@@ -1,6 +1,7 @@
 package store.buzzbook.core.mapper.order;
 
 import java.util.List;
+import java.util.UUID;
 
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.OrderDetailResponse;
