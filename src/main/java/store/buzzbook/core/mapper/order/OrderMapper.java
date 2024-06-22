@@ -7,6 +7,7 @@ import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
+import store.buzzbook.core.entity.user.User;
 
 public class OrderMapper {
 	public static ReadOrderResponse toDto(Order order, List<ReadOrderDetailResponse> details) {
@@ -24,9 +25,9 @@ public class OrderMapper {
 			.build();
 	}
 
-	public static Order toEntity(CreateOrderRequest createOrderRequest, DeliveryPolicy deliveryPolicy) {
+	public static Order toEntity(CreateOrderRequest createOrderRequest, DeliveryPolicy deliveryPolicy, User user) {
 		return Order.builder()
-			.user(createOrderRequest.getUser())
+			.user(user)
 			.price(createOrderRequest.getPrice())
 			.deliveryPolicy(deliveryPolicy)
 			.request(createOrderRequest.getRequest())

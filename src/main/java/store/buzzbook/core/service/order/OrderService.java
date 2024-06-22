@@ -31,6 +31,7 @@ import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.mapper.order.DeliveryPolicyMapper;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
@@ -109,7 +110,8 @@ public class OrderService {
 
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 
-		Order order = OrderMapper.toEntity(createOrderRequest, deliveryPolicy);
+		User user = userRepository.findByLoginId(createOrderRequest.getUser().loginId()).orElseThrow(()-> new IllegalArgumentException("User not found"));
+		Order order = OrderMapper.toEntity(createOrderRequest, deliveryPolicy, user);
 
 		order = orderRepository.save(order);
 
@@ -150,7 +152,7 @@ public class OrderService {
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().getLoginId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().loginId());
 		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
