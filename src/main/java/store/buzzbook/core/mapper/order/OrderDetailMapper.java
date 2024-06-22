@@ -1,7 +1,7 @@
 package store.buzzbook.core.mapper.order;
 
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
-import store.buzzbook.core.dto.order.OrderDetailResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -10,8 +10,8 @@ import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 
 public class OrderDetailMapper {
-	public static OrderDetailResponse toDto(OrderDetail orderDetail) {
-		return OrderDetailResponse.builder()
+	public static ReadOrderDetailResponse toDto(OrderDetail orderDetail) {
+		return ReadOrderDetailResponse.builder()
 			.id(orderDetail.getId())
 			.price(orderDetail.getPrice())
 			.wrap(orderDetail.isWrap())

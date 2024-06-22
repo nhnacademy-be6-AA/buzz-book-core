@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.OrderDetailResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
@@ -43,7 +43,7 @@ public class OrderController {
 		if (isAdmin) {
 			readOrderResponses = orderService.readOrders(pageable);
 		} else {
-			long userId = userRepository.findByLoginId(loginId).get().getId();
+			long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getId();
 			readOrderResponses = orderService.readMyOrders(userId, pageable);
 		}
 		return ResponseEntity.ok(readOrderResponses);
@@ -70,7 +70,7 @@ public class OrderController {
 
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
 	@GetMapping("/{id}/detail")
-	public ResponseEntity<List<OrderDetailResponse>> getOrderDetails(@PathVariable Long id) {
+	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable Long id) {
 		return null;
 	}
 

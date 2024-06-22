@@ -1,16 +1,15 @@
 package store.buzzbook.core.mapper.order;
 
 import java.util.List;
-import java.util.UUID;
 
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.OrderDetailResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 
 public class OrderMapper {
-	public static ReadOrderResponse toDto(Order order, List<OrderDetailResponse> details) {
+	public static ReadOrderResponse toDto(Order order, List<ReadOrderDetailResponse> details) {
 		return ReadOrderResponse.builder()
 			.id(order.getId())
 			.details(details)

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillStatus;
 
@@ -24,5 +25,5 @@ public class BillLogResponse {
 	private BillStatus status;
 
 	private UUID paymentKey;
-	private Order order;
+	private ReadOrderResponse readOrderResponse;
 }

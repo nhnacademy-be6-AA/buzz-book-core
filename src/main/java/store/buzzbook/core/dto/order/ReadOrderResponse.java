@@ -22,5 +22,5 @@ public class ReadOrderResponse {
 	private ZonedDateTime desiredDeliveryDate;
 	private String receiver;
 	private DeliveryPolicyResponse deliveryPolicy;
-	private List<OrderDetailResponse> details;
+	private List<ReadOrderDetailResponse> details;
 }

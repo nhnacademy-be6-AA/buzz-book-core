@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.OrderDetailResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
@@ -49,7 +49,7 @@ public class OrderService {
 
 		for (Order order : orders) {
 			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-			List<OrderDetailResponse> details = new ArrayList<>();
+			List<ReadOrderDetailResponse> details = new ArrayList<>();
 
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
@@ -69,7 +69,7 @@ public class OrderService {
 
 		for (Order order : orders) {
 			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-			List<OrderDetailResponse> details = new ArrayList<>();
+			List<ReadOrderDetailResponse> details = new ArrayList<>();
 
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
@@ -91,7 +91,7 @@ public class OrderService {
 
 		order = orderRepository.save(order);
 
-		List<OrderDetailResponse> orderDetailResponses = new ArrayList<>();
+		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (CreateOrderDetailRequest detail : details) {
 			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
@@ -102,27 +102,27 @@ public class OrderService {
 				.orElseThrow(()-> new IllegalArgumentException("Product not found"));
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
 			orderDetail = orderDetailRepository.save(orderDetail);
-			orderDetailResponses.add(OrderDetailMapper.toDto(orderDetail));
+			readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetail));
 		}
 
-		return OrderMapper.toDto(order, orderDetailResponses);
+		return OrderMapper.toDto(order, readOrderDetailRespons);
 	}
 
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(updateOrderRequest.getId());
-		List<OrderDetailResponse> orderDetailResponses = new ArrayList<>();
+		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
 			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getId() == updateOrderRequest.getId()).map(
 				UpdateOrderDetailRequest::getOrderStatusId).toList()) {
 				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
-				orderDetailResponses.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
+				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
 
-		return OrderMapper.toDto(order, orderDetailResponses);
+		return OrderMapper.toDto(order, readOrderDetailRespons);
 	}
 
 }
