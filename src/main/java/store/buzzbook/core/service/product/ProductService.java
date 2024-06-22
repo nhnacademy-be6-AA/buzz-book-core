@@ -7,10 +7,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.product.ProductNotFoundException;
 import store.buzzbook.core.dto.product.response.ProductRequest;
 import store.buzzbook.core.dto.product.response.ProductResponse;
 import store.buzzbook.core.dto.product.response.ProductUpdateRequest;
-import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.BookRepository;
@@ -22,39 +22,40 @@ import store.buzzbook.core.repository.product.ProductRepository;
 public class ProductService {
 
 	private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
-    private final BookRepository bookRepository;
+	private final CategoryRepository categoryRepository;
+	private final BookRepository bookRepository;
 
-	public Product saveProduct(ProductRequest productReq) {
-        Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
-        Product product = Product.builder()
-            .stock(productReq.getStock())
-            .productName(productReq.getProductName())
-            .price(productReq.getPrice())
-            .forwardDate(productReq.getForwardDate())
-            .score(productReq.getScore())
-            .thumbnailPath(productReq.getThumbnailPath())
-            .stockStatus(productReq.getStockStatus())
-            .category(category)
-            .build();
-		return productRepository.save(product);
+	public ProductResponse saveProduct(ProductRequest productReq) {
+		Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
+		Product product = Product.builder()
+			.stock(productReq.getStock())
+			.productName(productReq.getProductName())
+			.price(productReq.getPrice())
+			.forwardDate(productReq.getForwardDate())
+			.score(productReq.getScore())
+			.thumbnailPath(productReq.getThumbnailPath())
+			.stockStatus(productReq.getStockStatus())
+			.category(category)
+			.build();
+		product = productRepository.save(product);
+		return convertToProductResponse(product);
 	}
 
 	public List<ProductResponse> getAllProducts() {
 
-        return productRepository.findAll().stream()
-            .map(ProductResponse::convertToProductResponse)
-            .toList();
+		return productRepository.findAll().stream()
+			.map(ProductResponse::convertToProductResponse)
+			.toList();
 	}
 
 	public ProductResponse getProductById(int id) {
 		Product product = productRepository.findById(id).orElse(null);
 
-        if (product == null) {
-            throw new RuntimeException("Product not found");
-        }
+		if (product == null) {
+			throw new RuntimeException("Product not found");
+		}
 
-        return ProductResponse.builder()
+		return ProductResponse.builder()
 			.id(product.getId())
 			.stock(product.getStock())
 			.productName(product.getProductName())
@@ -67,51 +68,48 @@ public class ProductService {
 			.build();
 	}
 
-    public Product updateProduct(int id, ProductUpdateRequest productRequest) {
-        Product product = productRepository.findById(id).orElse(null);
-        Category category = categoryRepository.findById(productRequest.getCategoryId()).orElse(null);
+	public Product updateProduct(int id, ProductUpdateRequest productRequest) {
+		Product product = productRepository.findById(id).orElse(null);
+		Category category = categoryRepository.findById(productRequest.getCategoryId()).orElse(null);
 
-        //TODO 예외처리
-        if (product == null) {
-            throw new RuntimeException("Product not found");
-        }
-        if (category == null) {
-            throw new RuntimeException("Category not found");
-        }
+		if (product == null) {
+			throw new RuntimeException("Product not found");
+		}
+		if (category == null) {
+			throw new RuntimeException("Category not found");
+		}
 
-        Product updatedProduct = new Product(
-            product.getId(),
-            productRequest.getStock(),
-            productRequest.getProductName(),
-            productRequest.getPrice(),
-            product.getForwardDate(),
-            product.getScore(),
-            product.getThumbnailPath(),
-            productRequest.getStockStatus(),
-            category);
+		Product updatedProduct = new Product(
+			product.getId(),
+			productRequest.getStock(),
+			productRequest.getProductName(),
+			productRequest.getPrice(),
+			product.getForwardDate(),
+			product.getScore(),
+			product.getThumbnailPath(),
+			productRequest.getStockStatus(),
+			category);
 
-        return productRepository.save(updatedProduct);
-    }
+		return productRepository.save(updatedProduct);
+	}
 
-	public Book deleteBook(int productId){
-        Product product = productRepository.findById(productId).orElse(null);
+	public void deleteProduct(int productId) {
+		if (!productRepository.existsById(productId)) {
+			throw new ProductNotFoundException("존재 하지않은 상품입니다. id : " + productId);
+		}
+		productRepository.deleteById(productId);
+	}
 
-        if (product == null) {
-            throw new RuntimeException("Product not found");
-        }
-
-        ProductUpdateRequest productReq = ProductUpdateRequest.builder()
-            .stock(product.getStock())
-            .productName(product.getProductName())
-            .price(product.getPrice())
-            .thumbnailPath(product.getThumbnailPath())
-            .stockStatus(Product.StockStatus.SOLD_OUT)
-            .build();
-
-        updateProduct(productId, productReq);
-
-        Book book = bookRepository.findByProductId(productId);
-        book.setProduct(null);
-        return bookRepository.save(book);
+	private ProductResponse convertToProductResponse(Product product) {
+		return ProductResponse.builder()
+			.id(product.getId())
+			.stock(product.getStock())
+			.price(product.getPrice())
+			.forwardDate(product.getForwardDate())
+			.score(product.getScore())
+			.thumbnailPath(product.getThumbnailPath())
+			.productName(product.getProductName())
+			.stockStatus(product.getStockStatus())
+			.build();
 	}
 }
