@@ -11,7 +11,7 @@ import store.buzzbook.core.entity.payment.BillLog;
 @Getter
 public class PaymentLogResponse {
 	private long id;
-	private BillLog billLog;
+	private BillLogResponse billLogResponse;
 
 	private String name;
 	private int price;

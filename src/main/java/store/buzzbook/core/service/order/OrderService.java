@@ -80,6 +80,16 @@ public class OrderService {
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
 	}
 
+	public ReadOrderResponse readOrder(long orderId) {
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(orderId);
+		List<ReadOrderDetailResponse> details = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			details.add(OrderDetailMapper.toDto(orderDetail));
+		}
+		return OrderMapper.toDto(order, details);
+	}
+
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(createOrderRequest
@@ -123,6 +133,15 @@ public class OrderService {
 		}
 
 		return OrderMapper.toDto(order, readOrderDetailRespons);
+	}
+
+	public List<ReadOrderDetailResponse> readOrderDetails(long orderId) {
+		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetailRepository.findAllByOrder_Id(orderId)) {
+			readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetail));
+		}
+
+		return readOrderDetailRespons;
 	}
 
 }

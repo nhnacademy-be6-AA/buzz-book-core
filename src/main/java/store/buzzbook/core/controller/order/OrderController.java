@@ -61,19 +61,19 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
 	}
 
-	//////////
 	@Operation(summary = "주문 단건 조회", description = "주문 단건 조회")
 	@GetMapping("/{id}")
-	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable Long id, @RequestParam("userId") long userId) {
-		return null;
+	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("userId") long userId) {
+		return ResponseEntity.ok(orderService.readOrder(id));
 	}
 
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
 	@GetMapping("/{id}/detail")
-	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable Long id) {
-		return null;
+	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable long id) {
+		return ResponseEntity.ok(orderService.readOrderDetails(id));
 	}
 
+	////////////
 	@Operation(summary = "주문 상태 조회", description = "주문 상태 조회")
 	@GetMapping("status/{id}")
 	public ResponseEntity<OrderStatus> getOrderStatus(@PathVariable int id) {
