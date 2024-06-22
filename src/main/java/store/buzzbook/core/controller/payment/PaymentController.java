@@ -22,7 +22,6 @@ import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.payment.PaymentService;
-import store.buzzbook.core.service.user.UserService;
 
 @Tag(name = "Payments API", description = "결제 관련 API")
 @RestController
@@ -34,13 +33,14 @@ public class PaymentController {
 
 	@Operation(summary = "결제 내역 단건 조회", description = "결제 내역 단건 조회")
 	@GetMapping("/bill-log/{order-id}")
-	public ResponseEntity<ReadBillLogResponse> getBillLog(@PathVariable("order-id") long orderId) {
-		return ResponseEntity.ok(paymentService.readBillLog(orderId));
+	public ResponseEntity<ReadBillLogResponse> getBillLog(@PathVariable("order-id") long orderId, @RequestParam("login-id") String loginId) {
+		long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getId();
+		return ResponseEntity.ok(paymentService.readBillLog(userId, orderId));
 	}
 
 	@Operation(summary = "결제 내역 모두 조회", description = "결제 내역 모두 조회")
 	@GetMapping("/bill-logs")
-	public ResponseEntity<Page<ReadBillLogResponse>> getAllBillLogs(@PathVariable("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
+	public ResponseEntity<Page<ReadBillLogResponse>> getAllBillLogs(@RequestParam("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
 		Page<ReadBillLogResponse> billLogResponses = null;
 		if (isAdmin) {
 			billLogResponses = paymentService.readBillLogs(pageable);

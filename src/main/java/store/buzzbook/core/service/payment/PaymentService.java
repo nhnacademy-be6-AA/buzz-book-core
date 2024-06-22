@@ -72,8 +72,8 @@ public class PaymentService {
 		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
 	}
 
-	public ReadBillLogResponse readBillLog(long orderId) {
-		BillLog billLog = billLogRepository.findByOrder_id(orderId);
+	public ReadBillLogResponse readBillLog(long userId, long orderId) {
+		BillLog billLog = billLogRepository.findByUserIdAndId(userId, orderId);
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
