@@ -71,8 +71,8 @@ public class OrderController {
 
 	@Operation(summary = "주문 단건 조회", description = "주문 단건 조회")
 	@GetMapping("/{id}")
-	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("userId") long userId) {
-		return ResponseEntity.ok(orderService.readOrder(id));
+	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("loginId") String loginId) {
+		return ResponseEntity.ok(orderService.readOrder(id, loginId));
 	}
 
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")

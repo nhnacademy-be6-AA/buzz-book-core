@@ -92,9 +92,9 @@ public class OrderService {
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
 	}
 
-	public ReadOrderResponse readOrder(long orderId) {
+	public ReadOrderResponse readOrder(long orderId, String loginId) {
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(orderId);
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(orderId, loginId);
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			details.add(OrderDetailMapper.toDto(orderDetail));
@@ -133,7 +133,7 @@ public class OrderService {
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndULoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().getLoginId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndLoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().getLoginId());
 		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
