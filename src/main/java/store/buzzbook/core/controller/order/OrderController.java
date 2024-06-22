@@ -18,14 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
-import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.order.OrderService;
@@ -35,7 +37,7 @@ import store.buzzbook.core.service.order.OrderService;
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderController {
-	private static final String SUCCESS = "SUCCESS";
+	private static final String SUCCESS = "Deleted";
 
 	private final OrderService orderService;
 	private final UserRepository userRepository;
@@ -108,37 +110,38 @@ public class OrderController {
 		return ResponseEntity.ok(SUCCESS);
 	}
 
-	///////////////
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")
 	@GetMapping("delivery-policy/{id}")
-	public ResponseEntity<DeliveryPolicy> getDeliveryPolicy(@PathVariable int id) {
-		return null;
+	public ResponseEntity<ReadDeliveryPolicyResponse> getDeliveryPolicy(@PathVariable int id) {
+		return ResponseEntity.ok(orderService.readDeliveryPolicyById(id));
 	}
 
 	@Operation(summary = "운임비 정책 모두 조회", description = "운임비 정책 모두 조회")
 	@GetMapping("delivery-policy")
-	public ResponseEntity<List<DeliveryPolicy>> getAllDeliveryPolicy() {
-		return null;
+	public ResponseEntity<List<ReadDeliveryPolicyResponse>> getAllDeliveryPolicy() {
+		return ResponseEntity.ok(orderService.readAllDeliveryPolicy());
 	}
 
 	@Operation(summary = "운임비 정책 등록", description = "운임비 정책 등록")
 	@PostMapping("delivery-policy")
-	public ResponseEntity<DeliveryPolicy> createDeliveryPolicy(@RequestBody DeliveryPolicy deliveryPolicy) {
-		return null;
+	public ResponseEntity<ReadDeliveryPolicyResponse> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest request) {
+		return ResponseEntity.ok(orderService.createDeliveryPolicy(request));
 	}
 
 	@Operation(summary = "운임비 정책 수정", description = "운임비 정책 수정")
 	@PutMapping("delivery-policy")
-	public ResponseEntity<DeliveryPolicy> updateDeliveryPolicy(@RequestBody DeliveryPolicy deliveryPolicy) {
-		return null;
+	public ResponseEntity<ReadDeliveryPolicyResponse> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest request) {
+		return ResponseEntity.ok(orderService.updateDeliveryPolicy(request));
 	}
 
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
 	@DeleteMapping("delivery-policy/{id}")
 	public ResponseEntity<String> deleteDeliveryPolicy(@PathVariable int id) {
-		return null;
+		orderService.deleteDeliveryPolicy(id);
+		return ResponseEntity.ok(SUCCESS);
 	}
 
+	/////////////////
 	@Operation(summary = "포장 조회", description = "포장 조회")
 	@GetMapping("wrapping/{id}")
 	public ResponseEntity<Wrapping> getWrapping(@PathVariable int id) {

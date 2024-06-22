@@ -10,12 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
@@ -25,6 +28,7 @@ import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.mapper.order.DeliveryPolicyMapper;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.OrderStatusMapper;
@@ -168,5 +172,28 @@ public class OrderService {
 
 	public List<ReadOrderStatusResponse> readAllOrderStatus() {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
+	}
+
+	public ReadDeliveryPolicyResponse createDeliveryPolicy(CreateDeliveryPolicyRequest createDeliveryPolicyRequest) {
+		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.save(DeliveryPolicy.builder().name(createDeliveryPolicyRequest.getName())
+			.policyPrice(createDeliveryPolicyRequest.getPolicyPrice()).standardPrice(createDeliveryPolicyRequest.getStandardPrice()).build()));
+	}
+
+	public ReadDeliveryPolicyResponse updateDeliveryPolicy(UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest) {
+		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.save(DeliveryPolicy.builder().id(updateDeliveryPolicyRequest.getId())
+			.name(updateDeliveryPolicyRequest.getName()).policyPrice(updateDeliveryPolicyRequest.getPolicyPrice())
+			.standardPrice(updateDeliveryPolicyRequest.getStandardPrice()).build()));
+	}
+
+	public void deleteDeliveryPolicy(int deliveryPolicyId) {
+		deliveryPolicyRepository.deleteById(deliveryPolicyId);
+	}
+
+	public ReadDeliveryPolicyResponse readDeliveryPolicyById(int deliveryPolicyId) {
+		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.findById(deliveryPolicyId).orElseThrow(() -> new IllegalArgumentException("Delivery Policy not found")));
+	}
+
+	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
+		return deliveryPolicyRepository.findAll().stream().map(DeliveryPolicyMapper::toDto).toList();
 	}
 }
