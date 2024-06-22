@@ -5,12 +5,13 @@ import java.util.List;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.user.User;
 
 public class OrderMapper {
-	public static ReadOrderResponse toDto(Order order, List<ReadOrderDetailResponse> details) {
+	public static ReadOrderResponse toDto(Order order, List<ReadOrderDetailResponse> details, UserInfo userInfo) {
 		return ReadOrderResponse.builder()
 			.id(order.getId())
 			.details(details)
@@ -22,6 +23,7 @@ public class OrderMapper {
 			.receiver(order.getReceiver())
 			.request(order.getRequest())
 			.zipcode(order.getZipcode())
+			.user(userInfo)
 			.build();
 	}
 

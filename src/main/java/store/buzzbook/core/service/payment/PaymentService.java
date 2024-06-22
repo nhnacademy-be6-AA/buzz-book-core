@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
@@ -40,8 +41,11 @@ public class PaymentService {
 		BillLog billLog = billLogRepository.save(BillLog.builder().price(readPaymentResponse.getTotalAmount()).paymentKey(
 				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
 			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).paymentDate(ZonedDateTime.now()).build());
+		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo));
 	}
 
 	public Page<ReadBillLogResponse> readMyBillLogs(String loginId, Pageable pageable) {
@@ -52,7 +56,11 @@ public class PaymentService {
 			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses)));
+			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday()).build();
+
+			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo)));
 		}
 
 		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
@@ -66,7 +74,11 @@ public class PaymentService {
 			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses)));
+			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday()).build();
+
+			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo)));
 		}
 
 		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
@@ -77,7 +89,10 @@ public class PaymentService {
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
+		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo));
 	}
 }

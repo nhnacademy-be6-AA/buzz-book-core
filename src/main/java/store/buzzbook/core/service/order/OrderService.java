@@ -25,6 +25,7 @@ import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -67,7 +68,10 @@ public class OrderService {
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
 			}
-			responses.add(OrderMapper.toDto(order, details));
+			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday()).build();
+			responses.add(OrderMapper.toDto(order, details, userInfo));
 		}
 
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
@@ -87,7 +91,10 @@ public class OrderService {
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
 			}
-			responses.add(OrderMapper.toDto(order, details));
+			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday()).build();
+			responses.add(OrderMapper.toDto(order, details, userInfo));
 		}
 
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
@@ -100,7 +107,10 @@ public class OrderService {
 		for (OrderDetail orderDetail : orderDetails) {
 			details.add(OrderDetailMapper.toDto(orderDetail));
 		}
-		return OrderMapper.toDto(order, details);
+		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
+		return OrderMapper.toDto(order, details, userInfo);
 	}
 
 	@Transactional
@@ -128,8 +138,11 @@ public class OrderService {
 			orderDetail = orderDetailRepository.save(orderDetail);
 			readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetail));
 		}
+		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
-		return OrderMapper.toDto(order, readOrderDetailRespons);
+		return OrderMapper.toDto(order, readOrderDetailRespons, userInfo);
 	}
 
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
@@ -145,8 +158,11 @@ public class OrderService {
 				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
+		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
-		return OrderMapper.toDto(order, readOrderDetailRespons);
+		return OrderMapper.toDto(order, readOrderDetailRespons, userInfo);
 	}
 
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
@@ -162,8 +178,11 @@ public class OrderService {
 				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
+		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
-		return OrderMapper.toDto(order, readOrderDetailRespons);
+		return OrderMapper.toDto(order, readOrderDetailRespons, userInfo);
 	}
 
 	public List<ReadOrderDetailResponse> readOrderDetails(long orderId) {

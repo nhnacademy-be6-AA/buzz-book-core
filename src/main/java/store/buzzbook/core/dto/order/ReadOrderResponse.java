@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.UserInfo;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,4 +24,5 @@ public class ReadOrderResponse {
 	private String receiver;
 	private ReadDeliveryPolicyResponse deliveryPolicy;
 	private List<ReadOrderDetailResponse> details;
+	private UserInfo user;
 }
