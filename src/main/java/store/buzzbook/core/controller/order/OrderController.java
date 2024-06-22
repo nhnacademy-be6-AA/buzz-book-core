@@ -91,7 +91,7 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 아이디로 조회", description = "주문 상태 조회")
 	@GetMapping("status/{id}")
-	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(@PathVariable int id) {
+	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(@PathVariable int id) {
 		return ResponseEntity.ok(orderService.readOrderStatusById(id));
 	}
 
