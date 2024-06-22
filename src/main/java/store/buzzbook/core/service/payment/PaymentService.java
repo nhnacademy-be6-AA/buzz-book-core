@@ -44,8 +44,8 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses));
 	}
 
-	public Page<ReadBillLogResponse> readMyBillLogs(long userId, Pageable pageable) {
-		Page<BillLog> billLogs = billLogRepository.findAllByUserId(userId, pageable);
+	public Page<ReadBillLogResponse> readMyBillLogs(String loginId, Pageable pageable) {
+		Page<BillLog> billLogs = billLogRepository.findAllByLoginId(loginId, pageable);
 		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
 
 		for (BillLog billLog : billLogs) {

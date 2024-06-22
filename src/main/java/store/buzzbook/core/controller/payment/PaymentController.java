@@ -45,8 +45,7 @@ public class PaymentController {
 		if (isAdmin) {
 			billLogResponses = paymentService.readBillLogs(pageable);
 		} else {
-			long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getId();
-			billLogResponses = paymentService.readMyBillLogs(userId, pageable);
+			billLogResponses = paymentService.readMyBillLogs(loginId, pageable);
 		}
 
 		return ResponseEntity.ok(billLogResponses);
