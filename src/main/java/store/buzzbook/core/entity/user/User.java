@@ -32,7 +32,7 @@ public class User {
 	private long id;
 
 	@NotNull
-	@Column(name = "login_id")
+	@Column(name = "login_id", unique = true)
 	private String loginId;
 	@Column(name = "contact_number", nullable = false)
 	private String contactNumber;

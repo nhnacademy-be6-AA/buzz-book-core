@@ -150,4 +150,5 @@ public class UserServiceImpl implements UserService {
 			.status(UserStatus.ACTIVE)
 			.isAdmin(false).build();
 	}
+
 }
