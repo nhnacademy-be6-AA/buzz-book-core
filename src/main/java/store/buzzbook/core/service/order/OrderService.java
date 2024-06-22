@@ -117,7 +117,7 @@ public class OrderService {
 		for (OrderDetail orderDetail : orderDetails) {
 			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getId() == updateOrderRequest.getId()).map(
 				UpdateOrderDetailRequest::getOrderStatusId).toList()) {
-				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).get());
+				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
 				orderDetailResponses.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}

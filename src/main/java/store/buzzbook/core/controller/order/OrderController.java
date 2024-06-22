@@ -38,7 +38,7 @@ public class OrderController {
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@GetMapping("/{login-id}")
-	public ResponseEntity<Page<ReadOrderResponse>> getOrder(@PathVariable("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
+	public ResponseEntity<Page<ReadOrderResponse>> getOrders(@PathVariable("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
 		Page<ReadOrderResponse> readOrderResponses = null;
 		if (isAdmin) {
 			readOrderResponses = orderService.readOrders(pageable);
@@ -62,7 +62,7 @@ public class OrderController {
 	}
 
 	//////////
-	@Operation(summary = "주문 조회", description = "주문 조회")
+	@Operation(summary = "주문 단건 조회", description = "주문 단건 조회")
 	@GetMapping("/{id}")
 	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable Long id, @RequestParam("userId") long userId) {
 		return null;
@@ -77,6 +77,12 @@ public class OrderController {
 	@Operation(summary = "주문 상태 조회", description = "주문 상태 조회")
 	@GetMapping("status/{id}")
 	public ResponseEntity<OrderStatus> getOrderStatus(@PathVariable int id) {
+		return null;
+	}
+
+	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
+	@GetMapping("status")
+	public ResponseEntity<List<OrderStatus>> getAllOrderStatus() {
 		return null;
 	}
 
@@ -104,6 +110,12 @@ public class OrderController {
 		return null;
 	}
 
+	@Operation(summary = "운임비 정책 모두 조회", description = "운임비 정책 모두 조회")
+	@GetMapping("delivery-policy")
+	public ResponseEntity<List<DeliveryPolicy>> getAllDeliveryPolicy() {
+		return null;
+	}
+
 	@Operation(summary = "운임비 정책 등록", description = "운임비 정책 등록")
 	@PostMapping("delivery-policy")
 	public ResponseEntity<DeliveryPolicy> createDeliveryPolicy(@RequestBody DeliveryPolicy deliveryPolicy) {
@@ -125,6 +137,12 @@ public class OrderController {
 	@Operation(summary = "포장 조회", description = "포장 조회")
 	@GetMapping("wrapping/{id}")
 	public ResponseEntity<Wrapping> getWrapping(@PathVariable int id) {
+		return null;
+	}
+
+	@Operation(summary = "포장 모두 조회", description = "포장 모두 조회")
+	@GetMapping("wrapping")
+	public ResponseEntity<List<Wrapping>> getAllWrappings() {
 		return null;
 	}
 

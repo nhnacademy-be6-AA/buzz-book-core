@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.payment;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,7 @@ public class PaymentController {
 
 	@Operation(summary = "결제 내역 모두 조회", description = "결제 내역 모두 조회")
 	@GetMapping("/bill-logs")
-	public ResponseEntity<Page<BillLogResponse>> getBillLogs(Pageable pageable) {
+	public ResponseEntity<Page<BillLogResponse>> getAllBillLogs(Pageable pageable) {
 		return ResponseEntity.ok(paymentService.readBillLogs(pageable));
 	}
 
@@ -45,8 +47,14 @@ public class PaymentController {
 	}
 
 	@Operation(summary = "결제 수단 이력 조회", description = "결제 수단 이력 조회")
+	@GetMapping("/payament-log/{id}")
+	public ResponseEntity<PaymentLogResponse> getPaymentLog(@PathVariable("id") long id) {
+		return null;
+	}
+
+	@Operation(summary = "결제 수단 이력 모두 조회", description = "결제 수단 이력 모두 조회")
 	@GetMapping("/payament-log")
-	public ResponseEntity<PaymentLogResponse> getPaymentLog() {
+	public ResponseEntity<List<PaymentLogResponse>> getAllPaymentLogs() {
 		return null;
 	}
 
