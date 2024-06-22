@@ -45,8 +45,8 @@ public class OrderController {
 	private final UserRepository userRepository;
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
-	@GetMapping("/{login-id}")
-	public ResponseEntity<Page<ReadOrderResponse>> getOrders(@PathVariable("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
+	@GetMapping()
+	public ResponseEntity<Page<ReadOrderResponse>> getOrders(@RequestParam("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
 		Page<ReadOrderResponse> readOrderResponses = null;
 		if (isAdmin) {
 			readOrderResponses = orderService.readOrders(pageable);

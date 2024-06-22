@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.dto.user.UserInfo;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -21,6 +21,6 @@ public class CreateOrderRequest {
 	private ZonedDateTime desiredDeliveryDate;
 	private String receiver;
 	private int deliveryPolicyId;
-	private User user;
+	private UserInfo user;
 	private List<CreateOrderDetailRequest> details;
 }
