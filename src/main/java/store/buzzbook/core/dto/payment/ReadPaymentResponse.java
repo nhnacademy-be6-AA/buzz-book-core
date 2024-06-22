@@ -17,7 +17,7 @@ import store.buzzbook.core.dto.payment.toss.VirtualAccount;
 
 @Getter
 @NoArgsConstructor
-public class PaymentResponse {
+public class ReadPaymentResponse {
 	private String version;
 	private String paymentKey;
 	private String type;

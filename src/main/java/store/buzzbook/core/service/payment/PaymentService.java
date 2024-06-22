@@ -12,14 +12,11 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
-import store.buzzbook.core.dto.order.ReadOrderResponse;
-import store.buzzbook.core.dto.payment.BillLogResponse;
-import store.buzzbook.core.dto.payment.PaymentLogResponse;
-import store.buzzbook.core.dto.payment.PaymentResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogResponse;
+import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
-import store.buzzbook.core.entity.payment.PaymentLog;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
@@ -36,32 +33,46 @@ public class PaymentService {
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 
-	public BillLogResponse createBillLog(PaymentResponse paymentResponse) {
-		Order order = orderRepository.findById(Long.valueOf(paymentResponse.getOrderId())).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+	public ReadBillLogResponse createBillLog(ReadPaymentResponse readPaymentResponse) {
+		Order order = orderRepository.findById(Long.valueOf(readPaymentResponse.getOrderId())).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
-		BillLog billLog = billLogRepository.save(BillLog.builder().price(paymentResponse.getTotalAmount()).paymentKey(
-				UUID.fromString(paymentResponse.getPaymentKey())).order(order)
-			.status(BillStatus.valueOf(paymentResponse.getStatus())).payment(paymentResponse.getMethod()).paymentDate(ZonedDateTime.now()).build());
+		BillLog billLog = billLogRepository.save(BillLog.builder().price(readPaymentResponse.getTotalAmount()).paymentKey(
+				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
+			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).paymentDate(ZonedDateTime.now()).build());
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses));
 	}
 
-	public Page<BillLogResponse> readBillLogs(Pageable pageable) {
-		Page<BillLog> billLogs = billLogRepository.findAll(pageable);
-		List<BillLogResponse> billLogResponses = new ArrayList<>();
+	public Page<ReadBillLogResponse> readMyBillLogs(long userId, Pageable pageable) {
+		Page<BillLog> billLogs = billLogRepository.findAllByUserId(userId, pageable);
+		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
 
 		for (BillLog billLog : billLogs) {
 			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			billLogResponses.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses)));
+			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses)));
 		}
 
-		return new PageImpl<>(billLogResponses, pageable, billLogs.getTotalElements());
+		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
 	}
 
-	public BillLogResponse readBillLog(long orderId) {
+	public Page<ReadBillLogResponse> readBillLogs(Pageable pageable) {
+		Page<BillLog> billLogs = billLogRepository.findAll(pageable);
+		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
+
+		for (BillLog billLog : billLogs) {
+			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
+				OrderDetailMapper::toDto).toList();
+			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses)));
+		}
+
+		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
+	}
+
+	public ReadBillLogResponse readBillLog(long orderId) {
 		BillLog billLog = billLogRepository.findByOrder_id(orderId);
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(

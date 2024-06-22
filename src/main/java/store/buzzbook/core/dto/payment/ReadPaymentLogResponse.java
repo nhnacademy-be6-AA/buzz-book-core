@@ -4,14 +4,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.core.entity.payment.BillLog;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class PaymentLogResponse {
+public class ReadPaymentLogResponse {
 	private long id;
-	private BillLogResponse billLogResponse;
+	private ReadBillLogResponse readBillLogResponse;
 
 	private String name;
 	private int price;

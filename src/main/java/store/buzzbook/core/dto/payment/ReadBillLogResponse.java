@@ -8,14 +8,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
-import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillStatus;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
-public class BillLogResponse {
+public class ReadBillLogResponse {
 	private long id;
 
 	private String payment;
