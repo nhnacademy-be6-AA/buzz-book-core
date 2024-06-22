@@ -72,11 +72,11 @@ public class OrderService {
 		return new PageImpl<>(responses, pageable, orders.getTotalElements());
 	}
 
-	public Page<ReadOrderResponse> readMyOrders(long userId, Pageable pageable) {
-		userRepository.findById(userId)
+	public Page<ReadOrderResponse> readMyOrders(String loginId, Pageable pageable) {
+		userRepository.findByLoginId(loginId)
 			.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-		Page<Order> orders = orderRepository.findByUser_Id(userId, pageable);
+		Page<Order> orders = orderRepository.findAllByUser_LoginId(loginId, pageable);
 		List<ReadOrderResponse> responses = new ArrayList<>();
 
 		for (Order order : orders) {
@@ -133,7 +133,7 @@ public class OrderService {
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndLoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().getLoginId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().getLoginId());
 		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {

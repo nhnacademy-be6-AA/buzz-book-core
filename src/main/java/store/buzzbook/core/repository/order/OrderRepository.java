@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import store.buzzbook.core.entity.order.Order;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-	Page<Order> findByUser_Id(long userId, Pageable pageable);
+	Page<Order> findAllByUser_Id(long userId, Pageable pageable);
+	Page<Order> findAllByUser_LoginId(String loginId, Pageable pageable);
 }

@@ -51,8 +51,7 @@ public class OrderController {
 		if (isAdmin) {
 			readOrderResponses = orderService.readOrders(pageable);
 		} else {
-			long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getId();
-			readOrderResponses = orderService.readMyOrders(userId, pageable);
+			readOrderResponses = orderService.readMyOrders(loginId, pageable);
 		}
 		return ResponseEntity.ok(readOrderResponses);
 	}

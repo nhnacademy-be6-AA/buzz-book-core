@@ -11,7 +11,5 @@ import store.buzzbook.core.entity.order.OrderDetail;
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 	List<OrderDetail> findAllByOrder_IdAndOrder_User_LoginId(Long orderId, String loginId);
 	List<OrderDetail> findAllByOrder_IdAndOrderStatus_Id(long orderId, long orderStatusId);
-
-	@Query("select od from OrderDetail od where od.order.id = :orderId and od.order.user.loginId = :loginId")
-	List<OrderDetail> findAllByOrder_IdAndLoginId(@Param("orderId") long orderId, @Param("loginId") String loginId);
+	List<OrderDetail> findAllByOrder_Id(long orderId);
 }
