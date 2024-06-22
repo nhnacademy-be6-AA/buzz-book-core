@@ -14,14 +14,17 @@ import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
+import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -32,6 +35,7 @@ import store.buzzbook.core.mapper.order.DeliveryPolicyMapper;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.OrderStatusMapper;
+import store.buzzbook.core.mapper.order.WrappingMapper;
 import store.buzzbook.core.repository.order.DeliveryPolicyRepository;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
@@ -166,6 +170,10 @@ public class OrderService {
 		orderStatusRepository.delete(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
 	}
 
+	public ReadOrderStatusResponse readOrderStatusById(int id) {
+		return OrderStatusMapper.toDto(orderStatusRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
+	}
+
 	public ReadOrderStatusResponse readOrderStatusByName(String orderStatusName) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findByName(orderStatusName));
 	}
@@ -195,5 +203,27 @@ public class OrderService {
 
 	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
 		return deliveryPolicyRepository.findAll().stream().map(DeliveryPolicyMapper::toDto).toList();
+	}
+
+	public ReadWrappingResponse createWrapping(CreateWrappingRequest createWrappingRequest) {
+		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().paper(createWrappingRequest.getPaper())
+			.price(createWrappingRequest.getPrice()).build()));
+	}
+
+	public ReadWrappingResponse updateWrapping(UpdateWrappingRequest updateWrappingRequest) {
+		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().id(updateWrappingRequest.getId())
+			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).build()));
+	}
+
+	public void deleteWrapping(int wrappingId) {
+		wrappingRepository.deleteById(wrappingId);
+	}
+
+	public ReadWrappingResponse readWrappingById(int wrappingId) {
+		return WrappingMapper.toDto(wrappingRepository.findById(wrappingId).orElseThrow(() -> new IllegalArgumentException("Wrapping not found")));
+	}
+
+	public List<ReadWrappingResponse> readAllWrapping() {
+		return wrappingRepository.findAll().stream().map(WrappingMapper::toDto).toList();
 	}
 }
