@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
-import store.buzzbook.core.dto.order.OrderStatusResponse;
+import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
@@ -148,12 +148,12 @@ public class OrderService {
 		return readOrderDetailRespons;
 	}
 
-	public OrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
+	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
 
 		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder().name(createOrderStatusRequest.getName()).build()));
 	}
 
-	public OrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
+	public ReadOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
 
 		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder().id(updateOrderStatusRequest.getId()).name(updateOrderStatusRequest.getName()).build()));
 	}
@@ -162,11 +162,11 @@ public class OrderService {
 		orderStatusRepository.delete(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
 	}
 
-	public OrderStatusResponse readOrderStatusByName(String orderStatusName) {
+	public ReadOrderStatusResponse readOrderStatusByName(String orderStatusName) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findByName(orderStatusName));
 	}
 
-	public List<OrderStatusResponse> readAllOrderStatus() {
+	public List<ReadOrderStatusResponse> readAllOrderStatus() {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
 	}
 }

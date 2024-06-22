@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class DeliveryPolicyResponse {
+public class ReadDeliveryPolicyResponse {
 	private int id;
 	private String name;
 	private int standardPrice;

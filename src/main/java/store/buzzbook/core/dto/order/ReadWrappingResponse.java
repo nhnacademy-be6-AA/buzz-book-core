@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class WrappingResponse {
+public class ReadWrappingResponse {
 	private int id;
 	private String paper;
 	private int price;

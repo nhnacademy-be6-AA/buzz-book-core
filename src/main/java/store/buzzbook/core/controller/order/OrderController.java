@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
-import store.buzzbook.core.dto.order.OrderStatusResponse;
+import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
@@ -79,25 +79,25 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 조회", description = "주문 상태 조회")
 	@GetMapping("status/{name}")
-	public ResponseEntity<OrderStatusResponse> getOrderStatusByName(@PathVariable String name) {
+	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(@PathVariable String name) {
 		return ResponseEntity.ok(orderService.readOrderStatusByName(name));
 	}
 
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
 	@GetMapping("status")
-	public ResponseEntity<List<OrderStatusResponse>> getAllOrderStatus() {
+	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus() {
 		return ResponseEntity.ok(orderService.readAllOrderStatus());
 	}
 
 	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
 	@PostMapping("status")
-	public ResponseEntity<OrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
+	public ResponseEntity<ReadOrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
 		return ResponseEntity.ok(orderService.createOrderStatus(request));
 	}
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("status")
-	public ResponseEntity<OrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
+	public ResponseEntity<ReadOrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
 		return ResponseEntity.ok(orderService.updateOrderStatus(request));
 	}
 

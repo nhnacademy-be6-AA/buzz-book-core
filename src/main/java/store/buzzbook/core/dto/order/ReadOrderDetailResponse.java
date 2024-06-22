@@ -18,7 +18,7 @@ public class ReadOrderDetailResponse {
 	private int quantity;
 	private boolean wrap;
 	private ZonedDateTime createdDate;
-	private OrderStatusResponse orderStatus;
-	private WrappingResponse wrapping;
+	private ReadOrderStatusResponse orderStatus;
+	private ReadWrappingResponse wrapping;
 	private Product product;
 }

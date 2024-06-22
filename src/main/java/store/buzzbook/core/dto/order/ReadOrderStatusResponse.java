@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class OrderStatusResponse {
+public class ReadOrderStatusResponse {
 	private int id;
 	private String name;
 	private ZonedDateTime updateDate;
