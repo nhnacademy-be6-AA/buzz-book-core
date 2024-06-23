@@ -34,7 +34,7 @@ public class PaymentController {
 	@Operation(summary = "결제 내역 단건 조회", description = "결제 내역 단건 조회")
 	@GetMapping("/bill-log/{order-id}")
 	public ResponseEntity<ReadBillLogResponse> getBillLog(@PathVariable("order-id") long orderId, @RequestParam("login-id") String loginId) {
-		long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getId();
+		long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getUserPk().getId();
 		return ResponseEntity.ok(paymentService.readBillLog(userId, orderId));
 	}
 

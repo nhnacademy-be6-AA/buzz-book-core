@@ -1,9 +1,8 @@
 package store.buzzbook.core.controller.order;
 
 import java.util.List;
+import java.util.Map;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +22,7 @@ import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
+import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
@@ -31,7 +31,6 @@ import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
-import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.order.OrderService;
 
 @Tag(name = "Orders API", description = "주문 관련 API")
@@ -42,18 +41,17 @@ public class OrderController {
 	private static final String SUCCESS = "Deleted";
 
 	private final OrderService orderService;
-	private final UserRepository userRepository;
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
-	@GetMapping()
-	public ResponseEntity<Page<ReadOrderResponse>> getOrders(@RequestParam("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
-		Page<ReadOrderResponse> readOrderResponses = null;
-		if (isAdmin) {
-			readOrderResponses = orderService.readOrders(pageable);
+	@PostMapping
+	public ResponseEntity<?> getOrders(@RequestBody ReadOrderRequest request) {
+		Map<String, Object> data = null;
+		if (request.isAdmin()) {
+			data = orderService.readOrders(request);
 		} else {
-			readOrderResponses = orderService.readMyOrders(loginId, pageable);
+			data = orderService.readMyOrders(request);
 		}
-		return ResponseEntity.ok(readOrderResponses);
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "주문 등록", description = "주문하기")
@@ -73,7 +71,7 @@ public class OrderController {
 
 	@Operation(summary = "주문 단건 조회", description = "주문 단건 조회")
 	@GetMapping("/{id}")
-	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("loginId") String loginId) {
+	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("login-id") String loginId) {
 		return ResponseEntity.ok(orderService.readOrder(id, loginId));
 	}
 

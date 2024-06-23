@@ -35,9 +35,9 @@ public class Deactivation {
 	@Column(name = "deactivation_date")
 	private ZonedDateTime deactivationDate;
 
+	@MapsId("id")
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)
-	@MapsId
 	@JoinColumn(name = "user_id")
 	private User user;
 }

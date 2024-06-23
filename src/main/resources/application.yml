@@ -6,7 +6,7 @@ spring:
     name: core-api
 
   profiles:
-    active: dev
+    active: prod
 
 
   jpa:
@@ -19,6 +19,9 @@ spring:
       use_sql_comments: true
       highlight_sql: true
       auto_quote_keyword: true
+      hibernate:
+        create_empty_composites:
+          enabled: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
 

@@ -23,7 +23,7 @@ public class OrderMapper {
 			.receiver(order.getReceiver())
 			.request(order.getRequest())
 			.zipcode(order.getZipcode())
-			.user(userInfo)
+			.userInfo(userInfo)
 			.build();
 	}
 

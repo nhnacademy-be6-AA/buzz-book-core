@@ -42,7 +42,7 @@ public class PaymentService {
 				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
 			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).paymentDate(ZonedDateTime.now()).build());
 		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 			.birthday(order.getUser().getBirthday()).build();
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo));
@@ -57,7 +57,7 @@ public class PaymentService {
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
 			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 				.birthday(order.getUser().getBirthday()).build();
 
 			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo)));
@@ -75,7 +75,7 @@ public class PaymentService {
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
 			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 				.birthday(order.getUser().getBirthday()).build();
 
 			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo)));
@@ -90,7 +90,7 @@ public class PaymentService {
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
 		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 			.birthday(order.getUser().getBirthday()).build();
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo));
