@@ -19,14 +19,18 @@ public class DatabaseInitializeConfig {
 
 	@Bean
 	public ApplicationRunner initDatabase() {
-		return args -> {
+		int[] standard = new int[] {0, 100000, 200000, 300000};
+		double[] benfit = new double[] {1.0d, 2.0d, 2.0d, 3.0d};
 
-			for (GradeName name : GradeName.values()) {
-				log.info("Initializing grade name : {}", name);
+		return args -> {
+			for (int i = 0; i < GradeName.values().length; i++) {
+				GradeName gradeName = GradeName.values()[i];
+				log.info("Initializing grade name : {}", gradeName);
+
 				Grade grade = Grade.builder()
-					.name(name)
-					.standard(100000)
-					.benefit(2d)
+					.name(gradeName)
+					.standard(standard[i])
+					.benefit(benfit[i])
 					.build();
 
 				gradeService.save(grade);
