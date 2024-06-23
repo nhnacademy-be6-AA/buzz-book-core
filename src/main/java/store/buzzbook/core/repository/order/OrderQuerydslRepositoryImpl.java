@@ -1,6 +1,8 @@
 package store.buzzbook.core.repository.order;
 
 import static store.buzzbook.core.entity.order.QOrder.*;
+import static store.buzzbook.core.entity.order.QOrderDetail.*;
+import static store.buzzbook.core.entity.user.QUser.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -12,9 +14,11 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 
 import store.buzzbook.core.common.util.FunctionUtil;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.Order;
 
 public class OrderQuerydslRepositoryImpl extends QuerydslRepositorySupport implements OrderQuerydslRepository {
@@ -23,33 +27,39 @@ public class OrderQuerydslRepositoryImpl extends QuerydslRepositorySupport imple
 	}
 
 	@Override
-	public Page<Order> findAllByUser_LoginId(ReadOrderRequest request, Pageable pageable) {
+	public Page<ReadOrderResponse> findAllByUser_LoginId(ReadOrderRequest request, Pageable pageable) {
 		String[] sortBy = request.getSortBy();
 		Boolean[] sortDesc = request.getSortDesc();
 		List<OrderSpecifier> orderBy = new LinkedList<>();
 		searchOrderMultiSortFilter(sortBy, sortDesc, orderBy);
 
-		QueryResults<Order> results = from(order)
-			.where(order.user.userPk.loginId.eq(request.getLoginId()))
+		QueryResults<ReadOrderResponse> results = from(order)
+			.join(user).on(order.user.loginId.eq(user.loginId))
+			.join(orderDetail).on(orderDetail.order.id.eq(order.id))
+			.where(order.user.loginId.eq(request.getLoginId()))
+			.select(Projections.fields(ReadOrderResponse.class, orderDetail.as("details"), user.loginId))
 			.fetchResults();
 
-		List<Order> content = results.getResults();
+		List<ReadOrderResponse> content = results.getResults();
 		long total = results.getTotal();
 
 		return new PageImpl<>(content, pageable, total);
 	}
 
 	@Override
-	public Page<Order> findAll(ReadOrderRequest request, Pageable pageable) {
+	public Page<ReadOrderResponse> findAll(ReadOrderRequest request, Pageable pageable) {
 		String[] sortBy = request.getSortBy();
 		Boolean[] sortDesc = request.getSortDesc();
 		List<OrderSpecifier> orderBy = new LinkedList<>();
 		searchOrderMultiSortFilter(sortBy, sortDesc, orderBy);
 
-		QueryResults<Order> results = from(order)
+		QueryResults<ReadOrderResponse> results = from(order)
+			.join(user).on(order.user.loginId.eq(user.loginId))
+			.join(orderDetail).on(orderDetail.order.id.eq(order.id))
+			.select(Projections.fields(ReadOrderResponse.class, orderDetail.as("details"), user.loginId))
 			.fetchResults();
 
-		List<Order> content = results.getResults();
+		List<ReadOrderResponse> content = results.getResults();
 		long total = results.getTotal();
 
 		return new PageImpl<>(content, pageable, total);
@@ -61,9 +71,10 @@ public class OrderQuerydslRepositoryImpl extends QuerydslRepositorySupport imple
 			Boolean value = sortDesc[i];
 
 			switch (key) {
-				case "price" -> FunctionUtil.orderDescFilter(orderBy, value, order, "price");
-				case "deliveryPolicyId" -> FunctionUtil.orderDescFilter(orderBy, value, order, "deliveryPolicyId");
-				case "loginId" -> FunctionUtil.orderDescFilter(orderBy, value, order, "loginId");
+				case "price" -> FunctionUtil.orderDescFilter(orderBy, value, order.price, "price");
+				case "deliveryPolicyId" -> FunctionUtil.orderDescFilter(orderBy, value, order.deliveryPolicy, "deliveryPolicyId");
+				case "loginId" -> FunctionUtil.orderDescFilter(orderBy, value, order.user.loginId, "loginId");
+
 				default -> {
 				}
 			}

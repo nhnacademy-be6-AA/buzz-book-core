@@ -2,23 +2,19 @@ package store.buzzbook.core.entity.order;
 
 import java.time.ZonedDateTime;
 
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserPk;
 
 @Builder
 @Getter
@@ -30,6 +26,7 @@ public class Order {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+	private String orderStr;
 	private int price;
 	private String request;
 	private String address;
@@ -44,13 +41,6 @@ public class Order {
 	private DeliveryPolicy deliveryPolicy;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@MapsId
-	@JoinColumns({
-		@JoinColumn(name = "user_id", referencedColumnName = "id"),
-		@JoinColumn(name = "login_id", referencedColumnName = "login_id")
-	})
+	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = false)
 	private User user;
-
-	@EmbeddedId
-	private UserPk userPk;
 }

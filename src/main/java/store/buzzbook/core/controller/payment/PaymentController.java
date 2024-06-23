@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.payment.PaymentService;
 
+@CrossOrigin(origins = "*")
 @Tag(name = "Payments API", description = "결제 관련 API")
 @RestController
 @RequestMapping("/api/payments")
@@ -33,8 +35,8 @@ public class PaymentController {
 
 	@Operation(summary = "결제 내역 단건 조회", description = "결제 내역 단건 조회")
 	@GetMapping("/bill-log/{order-id}")
-	public ResponseEntity<ReadBillLogResponse> getBillLog(@PathVariable("order-id") long orderId, @RequestParam("login-id") String loginId) {
-		long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getUserPk().getId();
+	public ResponseEntity<ReadBillLogResponse> getBillLog(@PathVariable("order-id") String orderId, @RequestParam("login-id") String loginId) {
+		long userId = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("user not found")).getId();
 		return ResponseEntity.ok(paymentService.readBillLog(userId, orderId));
 	}
 

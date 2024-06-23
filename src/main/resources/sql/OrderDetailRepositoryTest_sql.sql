@@ -4,7 +4,7 @@ INSERT INTO `delivery_policy` (
     policy_price
 ) values (
           '정책1', 1000, 1000
-         );
+);
 
 INSERT INTO `order_status` (
     update_date, name

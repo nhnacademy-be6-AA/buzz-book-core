@@ -7,7 +7,7 @@ import store.buzzbook.core.entity.user.User;
 public record LoginUserResponse(String loginId, String password, boolean isAdmin) {
 	public static LoginUserResponse convertFrom(User user) {
 		return LoginUserResponse.builder()
-			.loginId(user.getUserPk().getLoginId())
+			.loginId(user.getLoginId())
 			.password(user.getPassword()).build();
 	}
 }

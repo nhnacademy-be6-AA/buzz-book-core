@@ -35,7 +35,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	public boolean updateLoginDate(String loginId) {
 		return jpaQueryFactory.update(user)
 			.set(user.lastLoginDate, ZonedDateTime.now())
-			.where(user.userPk.loginId.eq(loginId))
+			.where(user.loginId.eq(loginId))
 			.execute() > 0;
 	}
 
@@ -51,7 +51,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	public boolean updateStatus(String loginId, UserStatus status) {
 		return jpaQueryFactory.update(user)
 			.set(user.status, status)
-			.where(user.userPk.loginId.eq(loginId))
+			.where(user.loginId.eq(loginId))
 			.execute() > 0;
 	}
 

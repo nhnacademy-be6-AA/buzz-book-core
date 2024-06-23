@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
@@ -33,17 +35,19 @@ import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.service.order.OrderService;
 
+@CrossOrigin(origins = "*")
 @Tag(name = "Orders API", description = "주문 관련 API")
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
 	private static final String SUCCESS = "Deleted";
 
 	private final OrderService orderService;
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
-	@PostMapping
+	@PostMapping("/list")
 	public ResponseEntity<?> getOrders(@RequestBody ReadOrderRequest request) {
 		Map<String, Object> data = null;
 		if (request.isAdmin()) {
@@ -55,8 +59,9 @@ public class OrderController {
 	}
 
 	@Operation(summary = "주문 등록", description = "주문하기")
-	@PostMapping
+	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+		log.warn("OrderController - createOrder()");
 		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 

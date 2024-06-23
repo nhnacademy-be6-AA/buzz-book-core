@@ -28,7 +28,6 @@ public class Wishlist {
 	@Column(name = "id")
 	private long id;
 
-	@MapsId("id")
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")

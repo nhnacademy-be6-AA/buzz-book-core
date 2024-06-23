@@ -16,14 +16,15 @@ import store.buzzbook.core.dto.user.UserInfo;
 @Builder
 public class ReadOrderResponse {
 	private long id;
+	private String orderStr;
+	private String loginId;
 	private int price;
 	private String request;
 	private String address;
 	private String addressDetail;
 	private int zipcode;
-	private ZonedDateTime desiredDeliveryDate;
+	private String desiredDeliveryDate;
 	private String receiver;
 	private ReadDeliveryPolicyResponse deliveryPolicy;
 	private List<ReadOrderDetailResponse> details;
-	private UserInfo userInfo;
 }

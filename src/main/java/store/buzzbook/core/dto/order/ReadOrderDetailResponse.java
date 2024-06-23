@@ -21,4 +21,5 @@ public class ReadOrderDetailResponse {
 	private ReadOrderStatusResponse orderStatus;
 	private ReadWrappingResponse wrapping;
 	private Product product;
+	// private ReadOrderResponse readOrderResponse;
 }

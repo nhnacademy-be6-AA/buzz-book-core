@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.order;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
@@ -50,6 +55,7 @@ import store.buzzbook.core.repository.user.UserRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
@@ -59,25 +65,24 @@ public class OrderService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 
+
 	public Map<String, Object> readOrders(ReadOrderRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		Page<Order> pageOrders = orderRepository.findAll(request, pageable);
-		List<Order> orders = pageOrders.getContent();
+		Page<ReadOrderResponse> pageOrders = orderRepository.findAll(request, pageable);
+		List<ReadOrderResponse> orders = pageOrders.getContent();
 		List<ReadOrderResponse> responses = new ArrayList<>();
 
-		for (Order order : orders) {
+		for (ReadOrderResponse order : orders) {
 			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 			List<ReadOrderDetailResponse> details = new ArrayList<>();
 
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
 			}
-			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-				.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday()).build();
-			responses.add(OrderMapper.toDto(order, details, userInfo));
+
+			responses.add(order);
 		}
 
 		data.put("responseData", responses);
@@ -93,22 +98,20 @@ public class OrderService {
 		userRepository.findByLoginId(request.getLoginId())
 			.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-		Page<Order> pageOrders = orderRepository.findAllByUser_LoginId(request, pageable);
-		List<Order> orders = pageOrders.getContent();
+		Page<ReadOrderResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, pageable);
+		List<ReadOrderResponse> orders = pageOrders.getContent();
 
 		List<ReadOrderResponse> responses = new ArrayList<>();
 
-		for (Order order : orders) {
+		for (ReadOrderResponse order : orders) {
 			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 			List<ReadOrderDetailResponse> details = new ArrayList<>();
 
 			for (OrderDetail orderDetail : orderDetails) {
 				details.add(OrderDetailMapper.toDto(orderDetail));
 			}
-			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-				.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday()).build();
-			responses.add(OrderMapper.toDto(order, details, userInfo));
+
+			responses.add(order);
 		}
 
 		data.put("responseData", responses);
@@ -122,29 +125,28 @@ public class OrderService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(orderId, loginId);
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			details.add(OrderDetailMapper.toDto(orderDetail));
+			// details.add(OrderDetailMapper.toDto(orderDetail, readOrderResponse));
 		}
-		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-			.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday()).build();
-		return OrderMapper.toDto(order, details, userInfo);
+
+		return OrderMapper.toDto(order, details, loginId);
 	}
 
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
+		log.warn("OrderService createOrder {}", createOrderRequest.getDeliveryPolicyId());
 		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(createOrderRequest
 			.getDeliveryPolicyId()).orElseThrow(()-> new IllegalArgumentException("Delivery Policy not found"));
 
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 
-		User user = userRepository.findByLoginId(createOrderRequest.getUser().loginId()).orElseThrow(()-> new IllegalArgumentException("User not found"));
-		Order order = OrderMapper.toEntity(createOrderRequest, deliveryPolicy, user);
+		User user = userRepository.findByLoginId(createOrderRequest.getLoginId()).orElseThrow(()-> new IllegalArgumentException("User not found"));
 
-		order = orderRepository.save(order);
+		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, deliveryPolicy, user));
 
-		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
+		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (CreateOrderDetailRequest detail : details) {
+			detail.setOrderId(order.getId());
 			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
 				.orElseThrow(()-> new IllegalArgumentException("Order Status not found"));
 			Wrapping wrapping = wrappingRepository.findById(detail.getWrappingId())
@@ -153,53 +155,43 @@ public class OrderService {
 				.orElseThrow(()-> new IllegalArgumentException("Product not found"));
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
 			orderDetail = orderDetailRepository.save(orderDetail);
-			readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetail));
+			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail));
 		}
-		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-			.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday()).build();
 
-		return OrderMapper.toDto(order, readOrderDetailRespons, userInfo);
+		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
 	}
 
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllById(updateOrderRequest.getId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(updateOrderRequest.getId());
 		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
-			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getId() == updateOrderRequest.getId()).map(
+			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getOrder().getId() == updateOrderRequest.getId()).map(
 				UpdateOrderDetailRequest::getOrderStatusId).toList()) {
 				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
 				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
-		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-			.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday()).build();
-
-		return OrderMapper.toDto(order, readOrderDetailRespons, userInfo);
+		return OrderMapper.toDto(order, readOrderDetailRespons, updateOrderRequest.getUser().loginId());
 	}
 
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().loginId());
-		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
+		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
-			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getId() == updateOrderRequest.getId()).map(
+			for (int orderStatusId : updateOrderRequest.getDetails().stream().filter(d-> orderDetail.getOrder().getId() == updateOrderRequest.getId()).map(
 				UpdateOrderDetailRequest::getOrderStatusId).toList()) {
 				orderDetail.setOrderStatus(orderStatusRepository.findById(orderStatusId).orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
-				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
+				readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
-		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
-			.loginId(order.getUser().getUserPk().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday()).build();
 
-		return OrderMapper.toDto(order, readOrderDetailRespons, userInfo);
+		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getUser().loginId());
 	}
 
 	public List<ReadOrderDetailResponse> readOrderDetails(long orderId) {
@@ -213,7 +205,7 @@ public class OrderService {
 
 	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
 
-		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder().name(createOrderStatusRequest.getName()).build()));
+		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder().name(createOrderStatusRequest.getName()).updateDate(ZonedDateTime.now()).build()));
 	}
 
 	public ReadOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
