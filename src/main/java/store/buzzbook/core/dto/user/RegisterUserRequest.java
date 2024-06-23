@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import lombok.Builder;
 import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserStatus;
 
 @Builder
 public record RegisterUserRequest(
@@ -15,16 +16,18 @@ public record RegisterUserRequest(
 	String email,
 	String birthday
 ) {
-	public static User toUser(RegisterUserRequest request) {
+	public User toUser() {
 		return User.builder()
-			.loginId(request.loginId())
-			.name(request.name())
-			.birthday(ZonedDateTimeParser.toDate(request.birthday()))
+			.loginId(this.loginId())
+			.name(this.name())
+			.password(this.password())
+			.birthday(ZonedDateTimeParser.toDate(this.birthday()))
 			.createDate(ZonedDateTime.now())
-			.email(request.email())
-			.modifyDate(null)
-			.contactNumber(request.contactNumber())
+			.email(this.email())
+			.modifyDate(ZonedDateTime.now())
+			.contactNumber(this.contactNumber())
 			.lastLoginDate(null)
+			.status(UserStatus.ACTIVE)
 			.isAdmin(false).build();
 
 	}

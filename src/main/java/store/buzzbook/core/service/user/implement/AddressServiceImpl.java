@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
@@ -23,9 +24,10 @@ public class AddressServiceImpl implements AddressService {
 
 	@Override
 	public void createAddress(CreateAddressRequest createAddressRequest, long userId) {
-		User user = userRepository.findOne(userId).orElse(null);
-
-		if (user == null) {
+		User user = null;
+		try {
+			user = userRepository.getReferenceById(userId);
+		} catch (EntityNotFoundException e) {
 			log.warn("유저 주소 추가 중 존재하지 않는 user id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
@@ -33,5 +35,14 @@ public class AddressServiceImpl implements AddressService {
 		Address address = createAddressRequest.toAddress(user);
 
 		addressRepository.save(address);
+	}
+
+	@Override
+	public void deleteAddress(long addressId, long userId) {
+		if (!addressRepository.deleteByIdAndUserId(addressId, userId)) {
+			log.warn("잘못된 유저의 주소 삭제 요청입니다. : user : {}, address : {} ", userId, addressId);
+			throw new UserNotFoundException(userId);
+		}
+
 	}
 }

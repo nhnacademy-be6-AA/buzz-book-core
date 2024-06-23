@@ -12,7 +12,7 @@ public interface UserService {
 
 	RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest);
 
-	boolean deactivate(String loginId, String reason);
+	boolean deactivate(Long userId, String reason);
 
 	void activate(String loginId);
 
