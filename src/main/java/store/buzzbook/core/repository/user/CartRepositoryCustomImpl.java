@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -22,14 +23,15 @@ import store.buzzbook.core.entity.cart.CartDetail;
 
 @RequiredArgsConstructor
 @Transactional
-public class CartRepositroyCustomImpl implements CartRepositoryCustom {
-	private static final Logger log = LoggerFactory.getLogger(CartRepositroyCustomImpl.class);
+public class CartRepositoryCustomImpl implements CartRepositoryCustom {
+	private static final Logger log = LoggerFactory.getLogger(CartRepositoryCustomImpl.class);
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
 	public Optional<GetCartResponse> findCartWithCartDetailList(Long cartId) {
 		Cart motherCart = jpaQueryFactory
-			.selectFrom(cart)
+			.select(Projections.fields(Cart.class))
+			.from(cart)
 			.where(cart.id.eq(cartId))
 			.fetchOne();
 
@@ -39,7 +41,8 @@ public class CartRepositroyCustomImpl implements CartRepositoryCustom {
 		}
 
 		List<CartDetail> cartDetailList = jpaQueryFactory
-			.selectFrom(cartDetail)
+			.select(Projections.fields(CartDetail.class))
+			.from(cartDetail)
 			.where(cartDetail.cart.id.eq(cartId))
 			.fetch();
 
