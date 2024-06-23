@@ -1,3 +1,6 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: core
@@ -44,3 +47,40 @@ springdoc:
   cache:
     disabled: true
   model-and-view-allowed: true
+
+eureka:
+  instance:
+    instance-id: core-api
+    hostname: core-api
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://admin:1234@eureka-server:8761/eureka
+    instance:
+      prefer-ip-address: true
+
+management:
+  health:
+    status:
+      order: DOWN, UP
+  endpoint:
+    jolokia:
+      enabled: true
+    metrics:
+      enabled: true
+    pause:
+      enabled: true
+    resume:
+      enabled: true
+    restart:
+      enabled: true
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true
