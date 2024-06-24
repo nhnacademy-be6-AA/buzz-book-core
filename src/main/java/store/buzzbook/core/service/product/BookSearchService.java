@@ -144,7 +144,7 @@ public class BookSearchService {
 
 			// 상품 정보 저장 및 도서와 연결
 			try {
-				int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;
+				int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;	//재고관리필요
 				String productName = item.getTitle();
 				int price = item.getPricestandard();
 				ZonedDateTime forwardDate;
@@ -174,7 +174,7 @@ public class BookSearchService {
 					.forwardDate(forwardDate)
 					.score(score)
 					.thumbnailPath(thumbnailPath)
-					.stockStatus(Product.StockStatus.SALE)
+					.stockStatus(Product.StockStatus.SALE)	//재고상태관리필요
 					.category(category)
 					.build();
 
