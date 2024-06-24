@@ -10,5 +10,7 @@ public interface UserRepositoryCustom {
 
 	boolean updateLoginDate(String loginId);
 
+	boolean updateStatus(Long userId, UserStatus status);
+
 	boolean updateStatus(String loginId, UserStatus status);
 }
