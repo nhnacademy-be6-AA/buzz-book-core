@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.product;
 
 import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
+import static store.buzzbook.core.dto.product.response.ProductResponse.*;
 
 import java.util.List;
 
@@ -95,21 +96,8 @@ public class ProductService {
 
 	public void deleteProduct(int productId) {
 		if (!productRepository.existsById(productId)) {
-			throw new ProductNotFoundException("존재 하지않은 상품입니다. id : " + productId);
+			throw new ProductNotFoundException("존재하지 않는 상품입니다. id : " + productId);
 		}
 		productRepository.deleteById(productId);
-	}
-
-	private ProductResponse convertToProductResponse(Product product) {
-		return ProductResponse.builder()
-			.id(product.getId())
-			.stock(product.getStock())
-			.price(product.getPrice())
-			.forwardDate(product.getForwardDate())
-			.score(product.getScore())
-			.thumbnailPath(product.getThumbnailPath())
-			.productName(product.getProductName())
-			.stockStatus(product.getStockStatus())
-			.build();
 	}
 }

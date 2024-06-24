@@ -8,4 +8,6 @@ import store.buzzbook.core.entity.product.BookAuthor;
 
 public interface BookAuthorRepository extends JpaRepository<BookAuthor, Integer> {
 	List<BookAuthor> findAllByBookId(long bookId);
+
+	List<BookAuthor> findAllByBookIdIn(List<Long> bookIdList);
 }
