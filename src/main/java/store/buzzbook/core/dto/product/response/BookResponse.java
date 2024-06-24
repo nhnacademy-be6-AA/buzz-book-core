@@ -1,34 +1,45 @@
 package store.buzzbook.core.dto.product.response;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.lang.Nullable;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.entity.product.Author;
 import store.buzzbook.core.entity.product.Book;
+import store.buzzbook.core.entity.product.BookAuthor;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
 public class BookResponse {
-    private int id;
+    private long id;
     private String title;
-    private String[] authors;
+    private List<String> authors;
     private String description;
     private String isbn;
     private String publisher;
     private ZonedDateTime publishDate;
+    @Nullable
+    private ProductResponse product;
 
     public static BookResponse convertToBookResponse(Book book) {
+
         return BookResponse.builder()
-                .id(book.getId())
-                .title(book.getTitle())
-                .description(book.getDescription())
-                .isbn(book.getIsbn())
-                .publisher(book.getPublisher().toString())
-                .publishDate(book.getPublishDate())
-                .build();
+                            .id(book.getId())
+                            .authors(book.getBookAuthors().stream().map(BookAuthor::getAuthor).map(Author::getName).toList())
+                            .title(book.getTitle())
+                            .description(book.getDescription())
+                            .isbn(book.getIsbn())
+                            .publisher(book.getPublisher().toString())
+                            .publishDate(book.getPublishDate())
+                            .product(book.getProduct() == null ? null : ProductResponse.convertToProductResponse(book.getProduct()))
+                            .build();
     }
 }

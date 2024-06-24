@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "product_tag")
+@Table(name = "product_tag"
+	// , uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "tag_id"})}
+)
 public class ProductTag {
 
 	@Id
