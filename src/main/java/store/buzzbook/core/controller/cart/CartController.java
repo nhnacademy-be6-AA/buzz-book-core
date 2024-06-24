@@ -23,7 +23,11 @@ public class CartController {
 
 	@GetMapping("/{cartId}")
 	@ApiOperation("장바구니 내용을 가져온다. cartId를 넘기되, null 혹은 음수라면 새로운 장바구니로 인식한다.")
-	public void getCart(@PathVariable Long cartId) {
+	public void getCartByCartId(@PathVariable Long cartId) {
+		if (cartId < 0L) {
+			cartService.createNewCart(null);
+		}
+
 		//todo 비회원 회원 구분을 위한 바디 원함.
 		if (cartId > -1L) {
 			//cartService.createNewCart()

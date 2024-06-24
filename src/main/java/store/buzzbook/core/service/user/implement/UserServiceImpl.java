@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
+import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -17,6 +18,8 @@ import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Deactivation;
+import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.user.DeactivationRepository;
@@ -63,12 +66,15 @@ public class UserServiceImpl implements UserService {
 		String loginId = registerUserRequest.loginId();
 		String successRegister = "회원가입 성공";
 
+		Grade grade = gradeRepository.findByName(GradeName.NORMAL)
+			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
+
 		if (userRepository.existsByLoginId(loginId)) {
 			log.warn("유저 아이디 {} 중복 회원가입 실패 ", loginId);
 			throw new UserAlreadyExistsException(loginId);
 		}
 
-		User requestUser = registerUserRequest.toUser();
+		User requestUser = registerUserRequest.toUser(grade);
 		userRepository.save(requestUser);
 
 		return RegisterUserResponse.builder()
