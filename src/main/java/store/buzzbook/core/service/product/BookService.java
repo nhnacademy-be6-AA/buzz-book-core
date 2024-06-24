@@ -31,7 +31,7 @@ public class BookService {
 	}
 
 	public Book saveBook(BookRequest bookReq) {
-		Publisher publisher = publisherRepository.findByName(bookReq.getPublisher().strip());
+		Publisher publisher = publisherRepository.findByName(bookReq.getPublisher());
 
 		if (publisher == null) {
 			publisher = publisherRepository.save(new Publisher(bookReq.getPublisher()));
@@ -42,7 +42,7 @@ public class BookService {
 			.description(bookReq.getDescription())
 			.isbn(bookReq.getIsbn())
 			.publisher(publisher)
-			.publishDate(bookReq.getPublishDate())
+			.publishDate(bookReq.getPublishDate().toString())
 			.build();
 		return saveBook(newBook);
 	}
@@ -121,7 +121,7 @@ public class BookService {
 		Product product = productRepository.findById(book.getProduct().getId()).orElseThrow();
 		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getPrice(),
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
-			product.getCategory(), product.getProductTag());
+			product.getCategory());
 		productRepository.save(newProduct);
 		book.setProduct(null);
 		bookRepository.save(book);

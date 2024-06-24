@@ -1,25 +1,15 @@
 package store.buzzbook.core.entity.product;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "book")
 @Entity
@@ -46,7 +36,7 @@ public class Book {
 
 	@Column(nullable = false)
 	@JsonProperty("pubdate")
-	private LocalDate publishDate;
+	private ZonedDateTime publishDate;
 
 	@ManyToOne
 	@JoinColumn(name = "product_id")
@@ -61,6 +51,7 @@ public class Book {
 		this.description = description;
 		this.isbn = isbn;
 		this.publisher = publisher;
-		this.publishDate = LocalDate.parse(publishDate);
+		LocalDate localDate = LocalDate.parse(publishDate);
+		this.publishDate = localDate.atStartOfDay(ZoneId.systemDefault());
 	}
 }

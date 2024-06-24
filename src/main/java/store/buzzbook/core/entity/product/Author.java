@@ -25,8 +25,8 @@ public class Author {
     @OneToMany(mappedBy = "author", cascade = CascadeType.REMOVE)
     private List<BookAuthor> bookAuthors = new ArrayList<>();
 
-    public Author(String name) {
+    public Author(String trim) {
 
-        this.name = name;
+        this.name = trim;
     }
 }
