@@ -4,9 +4,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import store.buzzbook.core.entity.product.Author;
 import store.buzzbook.core.entity.product.BookAuthor;
 
 public interface BookAuthorRepository extends JpaRepository<BookAuthor, Integer> {
-	List<BookAuthor> findAllByBookId(int bookId);
+	List<BookAuthor> findAllByBookId(long bookId);
 }

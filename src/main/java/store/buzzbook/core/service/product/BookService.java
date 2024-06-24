@@ -26,20 +26,20 @@ public class BookService {
 			.collect(Collectors.toList());
 	}
 
-	public BookResponse getBookById(int id) {
+	public BookResponse getBookById(long id) {
 		Book book = bookRepository.findById(id).orElse(null);
 		BookResponse bookResponse = BookResponse.builder()
 			.id(book.getId())
 			.title(book.getTitle())
 			.description(book.getDescription())
 			.isbn(book.getIsbn())
-			.publisher(book.getPublisher())
+			.publisher(String.valueOf(book.getPublisher()))
 			.publishDate(book.getPublishDate())
 			.build();
 		return bookResponse;
 	}
 
-	public void deleteBookById(int id) {
+	public void deleteBookById(long id) {
 		bookRepository.deleteById(id);
 	}
 

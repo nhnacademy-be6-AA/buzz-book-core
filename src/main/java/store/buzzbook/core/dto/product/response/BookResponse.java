@@ -13,7 +13,7 @@ import store.buzzbook.core.entity.product.Book;
 @Getter
 @Builder
 public class BookResponse {
-    private int id;
+    private long id;
     private String title;
     private String[] authors;
     private String description;
