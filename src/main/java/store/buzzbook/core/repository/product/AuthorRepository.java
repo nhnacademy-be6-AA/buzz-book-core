@@ -6,4 +6,6 @@ import store.buzzbook.core.entity.product.Author;
 public interface AuthorRepository extends JpaRepository<Author, Integer> {
 
     Author findByName(String name);
+
+
 }
