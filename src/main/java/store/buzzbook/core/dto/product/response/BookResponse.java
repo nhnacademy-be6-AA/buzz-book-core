@@ -1,13 +1,12 @@
 package store.buzzbook.core.dto.product.response;
 
+import java.time.ZonedDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.product.Book;
-import store.buzzbook.core.entity.product.Publisher;
-
-import java.time.ZonedDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,9 +15,10 @@ import java.time.ZonedDateTime;
 public class BookResponse {
     private int id;
     private String title;
+    private String[] authors;
     private String description;
     private String isbn;
-    private Publisher publisher;
+    private String publisher;
     private ZonedDateTime publishDate;
 
     public static BookResponse convertToBookResponse(Book book) {
@@ -27,7 +27,7 @@ public class BookResponse {
                 .title(book.getTitle())
                 .description(book.getDescription())
                 .isbn(book.getIsbn())
-                .publisher(book.getPublisher())
+                .publisher(book.getPublisher().toString())
                 .publishDate(book.getPublishDate())
                 .build();
     }
