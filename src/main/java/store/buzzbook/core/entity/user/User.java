@@ -74,4 +74,7 @@ public class User {
 	@Column(name = "is_admin")
 	private boolean isAdmin;
 
+	public void deactivate() {
+		this.status = UserStatus.WITHDRAW;
+	}
 }

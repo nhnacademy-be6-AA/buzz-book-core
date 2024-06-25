@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.user;
 
+import java.time.ZonedDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,8 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.ZonedDateTime;
 
 @Getter
 @Entity
@@ -37,6 +37,7 @@ public class Deactivation {
 
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)
+	@MapsId
 	@JoinColumn(name = "user_id")
 	private User user;
 }

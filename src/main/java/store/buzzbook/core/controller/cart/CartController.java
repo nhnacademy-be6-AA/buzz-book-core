@@ -2,7 +2,6 @@ package store.buzzbook.core.controller.cart;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,17 +20,10 @@ import store.buzzbook.core.service.user.CartService;
 public class CartController {
 	private CartService cartService;
 
-	@GetMapping("/{cartId}")
+	@GetMapping
 	@ApiOperation("장바구니 내용을 가져온다. cartId를 넘기되, null 혹은 음수라면 새로운 장바구니로 인식한다.")
-	public void getCartByCartId(@PathVariable Long cartId) {
-		if (cartId < 0L) {
-			cartService.createNewCart(null);
-		}
+	public void getCartByCartId() {
 
-		//todo 비회원 회원 구분을 위한 바디 원함.
-		if (cartId > -1L) {
-			//cartService.createNewCart()
-		}
 	}
 
 	@PostMapping

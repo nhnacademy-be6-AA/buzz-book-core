@@ -1,11 +1,11 @@
 package store.buzzbook.core.service.user.implement;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
@@ -87,25 +87,35 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public boolean deactivate(Long userId, String reason) {
-		User user = null;
-		try {
-			user = userRepository.getReferenceById(userId);
-		} catch (EntityNotFoundException e) {
-			log.warn("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
+		Optional<User> user = null;
+		// try {
+		// 	user = userRepository.getReferenceById(userId);
+		// } catch (EntityNotFoundException e) {
+		// 	log.warn("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
+		// 	throw new UserNotFoundException(userId);
+		// }
+
+		//user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+		user = userRepository.findById(userId);
+		if (user.isEmpty()) {
 			throw new UserNotFoundException(userId);
 		}
 
 		Deactivation deactivation = Deactivation.builder()
 			.deactivationDate(ZonedDateTime.now())
 			.reason(reason)
-			.user(user).build();
+			.user(user.get()).build();
 
 		Deactivation savedData = deactivationRepository.save(deactivation);
 
-		if (userRepository.updateStatus(userId, UserStatus.WITHDRAW)) {
-			log.error("계정 탈퇴 중 오류가 발생했습니다. : {} ", userId);
-			throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", userId));
-		}
+		// if (userRepository.updateStatus(userId, UserStatus.WITHDRAW)) {
+		// 	log.error("계정 탈퇴 중 오류가 발생했습니다. : {} ", userId);
+		// 	throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", userId));
+		// }
+		user.get().deactivate();
+
+		userRepository.save(user.get());
 
 		return savedData.getUser().getId().equals(userId);
 	}

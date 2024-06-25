@@ -62,6 +62,8 @@ class DeactivationRepositoryTest {
 			.status(UserStatus.ACTIVE).build();
 		userRepository.save(user);
 
+		entityManager.flush();
+
 		deactivation =
 			Deactivation
 				.builder()
