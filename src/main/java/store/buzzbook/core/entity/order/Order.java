@@ -34,7 +34,6 @@ public class Order {
 	private int zipcode;
 	private ZonedDateTime desiredDeliveryDate;
 	private String receiver;
-	private String orderStr;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "delivery_policy_id", nullable = false)
