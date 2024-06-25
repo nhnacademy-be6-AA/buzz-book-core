@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class WrappingResponse {
-	private int id;
-	private String paper;
-	private int price;
+public class CreateDeliveryPolicyRequest {
+	private String name;
+	private int standardPrice;
+	private int policyPrice;
 }

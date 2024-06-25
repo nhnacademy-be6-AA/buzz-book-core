@@ -37,7 +37,6 @@ public class Deactivation {
 
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)
-	@MapsId
 	@JoinColumn(name = "user_id")
 	private User user;
 }

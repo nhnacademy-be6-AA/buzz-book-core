@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.common.util.PageRequestInfo;
+import store.buzzbook.core.dto.user.UserInfo;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,13 +16,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ReadOrderResponse {
 	private long id;
+	private String orderStr;
+	private String loginId;
 	private int price;
 	private String request;
 	private String address;
 	private String addressDetail;
 	private int zipcode;
-	private ZonedDateTime desiredDeliveryDate;
+	private String desiredDeliveryDate;
 	private String receiver;
-	private DeliveryPolicyResponse deliveryPolicy;
-	private List<OrderDetailResponse> details;
+	private ReadDeliveryPolicyResponse deliveryPolicy;
+	private List<ReadOrderDetailResponse> details;
 }

@@ -3,11 +3,14 @@ package store.buzzbook.core.repository.order;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import store.buzzbook.core.entity.order.OrderDetail;
-import store.buzzbook.core.entity.order.OrderStatus;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
-	List<OrderDetail> findAllByOrder_Id(Long orderId);
+	List<OrderDetail> findAllById(long orderId);
+	List<OrderDetail> findAllByOrder_IdAndOrder_User_LoginId(long orderId, String loginId);
 	List<OrderDetail> findAllByOrder_IdAndOrderStatus_Id(long orderId, long orderStatusId);
+	List<OrderDetail> findAllByOrder_Id(long orderId);
 }

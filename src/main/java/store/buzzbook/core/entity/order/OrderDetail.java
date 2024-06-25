@@ -2,11 +2,7 @@ package store.buzzbook.core.entity.order;
 
 import java.time.ZonedDateTime;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,7 +24,6 @@ import store.buzzbook.core.entity.product.Product;
 @NoArgsConstructor
 @Entity
 @Table
-@EntityListeners(AuditingEntityListener.class)
 public class OrderDetail {
 
 	@Id
@@ -38,9 +33,6 @@ public class OrderDetail {
 	private int price;
 	private int quantity;
 	private boolean wrap;
-
-	@CreatedDate
-	private ZonedDateTime createDate;
 
 	@Setter
 	@OneToOne
@@ -58,4 +50,6 @@ public class OrderDetail {
 	@ManyToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
+
+	private ZonedDateTime createDate;
 }

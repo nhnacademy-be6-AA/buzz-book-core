@@ -26,6 +26,7 @@ public class Order {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+	private String orderStr;
 	private int price;
 	private String request;
 	private String address;
@@ -33,7 +34,6 @@ public class Order {
 	private int zipcode;
 	private ZonedDateTime desiredDeliveryDate;
 	private String receiver;
-	private String orderStr;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "delivery_policy_id", nullable = false)
