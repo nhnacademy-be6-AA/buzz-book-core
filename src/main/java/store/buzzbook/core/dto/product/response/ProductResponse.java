@@ -2,6 +2,7 @@ package store.buzzbook.core.dto.product.response;
 
 import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ public class ProductResponse {
 	private int stock;
 	private String productName;
 	private int price;
-	private ZonedDateTime forwardDate;
+	private LocalDate forwardDate;
 	private int score;
 	private String thumbnailPath;
 	private Product.StockStatus stockStatus;

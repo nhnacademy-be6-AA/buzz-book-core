@@ -1,7 +1,5 @@
 package store.buzzbook.core.dto.product.response;
 
-import java.time.ZonedDateTime;
-
 import org.springframework.lang.Nullable;
 
 import lombok.Getter;
@@ -14,7 +12,7 @@ public class BookRequest {
     private String description;
     private String isbn;
     private String publisher;
-    private ZonedDateTime publishDate;
+    private String publishDate; //("YYYY-MM-DD")형식 or validation 필요
     @Nullable
     private Integer productId;
 }

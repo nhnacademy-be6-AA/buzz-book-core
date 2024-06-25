@@ -29,6 +29,7 @@ import store.buzzbook.core.service.user.UserService;
 
 @Service
 @Slf4j
+
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;

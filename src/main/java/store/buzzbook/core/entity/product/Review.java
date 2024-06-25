@@ -1,9 +1,16 @@
 package store.buzzbook.core.entity.product;
 
-import jakarta.persistence.*;
-import lombok.Getter;
+import java.time.ZonedDateTime;
 
-import java.sql.Timestamp;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import lombok.Getter;
+import store.buzzbook.core.entity.order.OrderDetail;
 
 @Entity
 @Getter
@@ -22,11 +29,11 @@ public class Review {
     @Column(nullable = false)
     private int reviewScore;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id",nullable = false)
-    private Product product;
+    @OneToOne
+    @JoinColumn(name = "order_detail_id", nullable = false)
+    private OrderDetail orderDetail;
 
     @Column(nullable = false)
-    private Timestamp reviewCreateDate;
+    private ZonedDateTime reviewCreatedAt;
 
 }
