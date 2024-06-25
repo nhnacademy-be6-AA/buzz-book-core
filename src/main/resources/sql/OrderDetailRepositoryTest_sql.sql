@@ -19,6 +19,7 @@ INSERT INTO `wrapping` (
 );
 
 INSERT INTO `order` (
+    order_str,
     price,
     request,
     address,
@@ -29,6 +30,7 @@ INSERT INTO `order` (
     delivery_policy_id,
     user_id
 ) VALUES (
+          'fsfsdsfds',
              1000,
              '감사합니다.',
              '광주',
