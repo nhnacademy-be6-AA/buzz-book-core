@@ -3,6 +3,7 @@ package store.buzzbook.core.service.product;
 import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
 import static store.buzzbook.core.dto.product.response.ProductResponse.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -14,9 +15,9 @@ import store.buzzbook.core.dto.product.response.ProductResponse;
 import store.buzzbook.core.dto.product.response.ProductUpdateRequest;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.CategoryRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
+import store.buzzbook.core.repository.product.TagRepository;
 
 @RequiredArgsConstructor
 @Service
@@ -24,7 +25,7 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
-	private final BookRepository bookRepository;
+	private final TagRepository tagRepository;
 
 	public ProductResponse saveProduct(ProductRequest productReq) {
 		Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
@@ -32,7 +33,7 @@ public class ProductService {
 			.stock(productReq.getStock())
 			.productName(productReq.getProductName())
 			.price(productReq.getPrice())
-			.forwardDate(productReq.getForwardDate())
+			.forwardDate(LocalDate.parse(productReq.getForwardDate()))
 			.score(productReq.getScore())
 			.thumbnailPath(productReq.getThumbnailPath())
 			.stockStatus(productReq.getStockStatus())
@@ -48,6 +49,13 @@ public class ProductService {
 			.map(ProductResponse::convertToProductResponse)
 			.toList();
 	}
+
+	public List<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus) {
+		return productRepository.findAllByStockStatus(stockStatus).stream()
+			.map(ProductResponse::convertToProductResponse)
+			.toList();
+	}
+
 
 	public ProductResponse getProductById(int id) {
 		Product product = productRepository.findById(id).orElse(null);
@@ -89,7 +97,7 @@ public class ProductService {
 			product.getScore(),
 			product.getThumbnailPath(),
 			productRequest.getStockStatus(),
-			category);
+			category, null);
 
 		return productRepository.save(updatedProduct);
 	}

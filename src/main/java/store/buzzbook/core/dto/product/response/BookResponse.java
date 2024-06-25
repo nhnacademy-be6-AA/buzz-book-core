@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.product.response;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class BookResponse {
     private String description;
     private String isbn;
     private String publisher;
-    private ZonedDateTime publishDate;
+    private LocalDate publishDate;
     @Nullable
     private ProductResponse product;
 
@@ -37,7 +38,7 @@ public class BookResponse {
                             .title(book.getTitle())
                             .description(book.getDescription())
                             .isbn(book.getIsbn())
-                            .publisher(book.getPublisher().toString())
+                            .publisher(book.getPublisher().getName())
                             .publishDate(book.getPublishDate())
                             .product(book.getProduct() == null ? null : ProductResponse.convertToProductResponse(book.getProduct()))
                             .build();
