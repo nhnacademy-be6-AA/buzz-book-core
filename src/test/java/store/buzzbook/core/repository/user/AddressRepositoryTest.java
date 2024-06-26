@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.EntityManager;
 import store.buzzbook.core.common.config.QuerydslConfig;
+import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
@@ -52,14 +53,13 @@ class AddressRepositoryTest {
 		user = User.builder()
 			.loginId("iojerw398")
 			.name("john doe")
-			.grade(grade)
 			.email("email123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.birthday(ZonedDateTime.now())
-			.modifyDate(ZonedDateTime.now())
-			.createDate(ZonedDateTime.now())
+			.birthday(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
+			.modifyAt(ZonedDateTime.now())
+			.createAt(ZonedDateTime.now())
 			.password("encrytedsolongpassword123345")
-			.lastLoginDate(ZonedDateTime.now())
+			.lastLoginAt(ZonedDateTime.now())
 			.status(UserStatus.ACTIVE).build();
 		userRepository.save(user);
 

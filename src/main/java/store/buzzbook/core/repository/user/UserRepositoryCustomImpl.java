@@ -34,7 +34,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	@Override
 	public boolean updateLoginDate(String loginId) {
 		return jpaQueryFactory.update(user)
-			.set(user.lastLoginDate, ZonedDateTime.now())
+			.set(user.lastLoginAt, ZonedDateTime.now())
 			.where(user.loginId.eq(loginId))
 			.execute() > 0;
 	}

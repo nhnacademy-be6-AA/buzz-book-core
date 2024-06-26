@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.entity.product.Product;
 
 @Builder
@@ -43,4 +44,13 @@ public class CartDetail {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id", nullable = false)
 	private Product product;
+
+	public CartDetailResponse toResponse(String thumbnailPath) {
+		return CartDetailResponse.builder()
+			.id(this.id)
+			.productId(this.product.getId())
+			.productName(this.product.getProductName())
+			.quantity(this.getQuantity())
+			.build();
+	}
 }

@@ -20,10 +20,12 @@ import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.user.DeactivationRepository;
+import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.UserService;
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final GradeRepository gradeRepository;
 	private final DeactivationRepository deactivationRepository;
+	private final GradeLogRepository gradeLogRepository;
 
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
@@ -63,6 +66,7 @@ public class UserServiceImpl implements UserService {
 		return getUserInfoByLoginId(loginId);
 	}
 
+	@Transactional
 	@Override
 	public RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest) {
 		String loginId = registerUserRequest.loginId();
@@ -77,7 +81,16 @@ public class UserServiceImpl implements UserService {
 		}
 
 		User requestUser = registerUserRequest.toUser();
-		userRepository.save(requestUser);
+		User savedUser = userRepository.save(requestUser);
+
+		GradeLog gradeLog = GradeLog.builder()
+			.grade(grade)
+			.user(savedUser)
+			.changeDate(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
+			.build();
+
+		gradeLogRepository.save(gradeLog);
+		//todo 쿠폰 처리
 
 		return RegisterUserResponse.builder()
 			.name(requestUser.getName())

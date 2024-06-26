@@ -5,5 +5,8 @@ import java.util.Optional;
 import store.buzzbook.core.dto.cart.GetCartResponse;
 
 public interface CartRepositoryCustom {
-	Optional<GetCartResponse> findCartWithCartDetailList(Long cartId);
+	Optional<GetCartResponse> findCartByCartId(Long cartId);
+
+	Optional<GetCartResponse> findCartByUserId(Long userId);
+
 }

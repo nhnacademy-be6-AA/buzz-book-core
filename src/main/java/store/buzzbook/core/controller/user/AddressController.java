@@ -88,7 +88,7 @@ public class AddressController {
 		try {
 			addressList = addressService.getAddressList(userId);
 		} catch (UserNotFoundException e) {
-			log.warn("알 수 없는 유저의 주소 수정 요청. : {}", userId);
+			log.warn("알 수 없는 유저의 주소 리스트 요청. : {}", userId);
 			return ResponseEntity.badRequest().build();
 		}
 

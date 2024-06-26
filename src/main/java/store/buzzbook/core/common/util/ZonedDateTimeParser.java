@@ -35,8 +35,4 @@ public class ZonedDateTimeParser {
 		return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 	}
 
-	public static LocalDate toLocalDate(String date) {
-		return LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-	}
-	
 }

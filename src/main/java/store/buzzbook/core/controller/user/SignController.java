@@ -26,7 +26,7 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/account")
-@Tag(name = "user sign in/up controller", description = "유저 인증 관련 api")
+@Tag(name = "회원가입, 로그인 관련 컨트롤러", description = "유저 인증 관련 api")
 @Slf4j
 public class SignController {
 	private final UserService userService;
