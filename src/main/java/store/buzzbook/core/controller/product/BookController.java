@@ -65,7 +65,7 @@ public class BookController {
 		"""
 			조건이 없을경우 모든 책 조회후 page<bookResponse>로 반환
 			boolean hasProduct=true : 상품으로 등록된 책들만 조회
-			int productId = {product_id} : product_id로 단일 책 조회 후 bookResponse로 반환
+			int productId = {product_id} : product_id로 단일 책 조회 후 bookResponse 반환
 			"""
 	)
 
