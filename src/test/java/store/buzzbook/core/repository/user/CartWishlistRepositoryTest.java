@@ -1,6 +1,7 @@
 package store.buzzbook.core.repository.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,20 +67,19 @@ class CartWishlistRepositoryTest {
 		user = User.builder()
 			.loginId("dfsajkh23489y")
 			.name("john doe")
-			.grade(grade)
 			.email("email123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.birthday(ZonedDateTime.now())
-			.modifyDate(ZonedDateTime.now())
-			.createDate(ZonedDateTime.now())
+			.birthday(LocalDate.now())
+			.modifyAt(LocalDateTime.now())
+			.createAt(LocalDateTime.now())
 			.password("encrytedsolongpassword123345")
-			.lastLoginDate(ZonedDateTime.now())
+			.lastLoginAt(LocalDateTime.now())
 			.status(UserStatus.ACTIVE).build();
 		userRepository.save(user);
 
 		cart = Cart.builder()
 			.user(user)
-			.updateDate(ZonedDateTime.now()).build();
+			.build();
 
 		Category category = Category.builder().name("test").build();
 
@@ -104,7 +104,7 @@ class CartWishlistRepositoryTest {
 			.price(10000)
 			.category(category)
 			.stockStatus(Product.StockStatus.SALE)
-			.forwardDate(ZonedDateTimeParser.toDate("2013-01-10")).build();
+			.forwardDate(ZonedDateTimeParser.toDate("2013-01-10").toLocalDate()).build();
 	}
 
 	@Test

@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,7 @@ public class Grade {
 
 	@NotNull
 	@Enumerated(value = EnumType.STRING)
+	@Size(min = 1, max = 20)
 	private GradeName name;
 
 	@NotNull

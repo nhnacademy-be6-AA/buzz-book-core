@@ -1,10 +1,9 @@
 package store.buzzbook.core.dto.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.Builder;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
-import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
@@ -15,20 +14,19 @@ public record RegisterUserRequest(
 	String name,
 	String contactNumber,
 	String email,
-	String birthday
+	LocalDate birthday
 ) {
-	public User toUser(Grade grade) {
+	public User toUser() {
 		return User.builder()
 			.loginId(this.loginId())
 			.name(this.name())
 			.password(this.password())
-			.birthday(ZonedDateTimeParser.toDate(this.birthday()))
-			.createDate(ZonedDateTime.now())
+			.birthday(this.birthday())
+			.createAt(LocalDateTime.now())
 			.email(this.email())
-			.modifyDate(ZonedDateTime.now())
+			.modifyAt(LocalDateTime.now())
 			.contactNumber(this.contactNumber())
-			.lastLoginDate(null)
-			.grade(grade)
+			.lastLoginAt(null)
 			.status(UserStatus.ACTIVE)
 			.isAdmin(false).build();
 

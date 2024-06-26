@@ -1,6 +1,7 @@
 package store.buzzbook.core.repository.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,14 +48,13 @@ class UserRepositoryTest {
 		user = User.builder()
 			.loginId("testid00000000")
 			.name("john doe")
-			.grade(grade)
 			.email("email123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.birthday(ZonedDateTime.now())
-			.modifyDate(ZonedDateTime.now())
-			.createDate(ZonedDateTime.now())
+			.birthday(LocalDate.now())
+			.modifyAt(LocalDateTime.now())
+			.createAt(LocalDateTime.now())
 			.password("encrytedsolongpassword123345")
-			.lastLoginDate(ZonedDateTime.now())
+			.lastLoginAt(LocalDateTime.now())
 			.isAdmin(false)
 			.status(UserStatus.ACTIVE).build();
 
@@ -93,7 +93,7 @@ class UserRepositoryTest {
 
 		Assertions.assertNotNull(updatedUser);
 		Assertions.assertEquals(user.getLoginId(), updatedUser.getLoginId());
-		log.info("last login date: {}", user.getLastLoginDate());
+		log.info("last login date: {}", user.getLastLoginAt());
 	}
 
 	@Test

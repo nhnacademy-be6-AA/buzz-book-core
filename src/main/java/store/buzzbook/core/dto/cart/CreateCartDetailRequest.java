@@ -1,8 +1,19 @@
 package store.buzzbook.core.dto.cart;
 
+import store.buzzbook.core.entity.cart.Cart;
+import store.buzzbook.core.entity.cart.CartDetail;
+import store.buzzbook.core.entity.product.Product;
 
 public record CreateCartDetailRequest(Long userId,
 									  Long cartId,
 									  Integer quantity,
-									  Long productId) {
+									  Integer productId) {
+
+	public CartDetail toCartDetail(Cart cart, Product product) {
+		return CartDetail.builder()
+			.cart(cart)
+			.product(product)
+			.quantity(this.quantity)
+			.build();
+	}
 }

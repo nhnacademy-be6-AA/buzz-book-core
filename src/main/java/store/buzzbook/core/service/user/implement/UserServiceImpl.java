@@ -1,11 +1,11 @@
 package store.buzzbook.core.service.user.implement;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
@@ -19,10 +19,12 @@ import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.user.DeactivationRepository;
+import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.UserService;
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final GradeRepository gradeRepository;
 	private final DeactivationRepository deactivationRepository;
+	private final GradeLogRepository gradeLogRepository;
 
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
@@ -62,6 +65,7 @@ public class UserServiceImpl implements UserService {
 		return getUserInfoByLoginId(loginId);
 	}
 
+	@Transactional
 	@Override
 	public RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest) {
 		String loginId = registerUserRequest.loginId();
@@ -75,8 +79,17 @@ public class UserServiceImpl implements UserService {
 			throw new UserAlreadyExistsException(loginId);
 		}
 
-		User requestUser = registerUserRequest.toUser(grade);
-		userRepository.save(requestUser);
+		User requestUser = registerUserRequest.toUser();
+		User savedUser = userRepository.save(requestUser);
+
+		GradeLog gradeLog = GradeLog.builder()
+			.grade(grade)
+			.user(savedUser)
+			.changeAt(LocalDateTime.now())
+			.build();
+
+		gradeLogRepository.save(gradeLog);
+		//todo 쿠폰 처리
 
 		return RegisterUserResponse.builder()
 			.name(requestUser.getName())
@@ -88,25 +101,23 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public boolean deactivate(Long userId, String reason) {
-		User user = null;
-		try {
-			user = userRepository.getReferenceById(userId);
-		} catch (EntityNotFoundException e) {
-			log.warn("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
+		Optional<User> userOptional = userRepository.findById(userId);
+
+		if (userOptional.isEmpty()) {
+			log.debug("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
 
 		Deactivation deactivation = Deactivation.builder()
-			.deactivationDate(ZonedDateTime.now())
+			.deactivationAt(LocalDateTime.now())
 			.reason(reason)
-			.user(user).build();
+			.user(userOptional.get()).build();
 
 		Deactivation savedData = deactivationRepository.save(deactivation);
 
-		if (userRepository.updateStatus(userId, UserStatus.WITHDRAW)) {
-			log.error("계정 탈퇴 중 오류가 발생했습니다. : {} ", userId);
-			throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", userId));
-		}
+		userOptional.get().deactivate();
+
+		userRepository.save(userOptional.get());
 
 		return savedData.getUser().getId().equals(userId);
 	}
@@ -136,7 +147,6 @@ public class UserServiceImpl implements UserService {
 			.loginId(user.getLoginId())
 			.birthday(user.getBirthday())
 			.isAdmin(user.isAdmin())
-			.grade(user.getGrade())
 			.contactNumber(user.getContactNumber())
 			.email(user.getEmail())
 			.build();

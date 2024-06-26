@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -58,7 +58,7 @@ class UserServiceTest {
 			.email("asd123@nhn.com")
 			.contactNumber("010-0000-1111")
 			.loginId("ijodfs328")
-			.birthday(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
+			.birthday(LocalDate.now())
 			.password("328u1u90uiodhiosdafhioufo82^&%6712jbsja")
 			.build();
 
@@ -125,8 +125,7 @@ class UserServiceTest {
 		Assertions.assertEquals(registerUserRequest.name(), responseInfo.name());
 		Assertions.assertEquals(registerUserRequest.email(), responseInfo.email());
 		Assertions.assertEquals(registerUserRequest.contactNumber(), responseInfo.contactNumber());
-		Assertions.assertEquals(registerUserRequest.birthday(),
-			ZonedDateTimeParser.toStringDate(responseInfo.birthday()));
+		Assertions.assertEquals(registerUserRequest.birthday(), responseInfo.birthday());
 
 	}
 
@@ -211,8 +210,7 @@ class UserServiceTest {
 		Assertions.assertEquals(registerUserRequest.name(), responseInfo.name());
 		Assertions.assertEquals(registerUserRequest.email(), responseInfo.email());
 		Assertions.assertEquals(registerUserRequest.contactNumber(), responseInfo.contactNumber());
-		Assertions.assertEquals(registerUserRequest.birthday(),
-			ZonedDateTimeParser.toStringDate(responseInfo.birthday()));
+		Assertions.assertEquals(registerUserRequest.birthday(), responseInfo.birthday());
 
 	}
 
@@ -221,14 +219,13 @@ class UserServiceTest {
 		return User.builder()
 			.loginId(request.loginId())
 			.name(request.name())
-			.birthday(ZonedDateTimeParser.toDate(request.birthday()))
-			.createDate(ZonedDateTime.now())
-			.grade(grade)
+			.birthday(request.birthday())
+			.createAt(LocalDateTime.now())
 			.password(request.password())
 			.email(request.email())
-			.modifyDate(null)
+			.modifyAt(null)
 			.contactNumber(request.contactNumber())
-			.lastLoginDate(null)
+			.lastLoginAt(null)
 			.isAdmin(false).build();
 	}
 }

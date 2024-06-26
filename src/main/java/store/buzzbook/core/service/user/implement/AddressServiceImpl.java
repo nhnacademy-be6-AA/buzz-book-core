@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.user.AddressMaxCountException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
 import store.buzzbook.core.dto.user.UpdateAddressRequest;
@@ -33,6 +34,13 @@ public class AddressServiceImpl implements AddressService {
 		} catch (EntityNotFoundException e) {
 			log.warn("회원 주소 추가 중 존재하지 않는 user id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
+		}
+
+		Integer addressCount = addressRepository.countAllByUserId(userId);
+
+		if (addressCount >= 10) {
+			log.warn("회원 주소 추가에 실패했습니다. 저장된 주소의 갯수가 최대입니다.");
+			throw new AddressMaxCountException(userId);
 		}
 
 		Address address = createAddressRequest.toAddress(user);
