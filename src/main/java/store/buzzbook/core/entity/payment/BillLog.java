@@ -16,9 +16,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,18 +39,26 @@ public class BillLog {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
+	@NotNull
 	private String payment;
+	@NotNull
 	private int price;
 
+	@NotNull
 	@CreatedDate
 	private ZonedDateTime paymentDate;
 
-	@OneToOne
+	@NotNull
+	@ManyToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
 
+	@NotNull
 	@Enumerated(value = EnumType.STRING)
 	private BillStatus status;
 
+	@NotNull
 	private UUID paymentKey;
+
+	private String cancelReason;
 }

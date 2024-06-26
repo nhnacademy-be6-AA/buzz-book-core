@@ -1,5 +1,6 @@
 package store.buzzbook.core.entity.order;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Entity;
@@ -10,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,20 +28,23 @@ public class Order {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+	@NotNull
 	private String orderStr;
+	@NotNull
 	private int price;
 	private String request;
+	@NotNull
 	private String address;
+	@NotNull
 	private String addressDetail;
+	@NotNull
 	private int zipcode;
+	@NotNull
 	private ZonedDateTime desiredDeliveryDate;
+	@NotNull
 	private String receiver;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(referencedColumnName = "id", name = "delivery_policy_id", nullable = false)
-	private DeliveryPolicy deliveryPolicy;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = false)
+	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = true)
 	private User user;
 }
