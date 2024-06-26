@@ -1,7 +1,6 @@
 package store.buzzbook.core.dto.payment;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
