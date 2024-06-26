@@ -61,7 +61,6 @@ public class OrderController {
 	@Operation(summary = "주문 등록", description = "주문하기")
 	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
-		log.warn("OrderController - createOrder()");
 		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 
