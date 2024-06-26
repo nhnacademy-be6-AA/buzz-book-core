@@ -1,10 +1,12 @@
 package store.buzzbook.core.repository.user;
 
+import java.util.Optional;
+
+import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.UserStatus;
 
 public interface UserRepositoryCustom {
-
-	boolean updateLoginDate(String loginId);
+	Optional<Grade> findGradeByUserId(Long userId);
 
 	boolean updateStatus(Long userId, UserStatus status);
 
