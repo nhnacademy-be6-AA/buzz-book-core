@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 public class CreateOrderDetailRequest {
+	@Setter
 	private int price;
 	private int quantity;
 	private boolean wrap;

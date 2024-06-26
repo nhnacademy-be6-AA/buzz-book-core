@@ -160,6 +160,9 @@ public class OrderService {
 
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(()-> new IllegalArgumentException("Product not found"));
+
+			detail.setPrice(product.getPrice());
+
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
 			orderDetail = orderDetailRepository.save(orderDetail);
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail));
