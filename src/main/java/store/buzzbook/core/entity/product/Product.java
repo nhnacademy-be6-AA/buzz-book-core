@@ -35,6 +35,9 @@ public class Product {
 	@Column(nullable = false, length = 255)
 	private String productName;
 
+	@Column
+	private String description;
+
 	@Column(nullable = false)
 	private int price;
 
@@ -59,10 +62,11 @@ public class Product {
 	private List<ProductTag> productTag = new ArrayList<>();
 
 	@Builder
-	public Product(int stock, String productName, int price, LocalDate forwardDate,
+	public Product(int stock, String productName, String description, int price, LocalDate forwardDate,
 		int score, String thumbnailPath, StockStatus stockStatus, Category category) {
 		this.stock = stock;
 		this.productName = productName;
+		this.description = description;
 		this.price = price;
 		this.forwardDate = forwardDate;
 		this.score = score;

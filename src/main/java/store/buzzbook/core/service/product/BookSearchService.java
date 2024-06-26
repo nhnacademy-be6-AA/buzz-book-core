@@ -169,6 +169,8 @@ public class BookSearchService {
 				Product product = Product.builder()
 					.stock(stock)
 					.productName(productName)
+					// TODO 알라딘 api에서 가져온 도서를 상품에 등록할때 상품의 설명 처리해야함.
+					.description(null)
 					.price(price)
 					.forwardDate(forwardDate)
 					.score(score)
