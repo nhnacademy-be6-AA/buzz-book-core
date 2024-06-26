@@ -1,5 +1,6 @@
 package store.buzzbook.core.mapper.order;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -15,10 +16,7 @@ import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.user.User;
 
 public class OrderMapper {
-	public static ZonedDateTime toZonedDateTime(String date) {
-		DateTimeFormatter formatter = DateTimeFormatter.ISO_ZONED_DATE_TIME;
-		return ZonedDateTime.parse(date, formatter);
-	}
+	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
 	public static ReadOrderResponse toDto(Order order, List<ReadOrderDetailResponse> details, String loginId) {
@@ -29,7 +27,7 @@ public class OrderMapper {
 			.price(order.getPrice())
 			.address(order.getAddress())
 			.addressDetail(order.getAddressDetail())
-			.desiredDeliveryDate(ZonedDateTimeParser.toStringDateTime(order.getDesiredDeliveryDate()))
+			.desiredDeliveryDate(order.getDesiredDeliveryDate().format(formatter))
 			.receiver(order.getReceiver())
 			.request(order.getRequest())
 			.zipcode(order.getZipcode())
@@ -48,7 +46,7 @@ public class OrderMapper {
 			.zipcode(createOrderRequest.getZipcode())
 			.address(createOrderRequest.getAddress())
 			.addressDetail(createOrderRequest.getAddressDetail())
-			.desiredDeliveryDate(ZonedDateTimeParser.toDateTime(createOrderRequest.getDesiredDeliveryDate()))
+			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate()))
 			.build();
 	}
 }

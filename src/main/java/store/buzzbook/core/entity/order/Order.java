@@ -40,7 +40,7 @@ public class Order {
 	@NotNull
 	private int zipcode;
 	@NotNull
-	private ZonedDateTime desiredDeliveryDate;
+	private LocalDate desiredDeliveryDate;
 	@NotNull
 	private String receiver;
 
