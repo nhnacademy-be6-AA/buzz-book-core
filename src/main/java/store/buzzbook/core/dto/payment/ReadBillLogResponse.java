@@ -25,4 +25,5 @@ public class ReadBillLogResponse {
 
 	private UUID paymentKey;
 	private ReadOrderResponse readOrderResponse;
+	private String cancelReason;
 }

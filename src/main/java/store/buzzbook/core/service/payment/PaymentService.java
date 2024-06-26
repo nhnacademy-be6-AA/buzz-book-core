@@ -41,7 +41,7 @@ public class PaymentService {
 		BillLog billLog = billLogRepository.save(BillLog.builder().price(readPaymentResponse.getTotalAmount()).paymentKey(
 				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
 			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).paymentDate(ZonedDateTime.now()).build());
-		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
 			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 			.birthday(order.getUser().getBirthday()).build();
 
@@ -56,7 +56,7 @@ public class PaymentService {
 			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
 				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 				.birthday(order.getUser().getBirthday()).build();
 
@@ -74,7 +74,7 @@ public class PaymentService {
 			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+			UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
 				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 				.birthday(order.getUser().getBirthday()).build();
 
@@ -89,7 +89,7 @@ public class PaymentService {
 		Order order = orderRepository.findByOrderStr(orderId);
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
-		UserInfo userInfo = UserInfo.builder().grade(order.getUser().getGrade()).email(order.getUser().getEmail())
+		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
 			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 			.birthday(order.getUser().getBirthday()).build();
 
