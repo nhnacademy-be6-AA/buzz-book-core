@@ -14,7 +14,7 @@ public class BillLogMapper {
 			.id(billLog.getId())
 			.price(billLog.getPrice())
 			.readOrderResponse(readOrderResponse)
-			.paymentDate(billLog.getPaymentDate().format(formatter))
+			.paymentDate(billLog.getPaymentDate())
 			.paymentKey(billLog.getPaymentKey())
 			.status(billLog.getStatus())
 			.payment(billLog.getPayment())
