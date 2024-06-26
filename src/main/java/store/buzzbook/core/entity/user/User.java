@@ -1,5 +1,6 @@
 package store.buzzbook.core.entity.user;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
@@ -47,14 +48,14 @@ public class User {
 	private String password;
 
 	@NotNull
-	private ZonedDateTime birthday;
+	private LocalDate birthday;
 
 	@NotNull
-	@Column(name = "create_date")
+	@Column(name = "created_at")
 	private ZonedDateTime createDate;
 
 	@NotNull
-	@Column(name = "last_login_date")
+	@Column(name = "last_login_at")
 	private ZonedDateTime lastLoginDate;
 
 	@NotNull
@@ -62,13 +63,13 @@ public class User {
 	private UserStatus status;
 
 	@NotNull
-	@Column(name = "modify_date")
+	@Column(name = "modify_at")
 	private ZonedDateTime modifyDate;
 
-	@NotNull
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "grade_id")
-	private Grade grade;
+	// @NotNull
+	// @ManyToOne(fetch = FetchType.LAZY)
+	// @JoinColumn(name = "grade_id")
+	// private Grade grade;
 
 	@NotNull
 	@Column(name = "is_admin")

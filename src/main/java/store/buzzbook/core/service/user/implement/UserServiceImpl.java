@@ -1,5 +1,6 @@
 package store.buzzbook.core.service.user.implement;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import org.springframework.stereotype.Service;
@@ -127,7 +128,7 @@ public class UserServiceImpl implements UserService {
 			.loginId(user.getLoginId())
 			.birthday(user.getBirthday())
 			.isAdmin(user.isAdmin())
-			.grade(user.getGrade())
+			// .grade(user.getGrade())
 			.contactNumber(user.getContactNumber())
 			.email(user.getEmail())
 			.build();
@@ -140,9 +141,9 @@ public class UserServiceImpl implements UserService {
 		return User.builder()
 			.loginId(request.loginId())
 			.name(request.name())
-			.grade(grade)
+			// .grade(grade)
 			.password(request.password())
-			.birthday(ZonedDateTimeParser.toDate(request.birthday()))
+			.birthday(LocalDate.parse(request.birthday()))
 			.createDate(ZonedDateTime.now())
 			.email(request.email())
 			.modifyDate(null)

@@ -43,7 +43,7 @@ public class UserAuth {
 	private String authToken;
 
 	@NotNull
-	@Column(name = "create_date")
+	@Column(name = "created_at")
 	private ZonedDateTime authCreateDate;
 
 }

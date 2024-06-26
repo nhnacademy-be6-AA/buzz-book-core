@@ -31,7 +31,4 @@ public class Cart {
 	@JoinColumn(name = "user_id")
 	private User user;
 
-	@NotNull
-	@Column(name = "update_date")
-	private ZonedDateTime updateDate;
 }

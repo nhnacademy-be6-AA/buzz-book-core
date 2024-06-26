@@ -1,5 +1,7 @@
 package store.buzzbook.core.dto.user;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import lombok.Builder;
@@ -19,7 +21,7 @@ public record RegisterUserRequest(
 		return User.builder()
 			.loginId(request.loginId())
 			.name(request.name())
-			.birthday(ZonedDateTimeParser.toDate(request.birthday()))
+			.birthday(LocalDate.parse(request.birthday()))
 			.createDate(ZonedDateTime.now())
 			.email(request.email())
 			.modifyDate(null)

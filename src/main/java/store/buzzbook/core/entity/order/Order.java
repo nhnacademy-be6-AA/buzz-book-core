@@ -1,6 +1,6 @@
 package store.buzzbook.core.entity.order;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,12 +31,8 @@ public class Order {
 	private String address;
 	private String addressDetail;
 	private int zipcode;
-	private ZonedDateTime desiredDeliveryDate;
+	private LocalDate desiredDeliveryDate;
 	private String receiver;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(referencedColumnName = "id", name = "delivery_policy_id", nullable = false)
-	private DeliveryPolicy deliveryPolicy;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = false)

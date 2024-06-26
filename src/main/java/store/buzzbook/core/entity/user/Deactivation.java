@@ -32,7 +32,7 @@ public class Deactivation {
 	private String reason;
 
 	@NotNull
-	@Column(name = "deactivation_date")
+	@Column(name = "deactivation_at")
 	private ZonedDateTime deactivationDate;
 
 	@NotNull

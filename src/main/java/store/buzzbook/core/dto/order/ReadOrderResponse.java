@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.order;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class ReadOrderResponse {
 	private String address;
 	private String addressDetail;
 	private int zipcode;
-	private ZonedDateTime desiredDeliveryDate;
+	private LocalDate desiredDeliveryDate;
 	private String receiver;
 	private DeliveryPolicyResponse deliveryPolicy;
 	private List<OrderDetailResponse> details;
