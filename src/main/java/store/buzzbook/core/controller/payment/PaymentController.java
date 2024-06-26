@@ -76,4 +76,5 @@ public class PaymentController {
 	public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody CreatePaymentLogRequest request) {
 		return null;
 	}
+
 }
