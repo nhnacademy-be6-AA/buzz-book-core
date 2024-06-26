@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,26 +31,34 @@ public class OrderDetail {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
+	@NotNull
 	private int price;
+	@NotNull
 	private int quantity;
+	@NotNull
 	private boolean wrap;
 
+	@NotNull
 	@Setter
 	@OneToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
 
+	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "wrapping_id")
 	private Wrapping wrapping;
 
+	@NotNull
 	@ManyToOne
 	@JoinColumn(referencedColumnName = "id", name = "product_id", nullable = false)
 	private Product product;
 
+	@NotNull
 	@ManyToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
 
+	@NotNull
 	private ZonedDateTime createDate;
 }

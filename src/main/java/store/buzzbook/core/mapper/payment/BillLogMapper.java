@@ -14,6 +14,7 @@ public class BillLogMapper {
 			.paymentKey(billLog.getPaymentKey())
 			.status(billLog.getStatus())
 			.payment(billLog.getPayment())
+			.cancelReason(billLog.getCancelReason())
 			.build();
 	}
 }
