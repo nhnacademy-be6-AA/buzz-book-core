@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.cart.CartNotExistsException;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
 import store.buzzbook.core.dto.cart.GetCartResponse;
+import store.buzzbook.core.dto.cart.UpdateCartRequest;
 import store.buzzbook.core.service.cart.CartService;
 
 @RestController
@@ -70,9 +71,13 @@ public class CartController {
 	}
 
 	@PutMapping
-	@Operation(summary = "장바구니 내용 변경", description = "장바구니 내용을 변경한다. Create와 유사하다.")
-	public ResponseEntity<Void> updateCartDetail(@RequestBody CreateCartDetailRequest createCartDetailRequest) {
-		cartService.createCartDetail(createCartDetailRequest);
+	@Operation(summary = "장바구니 상품의 갯수 변경", description = "장바구니 상품의 갯수를 변경한다. Create와 유사하다.")
+	public ResponseEntity<Void> updateCartDetail(@RequestBody UpdateCartRequest updateCartRequest) {
+		try {
+			cartService.updateCartDetail(updateCartRequest);
+		} catch (CartNotExistsException e) {
+			return ResponseEntity.badRequest().build();
+		}
 		return ResponseEntity.ok().build();
 	}
 }

@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.order;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
@@ -14,5 +15,5 @@ import lombok.NoArgsConstructor;
 public class ReadOrderStatusResponse {
 	private int id;
 	private String name;
-	private ZonedDateTime updateDate;
+	private LocalDateTime updateDate;
 }
