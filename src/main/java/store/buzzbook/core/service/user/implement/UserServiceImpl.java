@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
 	private final DeactivationRepository deactivationRepository;
 	private final GradeLogRepository gradeLogRepository;
 
+	@Transactional(readOnly = true)
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
@@ -53,6 +54,7 @@ public class UserServiceImpl implements UserService {
 		return LoginUserResponse.convertFrom(user);
 	}
 
+	@Transactional
 	@Override
 	public UserInfo successLogin(String loginId) {
 		log.info("최근 로그인 일자 업데이트 : {} ", loginId);
@@ -122,6 +124,7 @@ public class UserServiceImpl implements UserService {
 		return savedData.getUser().getId().equals(userId);
 	}
 
+	@Transactional
 	@Override
 	public void activate(String loginId) {
 
@@ -137,6 +140,7 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	@Transactional
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));

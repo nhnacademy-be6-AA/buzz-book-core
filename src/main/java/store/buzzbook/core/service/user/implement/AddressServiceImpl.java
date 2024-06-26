@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class AddressServiceImpl implements AddressService {
 	private final UserRepository userRepository;
 	private final AddressRepository addressRepository;
 
+	@Transactional
 	@Override
 	public void createAddress(CreateAddressRequest createAddressRequest, long userId) {
 		User user = null;
@@ -48,6 +50,7 @@ public class AddressServiceImpl implements AddressService {
 		addressRepository.save(address);
 	}
 
+	@Transactional
 	@Override
 	public void deleteAddress(Long addressId, Long userId) {
 		if (!addressRepository.deleteByIdAndUserId(addressId, userId)) {
@@ -56,6 +59,7 @@ public class AddressServiceImpl implements AddressService {
 		}
 	}
 
+	@Transactional
 	@Override
 	public void updateAddress(UpdateAddressRequest updateAddressRequest, long userId) {
 		User user = null;
@@ -71,6 +75,7 @@ public class AddressServiceImpl implements AddressService {
 		addressRepository.save(address);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<Address> getAddressList(Long userId) {
 		if (!userRepository.existsById(userId)) {
