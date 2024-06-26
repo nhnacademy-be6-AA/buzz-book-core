@@ -2,9 +2,13 @@ package store.buzzbook.core.service.product;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.response.BookRequest;
 import store.buzzbook.core.dto.product.response.BookResponse;
 import store.buzzbook.core.entity.product.Book;
@@ -53,16 +57,27 @@ public class BookService {
 			.toList();
 	}
 
+	public Page<BookResponse> getAllBooks(int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		return bookRepository.findAll(pageable).map(BookResponse::convertToBookResponse);
+	}
+
 	public List<BookResponse> getAllBooksExistProductId() {
 		return bookRepository.findAllByProductIdIsNotNull().stream()
 			.map(BookResponse::convertToBookResponse)
 			.toList();
 	}
 
+	public Page<BookResponse> getAllBooksExistProductId(int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		return bookRepository.findAllByProductIdIsNotNull(pageable)
+			.map(BookResponse::convertToBookResponse);
+	}
+
 	public BookResponse getBookById(long id) {
 		Book book = bookRepository.findById(id).orElse(null);
 		if (book == null) {
-			throw new RuntimeException("book not found");
+			throw new DataNotFoundException("book", id);
 		}
 		return BookResponse.convertToBookResponse(book);
 	}
@@ -70,7 +85,7 @@ public class BookService {
 	public BookResponse getBookByProductId(int productId) {
 		Book book = bookRepository.findByProductId(productId);
 		if (book == null) {
-			throw new RuntimeException("book not found");
+			throw new DataNotFoundException("book.productId", productId);
 		}
 		return BookResponse.convertToBookResponse(book);
 	}
@@ -80,44 +95,13 @@ public class BookService {
 		return bookList.stream().map(BookResponse::convertToBookResponse).toList();
 	}
 
-	// public List<BookResponse> getAllBooks() {
-	// 	List<Book> books = bookRepository.findAll();
-	// 	return books.stream().map(this::fetchBookAuthorsAndConvertToBookResponse).toList();
-	// }
-	//
-	// public List<BookResponse> getAllBooksExistProductId() {
-	// 	List<Book> bookList = bookRepository.findAllByProductIdIsNotNull();
-	// 	return bookList.stream().map(this::fetchBookAuthorsAndConvertToBookResponse).toList();
-	// }
-	//
-	// public BookResponse getBookById(long id) {
-	// 	Book book = bookRepository.findById(id).orElse(null);
-	// 	return fetchBookAuthorsAndConvertToBookResponse(book);
-	// }
-	//
-	// public BookResponse getBookByProductId(int productId) {
-	// 	Book book = bookRepository.findByProductId(productId);
-	// 	return fetchBookAuthorsAndConvertToBookResponse(book);
-	// }
-	//
-	// public List<BookResponse> getBooksByProductIdList(List<Integer> productIdList) {
-	// 	List<Book> bookList = bookRepository.findAllByProductIdIn(productIdList);
-	// 	return bookList.stream().map(this::fetchBookAuthorsAndConvertToBookResponse).toList();
-	// }
-	//
-	// //book으로 book_author와 author 테이블을 뒤져서 response로 매핑해주는 메소드
-	// private BookResponse fetchBookAuthorsAndConvertToBookResponse(Book book) {
-	// 	if (book == null) {
-	// 		return null;
-	// 	}
-	// 	List<BookAuthor> bookAuthorList = bookAuthorRepository.findAllByBookId(book.getId());
-	// 	List<Integer> bookAuthorIdList = bookAuthorList.stream().map(BookAuthor::getId).toList();
-	// 	List<Author> authorList = authorRepository.findAllByIdIn(bookAuthorIdList);
-	// 	return BookResponse.convertToBookResponse(book, authorList);
-	// }
-
 	public BookResponse deleteBookById(long id) {
-		Book book = bookRepository.findById(id).orElseThrow();
+
+		Book book = bookRepository.findById(id).orElse(null);
+		if (book == null) {
+			throw new DataNotFoundException("book", id);
+		}
+
 		Product product = productRepository.findById(book.getProduct().getId()).orElseThrow();
 		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getPrice(),
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,

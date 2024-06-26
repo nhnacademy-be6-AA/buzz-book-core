@@ -1,7 +1,6 @@
 package store.buzzbook.core.controller.product;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,15 +40,14 @@ public class ProductController {
 	}
 
 	@GetMapping
-	@Operation(summary = "모든 상품 조회", description = "모든 상품 조회,\nRequestParam status(SALE, OUT_OF_STOCK, SOLD_OUT)가 있으면 해당하는 productList 반환")
-	public ResponseEntity<List<ProductResponse>> getAllProduct(@RequestParam(required = false) Product.StockStatus status) {
-		List<ProductResponse> productList;
+	@Operation(summary = "조건으로 상품 목록 조회", description = "입력필요")
+	public ResponseEntity<Page<ProductResponse>> getAllProduct(@RequestParam(required = false) Product.StockStatus status,
+		@RequestParam(required = false, defaultValue = "0") Integer pageNo,
+		@RequestParam(required = false, defaultValue = "10") Integer pageSize) {
 		if (status == null) {
-			productList = productService.getAllProducts();
-		} else {
-			productList = productService.getAllProductsByStockStatus(status);
+			return ResponseEntity.ok(productService.getAllProducts(pageNo, pageSize));
 		}
-		return ResponseEntity.ok(productList);
+		return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
 	}
 
 	@GetMapping("/{id}")
