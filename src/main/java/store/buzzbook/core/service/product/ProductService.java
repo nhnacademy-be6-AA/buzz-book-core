@@ -59,7 +59,7 @@ public class ProductService {
 		Product product = productRepository.findById(id).orElse(null);
 
 		if (product == null) {
-			throw new RuntimeException("Product not found");
+			throw new DataNotFoundException("product", id);
 		}
 
 		return ProductResponse.builder()
@@ -76,14 +76,15 @@ public class ProductService {
 	}
 
 	public Product updateProduct(int id, ProductUpdateRequest productRequest) {
-		Product product = productRepository.findById(id).orElse(null);
-		Category category = categoryRepository.findById(productRequest.getCategoryId()).orElse(null);
 
+		Product product = productRepository.findById(id).orElse(null);
 		if (product == null) {
-			throw new RuntimeException("Product not found");
+			throw new DataNotFoundException("product", id);
 		}
+
+		Category category = categoryRepository.findById(productRequest.getCategoryId()).orElse(null);
 		if (category == null) {
-			throw new RuntimeException("Category not found");
+			throw new DataNotFoundException("category", productRequest.getCategoryId());
 		}
 
 		Product updatedProduct = new Product(
@@ -102,7 +103,7 @@ public class ProductService {
 
 	public void deleteProduct(int productId) {
 		if (!productRepository.existsById(productId)) {
-			throw new DataNotFoundException("product",productId);
+			throw new DataNotFoundException("product", productId);
 		}
 		productRepository.deleteById(productId);
 	}
