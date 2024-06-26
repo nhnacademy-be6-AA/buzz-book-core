@@ -1,5 +1,6 @@
 package store.buzzbook.core.controller.product;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.response.BookRequest;
 import store.buzzbook.core.dto.product.response.BookResponse;
 import store.buzzbook.core.entity.product.Book;
@@ -73,7 +75,6 @@ public class BookController {
 		@RequestParam(required = false, defaultValue = "false") Boolean hasProduct,
 		@RequestParam(required = false) Integer productId) {
 
-			if (productId != null) {
 		if (productId != null) {
 			BookResponse book = bookService.getBookByProductId(productId);
 			return ResponseEntity.ok(book);
