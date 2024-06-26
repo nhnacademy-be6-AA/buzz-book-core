@@ -31,7 +31,7 @@ public class CartController {
 
 	@GetMapping
 	@Operation(summary = "장바구니 조회(비회원)", description = "카트 id로 장바구니 내용을 가져온다.")
-	public ResponseEntity<GetCartResponse> getCartByCartId(@RequestParam Long cartId) {
+	public ResponseEntity<GetCartResponse> getCartByCartId(@RequestParam("cartId") Long cartId) {
 		log.debug("장바구니 아이디로 장바구니 조회 요청 : {}", cartId);
 
 		GetCartResponse response = null;
@@ -63,8 +63,8 @@ public class CartController {
 
 	@DeleteMapping
 	@Operation(summary = "장바구니 물건 모두 제거", description = "장바구니 내용을 모두 제거한다.")
-	public ResponseEntity<Void> deleteAllCartDetail(@RequestParam Long cartDetailId) {
-		cartService.deleteAll(cartDetailId);
+	public ResponseEntity<Void> deleteAllCartDetail(@RequestParam("cartId") Long cartId) {
+		cartService.deleteAll(cartId);
 
 		return ResponseEntity.ok().build();
 	}

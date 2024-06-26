@@ -9,4 +9,5 @@ import store.buzzbook.core.entity.user.Grade;
 public record UserInfo(Long id, String loginId,
 					   String contactNumber, String name, String email,
 					   LocalDate birthday, Grade grade, boolean isAdmin) {
+
 }

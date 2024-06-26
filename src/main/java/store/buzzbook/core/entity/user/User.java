@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.UserInfo;
 
 @Builder
 @Getter
@@ -49,6 +51,7 @@ public class User {
 
 	@NotNull
 	@Size(max = 255)
+	@Email
 	private String email;
 
 	@NotNull
@@ -85,5 +88,25 @@ public class User {
 
 	public void deactivate() {
 		this.status = UserStatus.WITHDRAW;
+	}
+
+	public void activate() {
+		this.status = UserStatus.ACTIVE;
+	}
+
+	public void updateLastLogin() {
+		this.lastLoginAt = LocalDateTime.now();
+	}
+
+	public UserInfo toUserInfo(Grade grade) {
+		return UserInfo.builder()
+			.email(this.email)
+			.id(this.id)
+			.contactNumber(this.contactNumber)
+			.isAdmin(this.isAdmin)
+			.birthday(this.birthday)
+			.grade(grade)
+			.loginId(this.loginId)
+			.name(this.name).build();
 	}
 }
