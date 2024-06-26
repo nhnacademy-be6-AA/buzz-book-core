@@ -17,9 +17,7 @@ import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 
 public class OrderDetailMapper {
-	private static DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-	private static ZoneId seoulZoneId = ZoneId.of("Asia/Seoul");
+	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
 	public static ReadOrderDetailResponse toDto(OrderDetail orderDetail) {
@@ -27,7 +25,7 @@ public class OrderDetailMapper {
 			.id(orderDetail.getId())
 			.price(orderDetail.getPrice())
 			.wrap(orderDetail.isWrap())
-			.createdDate(orderDetail.getCreateDate())
+			.createdAt(orderDetail.getCreateAt())
 			.orderStatus(OrderStatusMapper.toDto(orderDetail.getOrderStatus()))
 			.quantity(orderDetail.getQuantity())
 			.product(orderDetail.getProduct())
@@ -38,9 +36,6 @@ public class OrderDetailMapper {
 
 	public static OrderDetail toEntity(CreateOrderDetailRequest createOrderDetailRequest, Order order,
 		Wrapping wrapping, Product product, OrderStatus orderStatus) {
-		LocalDateTime localDateTime = LocalDateTime.parse(createOrderDetailRequest.getCreateDate(), inputFormatter);
-		ZoneId zid = ZoneId.of("Asia/Seoul");
-		ZonedDateTime zdt = localDateTime.atZone(zid);
 
 		return OrderDetail.builder()
 			.orderStatus(orderStatus)
@@ -51,7 +46,7 @@ public class OrderDetailMapper {
 			.product(product)
 			.quantity(createOrderDetailRequest.getQuantity())
 			.order(order)
-			.createDate(ZonedDateTime.now())
+			.createAt(LocalDateTime.now())
 			.build();
 	}
 }

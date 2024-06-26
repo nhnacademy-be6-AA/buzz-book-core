@@ -1,5 +1,6 @@
 package store.buzzbook.core.entity.payment;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class BillLog {
 
 	@NotNull
 	@CreatedDate
-	private ZonedDateTime paymentDate;
+	private LocalDate paymentDate;
 
 	@NotNull
 	@ManyToOne

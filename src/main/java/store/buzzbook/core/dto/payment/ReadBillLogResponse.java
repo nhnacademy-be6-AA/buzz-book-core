@@ -19,7 +19,7 @@ public class ReadBillLogResponse {
 
 	private String payment;
 	private int price;
-	private ZonedDateTime paymentDate;
+	private String paymentDate;
 
 	private BillStatus status;
 

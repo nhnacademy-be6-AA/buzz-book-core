@@ -1,5 +1,6 @@
 package store.buzzbook.core.entity.order;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import jakarta.persistence.Entity;
@@ -60,5 +61,5 @@ public class OrderDetail {
 	private Order order;
 
 	@NotNull
-	private ZonedDateTime createDate;
+	private LocalDateTime createAt;
 }
