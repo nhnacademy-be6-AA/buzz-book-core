@@ -26,5 +26,5 @@ public class OrderStatus {
 	@NotNull
 	private String name;
 	@NotNull
-	private ZonedDateTime updateDate;
+	private ZonedDateTime updateAt;
 }

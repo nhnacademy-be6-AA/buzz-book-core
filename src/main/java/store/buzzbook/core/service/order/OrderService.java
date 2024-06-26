@@ -52,6 +52,7 @@ import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.user.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +65,7 @@ public class OrderService {
 	private final WrappingRepository wrappingRepository;
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
+	private final UserService userService;
 
 
 	public Map<String, Object> readOrders(ReadOrderRequest request) {
@@ -134,14 +136,14 @@ public class OrderService {
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		log.warn("OrderService createOrder {}", createOrderRequest.getDeliveryPolicyId());
-		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(createOrderRequest
-			.getDeliveryPolicyId()).orElseThrow(()-> new IllegalArgumentException("Delivery Policy not found"));
 
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 
-		User user = userRepository.findByLoginId(createOrderRequest.getLoginId()).orElseThrow(()-> new IllegalArgumentException("User not found"));
+		UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
 
-		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, deliveryPolicy, user));
+		User user = userRepository.findById(userInfo.id())
+			.orElseThrow(() -> new IllegalArgumentException("User not found"));
+		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
