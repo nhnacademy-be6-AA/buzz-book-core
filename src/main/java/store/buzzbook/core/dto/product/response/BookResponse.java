@@ -1,8 +1,6 @@
 package store.buzzbook.core.dto.product.response;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.lang.Nullable;

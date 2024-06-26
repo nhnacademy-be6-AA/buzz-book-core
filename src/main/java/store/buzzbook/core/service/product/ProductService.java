@@ -33,6 +33,7 @@ public class ProductService {
 		Product product = Product.builder()
 			.stock(productReq.getStock())
 			.productName(productReq.getProductName())
+			.description(productReq.getDescription() == null ? null : productReq.getDescription())
 			.price(productReq.getPrice())
 			.forwardDate(LocalDate.parse(productReq.getForwardDate()))
 			.score(productReq.getScore())
@@ -104,6 +105,7 @@ public class ProductService {
 			product.getId(),
 			productRequest.getStock(),
 			productRequest.getProductName(),
+			productRequest.getDescription() == null ? product.getDescription() : productRequest.getDescription(),
 			productRequest.getPrice(),
 			product.getForwardDate(),
 			product.getScore(),

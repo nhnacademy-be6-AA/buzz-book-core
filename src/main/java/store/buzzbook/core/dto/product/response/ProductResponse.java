@@ -17,6 +17,7 @@ public class ProductResponse {
 	private int id;
 	private int stock;
 	private String productName;
+	private String description;
 	private int price;
 	private LocalDate forwardDate;
 	private int score;
@@ -29,6 +30,7 @@ public class ProductResponse {
 			.id(product.getId())
 			.stock(product.getStock())
 			.productName(product.getProductName())
+			.description(product.getDescription())
 			.price(product.getPrice())
 			.forwardDate(product.getForwardDate())
 			.score(product.getScore())
