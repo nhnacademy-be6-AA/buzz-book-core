@@ -29,7 +29,7 @@ public class BookController {
 	private final BookService bookService;
 
 	@GetMapping("/{id}")
-	@Operation(summary = "id로 단일 책 조회", description = "PathVariable long id로 단일 책 조회")
+	@Operation(summary = "id로 단일 책 조회", description = "long id로 단일 책 조회")
 	public ResponseEntity<BookResponse> getBookById(@PathVariable long id) {
 		BookResponse book;
 		try {
@@ -61,31 +61,26 @@ public class BookController {
 
 
 	@GetMapping
-	@Operation(summary = "조건으로 책 목록 조회", description = """
-		다양한 조건에 따라 책 목록을 조회합니다.
-
-		Integer productId=productId : productId로 책 단일 조회
-
-		boolean hasProduct=true : 상품으로 등록된 책들만 조회
+	@Operation(summary = "조건으로 책 목록 조회", description =
 		"""
+			조건이 없을경우 모든 책 조회후 page<bookResponse>로 반환
+			boolean hasProduct=true : 상품으로 등록된 책들만 조회
+			int productId = {product_id} : product_id로 단일 책 조회 후 bookResponse 반환
+			"""
 	)
-	public ResponseEntity<Object> getBooks(
-		// @RequestBody(required = false) List<Integer> productIdList,
-		@RequestParam(required = false) Integer productId,
-		@RequestParam(required = false, defaultValue = "false") boolean hasProduct
-	) {
 
-			if (productId != null) {
-			// Case 2: RequestBody int productId 값이 있으면
+	public ResponseEntity<?> getBooks(
+		@RequestParam(required = false, defaultValue = "0") Integer pageNo,
+		@RequestParam(required = false, defaultValue = "10") Integer pageSize,
+		@RequestParam(required = false, defaultValue = "false") Boolean hasProduct,
+		@RequestParam(required = false) Integer productId) {
+
+		if (productId != null) {
 			BookResponse book = bookService.getBookByProductId(productId);
 			return ResponseEntity.ok(book);
-		} else {
-			// Case 3: RequestBody가 없고, boolean hasProduct 값에 따라 처리
-			if (hasProduct) {
-				return ResponseEntity.ok(bookService.getAllBooksExistProductId());
-			} else {
-				return ResponseEntity.ok(bookService.getAllBooks());
-			}
+		} else if (Boolean.TRUE.equals(hasProduct)) {
+			return ResponseEntity.ok(bookService.getAllBooksExistProductId(pageNo, pageSize));
 		}
+		return ResponseEntity.ok(bookService.getAllBooks(pageNo, pageSize));
 	}
 }
