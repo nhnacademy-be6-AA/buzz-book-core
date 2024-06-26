@@ -12,13 +12,14 @@ import store.buzzbook.core.entity.product.Product;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class OrderDetailResponse {
+public class ReadOrderDetailResponse {
 	private long id;
 	private int price;
 	private int quantity;
 	private boolean wrap;
 	private ZonedDateTime createdDate;
-	private OrderStatusResponse orderStatus;
-	private WrappingResponse wrapping;
+	private ReadOrderStatusResponse orderStatus;
+	private ReadWrappingResponse wrapping;
 	private Product product;
+	// private ReadOrderResponse readOrderResponse;
 }

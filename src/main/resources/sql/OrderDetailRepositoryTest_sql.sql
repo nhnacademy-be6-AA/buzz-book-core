@@ -1,22 +1,10 @@
-INSERT INTO `user` (
-    name
-) values (
-    'ps'
-);
-
-INSERT INTO `category` (
-    name
-) values (
-    'IT'
-);
-
 INSERT INTO `delivery_policy` (
     name,
     standard_price,
     policy_price
 ) values (
           '정책1', 1000, 1000
-         );
+);
 
 INSERT INTO `order_status` (
     update_date, name
@@ -30,26 +18,8 @@ INSERT INTO `wrapping` (
     '신문지', 1000
 );
 
-INSERT INTO product (
-    stock,
-    price,
-    forward_date,
-    score,
-    thumbnail_path,
-    category_id,
-                     book_id
-) VALUES (
-             1,
-             1000.00,
-             '2024-01-01',
-             1,
-             'path/to/thumbnail.jpg',
-             2,
-          1
-         );
-
-
 INSERT INTO `order` (
+    order_str,
     price,
     request,
     address,
@@ -60,6 +30,7 @@ INSERT INTO `order` (
     delivery_policy_id,
     user_id
 ) VALUES (
+          'fsfsdsfds',
              1000,
              '감사합니다.',
              '광주',

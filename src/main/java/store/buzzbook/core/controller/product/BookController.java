@@ -29,7 +29,12 @@ public class BookController {
 	@GetMapping("/{id}")
 	@Operation(summary = "id로 단일 책 조회", description = "long id로 단일 책 조회")
 	public ResponseEntity<BookResponse> getBookById(@PathVariable long id) {
-		BookResponse book = bookService.getBookById(id);
+		BookResponse book;
+		try {
+			book = bookService.getBookById(id);
+		} catch (DataNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
 		return ResponseEntity.ok(book);
 	}
 
@@ -43,9 +48,15 @@ public class BookController {
 	@DeleteMapping("/{id}")
 	@Operation(summary = "id로 책 삭제", description = "PathVariable long id로 도서 논리 삭제(product.product_status=SOLD_OUT, product.stock=0, book.product_id=null)")
 	public ResponseEntity<BookResponse> deleteBookById(@PathVariable long id) {
-		BookResponse bookResponse = bookService.deleteBookById(id);
+		BookResponse bookResponse;
+		try {
+			bookResponse = bookService.deleteBookById(id);
+		}catch (DataNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 		return ResponseEntity.ok(bookResponse);
 	}
+
 
 	@GetMapping
 	@Operation(summary = "조건으로 책 목록 조회", description =
@@ -62,6 +73,7 @@ public class BookController {
 		@RequestParam(required = false, defaultValue = "false") Boolean hasProduct,
 		@RequestParam(required = false) Integer productId) {
 
+			if (productId != null) {
 		if (productId != null) {
 			BookResponse book = bookService.getBookByProductId(productId);
 			return ResponseEntity.ok(book);

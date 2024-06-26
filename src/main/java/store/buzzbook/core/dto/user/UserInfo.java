@@ -7,7 +7,7 @@ import lombok.Builder;
 import store.buzzbook.core.entity.user.Grade;
 
 @Builder
-public record UserInfo(String loginId,
+public record UserInfo(Long id, String loginId,
 					   String contactNumber, String name, String email,
 					   LocalDate birthday, Grade grade, boolean isAdmin) {
 }

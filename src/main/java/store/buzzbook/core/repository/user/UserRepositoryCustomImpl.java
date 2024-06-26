@@ -40,6 +40,14 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	}
 
 	@Override
+	public boolean updateStatus(Long userId, UserStatus status) {
+		return jpaQueryFactory.update(user)
+			.set(user.status, status)
+			.where(user.id.eq(userId))
+			.execute() > 0;
+	}
+
+	@Override
 	public boolean updateStatus(String loginId, UserStatus status) {
 		return jpaQueryFactory.update(user)
 			.set(user.status, status)

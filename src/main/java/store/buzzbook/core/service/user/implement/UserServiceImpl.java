@@ -1,11 +1,11 @@
 package store.buzzbook.core.service.user.implement;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
@@ -13,7 +13,6 @@ import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -68,12 +67,15 @@ public class UserServiceImpl implements UserService {
 		String loginId = registerUserRequest.loginId();
 		String successRegister = "회원가입 성공";
 
+		Grade grade = gradeRepository.findByName(GradeName.NORMAL)
+			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
+
 		if (userRepository.existsByLoginId(loginId)) {
 			log.warn("유저 아이디 {} 중복 회원가입 실패 ", loginId);
 			throw new UserAlreadyExistsException(loginId);
 		}
 
-		User requestUser = convertToUser(registerUserRequest);
+		User requestUser = registerUserRequest.toUser(grade);
 		userRepository.save(requestUser);
 
 		return RegisterUserResponse.builder()
@@ -85,9 +87,14 @@ public class UserServiceImpl implements UserService {
 
 	@Transactional
 	@Override
-	public boolean deactivate(String loginId, String reason) {
-		User user = userRepository.findByLoginId(loginId)
-			.orElseThrow(() -> new UserNotFoundException(loginId));
+	public boolean deactivate(Long userId, String reason) {
+		User user = null;
+		try {
+			user = userRepository.getReferenceById(userId);
+		} catch (EntityNotFoundException e) {
+			log.warn("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
+			throw new UserNotFoundException(userId);
+		}
 
 		Deactivation deactivation = Deactivation.builder()
 			.deactivationDate(ZonedDateTime.now())
@@ -96,12 +103,12 @@ public class UserServiceImpl implements UserService {
 
 		Deactivation savedData = deactivationRepository.save(deactivation);
 
-		if (userRepository.updateStatus(loginId, UserStatus.DORMANT)) {
-			log.error("계정 상태 휴면화 중 오류가 발생했습니다. : {} ", loginId);
-			throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", loginId));
+		if (userRepository.updateStatus(userId, UserStatus.WITHDRAW)) {
+			log.error("계정 탈퇴 중 오류가 발생했습니다. : {} ", userId);
+			throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", userId));
 		}
 
-		return savedData.getUser().getLoginId().equals(loginId);
+		return savedData.getUser().getId().equals(userId);
 	}
 
 	@Override
@@ -124,32 +131,15 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
 		return UserInfo.builder()
+			.id(user.getId())
 			.name(user.getName())
 			.loginId(user.getLoginId())
 			.birthday(user.getBirthday())
 			.isAdmin(user.isAdmin())
-			// .grade(user.getGrade())
+			.grade(user.getGrade())
 			.contactNumber(user.getContactNumber())
 			.email(user.getEmail())
 			.build();
 	}
 
-	private User convertToUser(RegisterUserRequest request) {
-		Grade grade = gradeRepository.findByName(GradeName.NORMAL)
-			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
-
-		return User.builder()
-			.loginId(request.loginId())
-			.name(request.name())
-			// .grade(grade)
-			.password(request.password())
-			.birthday(LocalDate.parse(request.birthday()))
-			.createDate(ZonedDateTime.now())
-			.email(request.email())
-			.modifyDate(null)
-			.contactNumber(request.contactNumber())
-			.lastLoginDate(null)
-			.status(UserStatus.ACTIVE)
-			.isAdmin(false).build();
-	}
 }

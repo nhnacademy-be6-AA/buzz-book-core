@@ -1,11 +1,11 @@
 package store.buzzbook.core.mapper.order;
 
-import store.buzzbook.core.dto.order.OrderStatusResponse;
+import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.entity.order.OrderStatus;
 
 public class OrderStatusMapper {
-	public static OrderStatusResponse toDto(OrderStatus orderStatus) {
-		return OrderStatusResponse.builder()
+	public static ReadOrderStatusResponse toDto(OrderStatus orderStatus) {
+		return ReadOrderStatusResponse.builder()
 			.id(orderStatus.getId())
 			.name(orderStatus.getName())
 			.updateDate(orderStatus.getUpdateDate())
