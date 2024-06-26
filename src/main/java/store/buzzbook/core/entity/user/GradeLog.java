@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.user;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,9 +31,9 @@ public class GradeLog {
 	private Long id;
 
 	@NotNull
-	@Column(name = "change_date")
+	@Column(name = "change_at")
 	@Past
-	private String changeDate;
+	private LocalDateTime changeAt;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)

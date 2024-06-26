@@ -1,5 +1,6 @@
 package store.buzzbook.core.repository.order;
 
+import static store.buzzbook.core.entity.order.QDeliveryPolicy.*;
 import static store.buzzbook.core.entity.order.QOrder.*;
 import static store.buzzbook.core.entity.order.QOrderDetail.*;
 import static store.buzzbook.core.entity.user.QUser.*;
@@ -72,7 +73,8 @@ public class OrderQuerydslRepositoryImpl extends QuerydslRepositorySupport imple
 
 			switch (key) {
 				case "price" -> FunctionUtil.orderDescFilter(orderBy, value, order.price, "price");
-				case "deliveryPolicyId" -> FunctionUtil.orderDescFilter(orderBy, value, order.deliveryPolicy, "deliveryPolicyId");
+				case "deliveryPolicyId" ->
+					FunctionUtil.orderDescFilter(orderBy, value, deliveryPolicy.id, "deliveryPolicyId");
 				case "loginId" -> FunctionUtil.orderDescFilter(orderBy, value, order.user.loginId, "loginId");
 
 				default -> {

@@ -1,6 +1,7 @@
 package store.buzzbook.core.entity.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.ColumnDefault;
 
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "user")
+@Table(name = "`user`")
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,17 +57,17 @@ public class User {
 
 	@NotNull
 	@Past
-	private String birthday;
+	private LocalDate birthday;
 
 	@NotNull
 	@Column(name = "created_at")
 	@Past
-	private ZonedDateTime createAt;
+	private LocalDateTime createAt;
 
 	@NotNull
 	@Column(name = "last_login_at")
 	@Past
-	private ZonedDateTime lastLoginAt;
+	private LocalDateTime lastLoginAt;
 
 	@NotNull
 	@Enumerated(value = EnumType.STRING)
@@ -75,7 +76,7 @@ public class User {
 	@NotNull
 	@Column(name = "modify_at")
 	@Past
-	private ZonedDateTime modifyAt;
+	private LocalDateTime modifyAt;
 
 	@NotNull
 	@Column(name = "is_admin")

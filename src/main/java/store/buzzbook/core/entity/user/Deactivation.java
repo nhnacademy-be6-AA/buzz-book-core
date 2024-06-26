@@ -1,6 +1,6 @@
 package store.buzzbook.core.entity.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,7 +35,7 @@ public class Deactivation {
 
 	@NotNull
 	@Column(name = "deactivation_at")
-	private ZonedDateTime deactivationAt;
+	private LocalDateTime deactivationAt;
 
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)

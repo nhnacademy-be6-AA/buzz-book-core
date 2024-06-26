@@ -1,6 +1,6 @@
 package store.buzzbook.core.entity.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +49,6 @@ public class UserAuth {
 	@NotNull
 	@Past
 	@Column(name = "created_at")
-	private ZonedDateTime createdAt;
+	private LocalDateTime createdAt;
 
 }

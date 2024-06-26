@@ -1,6 +1,7 @@
 package store.buzzbook.core.repository.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -8,20 +9,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.EntityManager;
 import store.buzzbook.core.common.config.QuerydslConfig;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QuerydslConfig.class)
 @DataJpaTest
 class AddressRepositoryTest {
@@ -55,11 +53,11 @@ class AddressRepositoryTest {
 			.name("john doe")
 			.email("email123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.birthday(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
-			.modifyAt(ZonedDateTime.now())
-			.createAt(ZonedDateTime.now())
+			.birthday(LocalDate.now())
+			.modifyAt(LocalDateTime.now())
+			.createAt(LocalDateTime.now())
 			.password("encrytedsolongpassword123345")
-			.lastLoginAt(ZonedDateTime.now())
+			.lastLoginAt(LocalDateTime.now())
 			.status(UserStatus.ACTIVE).build();
 		userRepository.save(user);
 

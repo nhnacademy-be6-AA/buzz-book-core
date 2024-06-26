@@ -1,6 +1,6 @@
 package store.buzzbook.core.service.user.implement;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -13,7 +13,6 @@ import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -86,7 +85,7 @@ public class UserServiceImpl implements UserService {
 		GradeLog gradeLog = GradeLog.builder()
 			.grade(grade)
 			.user(savedUser)
-			.changeDate(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
+			.changeAt(LocalDateTime.now())
 			.build();
 
 		gradeLogRepository.save(gradeLog);
@@ -118,7 +117,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		Deactivation deactivation = Deactivation.builder()
-			.deactivationAt(ZonedDateTime.now())
+			.deactivationAt(LocalDateTime.now())
 			.reason(reason)
 			.user(user.get()).build();
 
@@ -158,7 +157,7 @@ public class UserServiceImpl implements UserService {
 			.id(user.getId())
 			.name(user.getName())
 			.loginId(user.getLoginId())
-			.birthday(ZonedDateTimeParser.toDate(user.getBirthday()))
+			.birthday(user.getBirthday())
 			.isAdmin(user.isAdmin())
 			.contactNumber(user.getContactNumber())
 			.email(user.getEmail())

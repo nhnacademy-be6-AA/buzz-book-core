@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.point;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,9 +18,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.user.User;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -38,18 +37,18 @@ public class PointLog {
 	private User user;
 
 	@NotNull
-	@Column(nullable = false, name = "create_date")
-	private ZonedDateTime createDate;
+	@Column(nullable = false, name = "created_at")
+	private LocalDateTime createdAt;
 
 	@NotNull
 	@Column(nullable = false)
 	private String inquiry;
 
 	@NotNull
-	@Column(nullable = false, precision = 10, scale = 2, columnDefinition = "default `0.00`")
+	@Column(nullable = false)
 	private int delta;
 
 	@NotNull
-	@Column(nullable = false, precision = 10, scale = 2, columnDefinition = "default `0.00`")
+	@Column(nullable = false)
 	private int balance;
 }
