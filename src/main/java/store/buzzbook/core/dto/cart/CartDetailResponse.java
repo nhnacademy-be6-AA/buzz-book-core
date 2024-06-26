@@ -10,5 +10,6 @@ public class CartDetailResponse {
 	private int productId;
 	private String productName;
 	private int quantity;
+	private int price;
 	private String thumbnailPath;
 }

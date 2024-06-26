@@ -64,7 +64,7 @@ public class CartController {
 	@DeleteMapping
 	@Operation(summary = "장바구니 물건 모두 제거", description = "장바구니 내용을 모두 제거한다.")
 	public ResponseEntity<Void> deleteAllCartDetail(@RequestParam Long cartDetailId) {
-		cartService.deleteCartDetail(cartDetailId);
+		cartService.deleteAll(cartDetailId);
 
 		return ResponseEntity.ok().build();
 	}
