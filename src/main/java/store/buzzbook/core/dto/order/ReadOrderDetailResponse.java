@@ -1,6 +1,7 @@
 package store.buzzbook.core.dto.order;
 
-import java.time.ZonedDateTime;
+
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class ReadOrderDetailResponse {
 	private int price;
 	private int quantity;
 	private boolean wrap;
-	private ZonedDateTime createdDate;
+	private LocalDateTime createdAt;
 	private ReadOrderStatusResponse orderStatus;
 	private ReadWrappingResponse wrapping;
 	private Product product;

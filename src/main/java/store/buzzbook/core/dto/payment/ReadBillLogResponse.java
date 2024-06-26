@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.payment;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class ReadBillLogResponse {
 
 	private String payment;
 	private int price;
-	private ZonedDateTime paymentDate;
+	private LocalDate paymentDate;
 
 	private BillStatus status;
 

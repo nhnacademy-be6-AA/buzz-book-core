@@ -1,5 +1,6 @@
 package store.buzzbook.core.service.payment;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,28 +37,15 @@ public class PaymentService {
 
 	public ReadBillLogResponse createBillLog(ReadPaymentResponse readPaymentResponse) {
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId())
-			.stream()
-			.map(
-				OrderDetailMapper::toDto)
-			.toList();
-		BillLog billLog = billLogRepository.save(
-			BillLog.builder()
-				.price(readPaymentResponse.getTotalAmount())
-				.paymentKey(
-					UUID.fromString(readPaymentResponse.getPaymentKey()))
-				.order(order)
-				.status(BillStatus.valueOf(readPaymentResponse.getStatus()))
-				.payment(readPaymentResponse.getMethod())
-				.paymentDate(ZonedDateTime.now())
-				.build());
-		UserInfo userInfo = UserInfo.builder()
-			.email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId())
-			.isAdmin(order.getUser().isAdmin())
-			.contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday())
-			.build();
+		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
+			OrderDetailMapper::toDto).toList();
+		BillLog billLog = billLogRepository.save(BillLog.builder().price(readPaymentResponse.getTotalAmount()).paymentKey(
+				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
+			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).paymentDate(
+				LocalDate.now()).build());
+		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
@@ -67,21 +55,14 @@ public class PaymentService {
 		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
 
 		for (BillLog billLog : billLogs) {
-			Order order = orderRepository.findById(billLog.getOrder().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Order not found"));
-			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(
-				order.getId()).stream().map(
+			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			UserInfo userInfo = UserInfo.builder()
-				.email(order.getUser().getEmail())
-				.loginId(order.getUser().getLoginId())
-				.isAdmin(order.getUser().isAdmin())
-				.contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday())
-				.build();
+			UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday()).build();
 
-			readBillLogRespons.add(
-				BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
+			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
 		}
 
 		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
@@ -92,21 +73,14 @@ public class PaymentService {
 		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
 
 		for (BillLog billLog : billLogs) {
-			Order order = orderRepository.findById(billLog.getOrder().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Order not found"));
-			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(
-				order.getId()).stream().map(
+			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 				OrderDetailMapper::toDto).toList();
-			UserInfo userInfo = UserInfo.builder()
-				.email(order.getUser().getEmail())
-				.loginId(order.getUser().getLoginId())
-				.isAdmin(order.getUser().isAdmin())
-				.contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday())
-				.build();
+			UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday()).build();
 
-			readBillLogRespons.add(
-				BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
+			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
 		}
 
 		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
@@ -115,18 +89,11 @@ public class PaymentService {
 	public ReadBillLogResponse readBillLog(long userId, String orderId) {
 		BillLog billLog = billLogRepository.findByUserIdAndId(userId, orderId);
 		Order order = orderRepository.findByOrderStr(orderId);
-		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId())
-			.stream()
-			.map(
-				OrderDetailMapper::toDto)
-			.toList();
-		UserInfo userInfo = UserInfo.builder()
-			.email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId())
-			.isAdmin(order.getUser().isAdmin())
-			.contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday())
-			.build();
+		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
+			OrderDetailMapper::toDto).toList();
+		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
