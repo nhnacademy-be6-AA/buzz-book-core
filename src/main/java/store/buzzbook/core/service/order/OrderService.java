@@ -140,7 +140,7 @@ public class OrderService {
 
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 
-		UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
 
 		User user = userRepository.findById(userInfo.id())
 			.orElseThrow(() -> new IllegalArgumentException("User not found"));
