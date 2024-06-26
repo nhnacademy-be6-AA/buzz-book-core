@@ -6,6 +6,9 @@ import static store.buzzbook.core.dto.product.response.ProductResponse.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +55,16 @@ public class ProductService {
 		return productRepository.findAllByStockStatus(stockStatus).stream()
 			.map(ProductResponse::convertToProductResponse)
 			.toList();
+	}
+
+	public Page<ProductResponse> getAllProducts(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAll(pageable).map(ProductResponse::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByStockStatus(stockStatus, pageable).map(ProductResponse::convertToProductResponse);
 	}
 
 
