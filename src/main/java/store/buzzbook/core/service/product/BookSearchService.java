@@ -147,10 +147,9 @@ public class BookSearchService {
 				int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;	//재고관리필요
 				String productName = item.getTitle();
 				int price = item.getPricestandard();
-				ZonedDateTime forwardDate;
+				LocalDate forwardDate;
 				try {
-					LocalDate localDate = LocalDate.parse(item.getPubDate(), dateFormatter);
-					forwardDate = localDate.atStartOfDay(ZoneId.systemDefault());
+					forwardDate = LocalDate.parse(item.getPubDate(), dateFormatter);
 				} catch (DateTimeParseException e) {
 					log.error("날짜 파싱 오류: {}", item.getPubDate(), e);
 					continue;
