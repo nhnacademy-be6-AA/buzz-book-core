@@ -19,7 +19,10 @@ public class CreateOrderRequest {
 	private int zipcode;
 	private String desiredDeliveryDate;
 	private String receiver;
-	private int deliveryPolicyId;
+	private Integer deliveryPolicyId;
 	private String loginId;
 	private List<CreateOrderDetailRequest> details;
+	private String contactNumber;
+	private String email;
+	private Integer orderStatusId;
 }

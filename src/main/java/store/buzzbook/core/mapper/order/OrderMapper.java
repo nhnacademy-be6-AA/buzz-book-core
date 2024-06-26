@@ -35,7 +35,7 @@ public class OrderMapper {
 			.build();
 	}
 
-	public static Order toEntity(CreateOrderRequest createOrderRequest, DeliveryPolicy deliveryPolicy, User user) {
+	public static Order toEntity(CreateOrderRequest createOrderRequest, User user) {
 
 		return Order.builder()
 			.user(user)
