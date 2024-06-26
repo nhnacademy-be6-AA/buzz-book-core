@@ -47,14 +47,6 @@ public class BookController {
 		return ResponseEntity.ok(bookResponse);
 	}
 
-	//
-	// @GetMapping("/product")
-	// @Operation(summary = "product_id List로 다수의 책 조회", description = "RequestBody List<Integer> product_id List로 다수의 책 조회")
-	// public ResponseEntity<List<BookResponse>> getAllBooksByProductIdList(@RequestBody List<Integer> productIdList) {
-	// 	List<BookResponse> bookList = bookService.getBooksByProductIdList(productIdList);
-	// 	return ResponseEntity.ok(bookList);
-	// }
-	//
 
 
 	@GetMapping
@@ -71,11 +63,6 @@ public class BookController {
 		@RequestParam(required = false) Integer productId,
 		@RequestParam(required = false, defaultValue = "false") boolean hasProduct
 	) {
-		// if (productIdList != null && !productIdList.isEmpty()) {
-		// 	// Case 1: RequestBody List<Integer> productIdList 값이 있으면
-		// 	List<BookResponse> bookList = bookService.getBooksByProductIdList(productIdList);
-		// 	return ResponseEntity.ok(bookList);
-		// } else
 
 			if (productId != null) {
 			// Case 2: RequestBody int productId 값이 있으면
