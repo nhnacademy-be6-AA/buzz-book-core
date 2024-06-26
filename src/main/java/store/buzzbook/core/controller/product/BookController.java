@@ -1,5 +1,6 @@
 package store.buzzbook.core.controller.product;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.response.BookRequest;
 import store.buzzbook.core.dto.product.response.BookResponse;
 import store.buzzbook.core.entity.product.Book;
@@ -29,7 +31,12 @@ public class BookController {
 	@GetMapping("/{id}")
 	@Operation(summary = "id로 단일 책 조회", description = "PathVariable long id로 단일 책 조회")
 	public ResponseEntity<BookResponse> getBookById(@PathVariable long id) {
-		BookResponse book = bookService.getBookById(id);
+		BookResponse book;
+		try {
+			book = bookService.getBookById(id);
+		} catch (DataNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
 		return ResponseEntity.ok(book);
 	}
 
@@ -43,18 +50,14 @@ public class BookController {
 	@DeleteMapping("/{id}")
 	@Operation(summary = "id로 책 삭제", description = "PathVariable long id로 도서 논리 삭제(product.product_status=SOLD_OUT, product.stock=0, book.product_id=null)")
 	public ResponseEntity<BookResponse> deleteBookById(@PathVariable long id) {
-		BookResponse bookResponse = bookService.deleteBookById(id);
+		BookResponse bookResponse;
+		try {
+			bookResponse = bookService.deleteBookById(id);
+		}catch (DataNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
 		return ResponseEntity.ok(bookResponse);
 	}
-
-	//
-	// @GetMapping("/product")
-	// @Operation(summary = "product_id List로 다수의 책 조회", description = "RequestBody List<Integer> product_id List로 다수의 책 조회")
-	// public ResponseEntity<List<BookResponse>> getAllBooksByProductIdList(@RequestBody List<Integer> productIdList) {
-	// 	List<BookResponse> bookList = bookService.getBooksByProductIdList(productIdList);
-	// 	return ResponseEntity.ok(bookList);
-	// }
-	//
 
 
 	@GetMapping
@@ -71,11 +74,6 @@ public class BookController {
 		@RequestParam(required = false) Integer productId,
 		@RequestParam(required = false, defaultValue = "false") boolean hasProduct
 	) {
-		// if (productIdList != null && !productIdList.isEmpty()) {
-		// 	// Case 1: RequestBody List<Integer> productIdList 값이 있으면
-		// 	List<BookResponse> bookList = bookService.getBooksByProductIdList(productIdList);
-		// 	return ResponseEntity.ok(bookList);
-		// } else
 
 			if (productId != null) {
 			// Case 2: RequestBody int productId 값이 있으면

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.product.ProductNotFoundException;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.response.ProductRequest;
 import store.buzzbook.core.dto.product.response.ProductResponse;
 import store.buzzbook.core.dto.product.response.ProductUpdateRequest;
@@ -73,8 +73,8 @@ public class ProductController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@ExceptionHandler(ProductNotFoundException.class)
-	public ResponseEntity<String> handleProductNotFoundException(ProductNotFoundException ex) {
+	@ExceptionHandler(DataNotFoundException.class)
+	public ResponseEntity<String> handleProductNotFoundException(DataNotFoundException ex) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
 	}
 }
