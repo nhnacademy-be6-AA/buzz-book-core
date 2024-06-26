@@ -1,19 +1,20 @@
 package store.buzzbook.core.service.product;
 
 import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
+import static store.buzzbook.core.dto.product.response.ProductResponse.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.product.ProductNotFoundException;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.response.ProductRequest;
 import store.buzzbook.core.dto.product.response.ProductResponse;
 import store.buzzbook.core.dto.product.response.ProductUpdateRequest;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.CategoryRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 
@@ -23,7 +24,6 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
-	private final BookRepository bookRepository;
 
 	public ProductResponse saveProduct(ProductRequest productReq) {
 		Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
@@ -31,7 +31,7 @@ public class ProductService {
 			.stock(productReq.getStock())
 			.productName(productReq.getProductName())
 			.price(productReq.getPrice())
-			.forwardDate(productReq.getForwardDate())
+			.forwardDate(LocalDate.parse(productReq.getForwardDate()))
 			.score(productReq.getScore())
 			.thumbnailPath(productReq.getThumbnailPath())
 			.stockStatus(productReq.getStockStatus())
@@ -47,6 +47,13 @@ public class ProductService {
 			.map(ProductResponse::convertToProductResponse)
 			.toList();
 	}
+
+	public List<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus) {
+		return productRepository.findAllByStockStatus(stockStatus).stream()
+			.map(ProductResponse::convertToProductResponse)
+			.toList();
+	}
+
 
 	public ProductResponse getProductById(int id) {
 		Product product = productRepository.findById(id).orElse(null);
@@ -88,28 +95,15 @@ public class ProductService {
 			product.getScore(),
 			product.getThumbnailPath(),
 			productRequest.getStockStatus(),
-			category);
+			category, null);
 
 		return productRepository.save(updatedProduct);
 	}
 
 	public void deleteProduct(int productId) {
 		if (!productRepository.existsById(productId)) {
-			throw new ProductNotFoundException("존재 하지않은 상품입니다. id : " + productId);
+			throw new DataNotFoundException("product",productId);
 		}
 		productRepository.deleteById(productId);
-	}
-
-	private ProductResponse convertToProductResponse(Product product) {
-		return ProductResponse.builder()
-			.id(product.getId())
-			.stock(product.getStock())
-			.price(product.getPrice())
-			.forwardDate(product.getForwardDate())
-			.score(product.getScore())
-			.thumbnailPath(product.getThumbnailPath())
-			.productName(product.getProductName())
-			.stockStatus(product.getStockStatus())
-			.build();
 	}
 }
