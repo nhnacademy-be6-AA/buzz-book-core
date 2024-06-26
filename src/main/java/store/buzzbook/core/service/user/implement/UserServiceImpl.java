@@ -13,6 +13,8 @@ import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.common.service.CouponProducerService;
+import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -38,6 +40,7 @@ public class UserServiceImpl implements UserService {
 	private final GradeRepository gradeRepository;
 	private final DeactivationRepository deactivationRepository;
 	private final GradeLogRepository gradeLogRepository;
+	private final CouponProducerService couponProducerService;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -91,7 +94,10 @@ public class UserServiceImpl implements UserService {
 			.build();
 
 		gradeLogRepository.save(gradeLog);
-		//todo 쿠폰 처리
+
+		couponProducerService.sendWelcomeCouponRequest(CreateWelcomeCouponRequest.builder()
+				.userId(savedUser.getId())
+				.build());
 
 		return RegisterUserResponse.builder()
 			.name(requestUser.getName())
