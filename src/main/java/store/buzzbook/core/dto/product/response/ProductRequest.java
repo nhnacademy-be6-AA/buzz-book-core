@@ -9,6 +9,7 @@ import store.buzzbook.core.entity.product.Product;
 public class ProductRequest {
 	private int stock;
 	private String productName;
+	private String description;
 	private int price;
 	private String forwardDate; //("YYYY-MM-DD")형식 or validation 필요
 	private int score;
