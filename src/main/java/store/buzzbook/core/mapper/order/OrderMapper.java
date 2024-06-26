@@ -46,7 +46,7 @@ public class OrderMapper {
 			.zipcode(createOrderRequest.getZipcode())
 			.address(createOrderRequest.getAddress())
 			.addressDetail(createOrderRequest.getAddressDetail())
-			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate()))
+			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate(), formatter))
 			.build();
 	}
 }

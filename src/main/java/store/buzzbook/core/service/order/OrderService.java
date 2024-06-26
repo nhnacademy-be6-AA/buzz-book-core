@@ -152,8 +152,12 @@ public class OrderService {
 			detail.setOrderId(order.getId());
 			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
 				.orElseThrow(()-> new IllegalArgumentException("Order Status not found"));
-			Wrapping wrapping = wrappingRepository.findById(detail.getWrappingId())
-				.orElseThrow(()-> new IllegalArgumentException("Wrapping not found"));
+			Wrapping wrapping = null;
+			if (!detail.isWrap()) {
+				wrapping = wrappingRepository.findById(1)
+					.orElseThrow(()-> new IllegalArgumentException("Wrapping not found"));
+			}
+
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(()-> new IllegalArgumentException("Product not found"));
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
