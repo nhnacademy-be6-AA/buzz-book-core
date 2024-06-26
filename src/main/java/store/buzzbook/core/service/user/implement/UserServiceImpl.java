@@ -13,6 +13,7 @@ import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -74,7 +75,7 @@ public class UserServiceImpl implements UserService {
 			throw new UserAlreadyExistsException(loginId);
 		}
 
-		User requestUser = registerUserRequest.toUser(grade);
+		User requestUser = registerUserRequest.toUser();
 		userRepository.save(requestUser);
 
 		return RegisterUserResponse.builder()
@@ -103,7 +104,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		Deactivation deactivation = Deactivation.builder()
-			.deactivationDate(ZonedDateTime.now())
+			.deactivationAt(ZonedDateTime.now())
 			.reason(reason)
 			.user(user.get()).build();
 
@@ -143,9 +144,8 @@ public class UserServiceImpl implements UserService {
 			.id(user.getId())
 			.name(user.getName())
 			.loginId(user.getLoginId())
-			.birthday(user.getBirthday())
+			.birthday(ZonedDateTimeParser.toDate(user.getBirthday()))
 			.isAdmin(user.isAdmin())
-			.grade(user.getGrade())
 			.contactNumber(user.getContactNumber())
 			.email(user.getEmail())
 			.build();

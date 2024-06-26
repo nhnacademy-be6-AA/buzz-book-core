@@ -1,7 +1,5 @@
 package store.buzzbook.core.entity.user;
 
-import java.time.ZonedDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,42 +11,35 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
-@Builder
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "grade_log")
+@Builder
+@Getter
 @AllArgsConstructor
-@Table(name = "user_auth")
-public class UserAuth {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class GradeLog {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
+
+	@NotNull
+	@Column(name = "change_date")
+	@Past
+	private String changeDate;
+
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "grade_id")
+	private Grade grade;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
-
-	@NotNull
-	@Size(max = 20)
-	@Column(name = "provider")
-	private String provider;
-
-	@NotNull
-	@Size(max = 255)
-	@Column(name = "token")
-	private String token;
-
-	@NotNull
-	@Past
-	@Column(name = "created_at")
-	private ZonedDateTime createdAt;
-
 }

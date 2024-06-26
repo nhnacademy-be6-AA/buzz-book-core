@@ -3,8 +3,6 @@ package store.buzzbook.core.dto.user;
 import java.time.ZonedDateTime;
 
 import lombok.Builder;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
-import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
@@ -17,18 +15,17 @@ public record RegisterUserRequest(
 	String email,
 	String birthday
 ) {
-	public User toUser(Grade grade) {
+	public User toUser() {
 		return User.builder()
 			.loginId(this.loginId())
 			.name(this.name())
 			.password(this.password())
-			.birthday(ZonedDateTimeParser.toDate(this.birthday()))
-			.createDate(ZonedDateTime.now())
+			.birthday(this.birthday())
+			.createAt(ZonedDateTime.now())
 			.email(this.email())
-			.modifyDate(ZonedDateTime.now())
+			.modifyAt(ZonedDateTime.now())
 			.contactNumber(this.contactNumber())
-			.lastLoginDate(null)
-			.grade(grade)
+			.lastLoginAt(null)
 			.status(UserStatus.ACTIVE)
 			.isAdmin(false).build();
 

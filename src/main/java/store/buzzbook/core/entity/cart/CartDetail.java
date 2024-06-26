@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.cart;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,12 +21,11 @@ import store.buzzbook.core.entity.product.Product;
 
 @Builder
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
 @Table(name = "cart_detail")
 public class CartDetail {
-	//todo cart detail id 추가
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -33,7 +35,8 @@ public class CartDetail {
 	private Cart cart;
 
 	@NotNull
-	@Min(value = 0)
+	@ColumnDefault(value = "1")
+	@Min(value = 1)
 	private int quantity;
 
 	@NotNull

@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,11 +30,12 @@ public class Deactivation {
 
 	@NotNull
 	@Column(name = "reason")
+	@Size(max = 50)
 	private String reason;
 
 	@NotNull
-	@Column(name = "deactivation_date")
-	private ZonedDateTime deactivationDate;
+	@Column(name = "deactivation_at")
+	private ZonedDateTime deactivationAt;
 
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)
