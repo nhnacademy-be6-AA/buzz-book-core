@@ -101,35 +101,23 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public boolean deactivate(Long userId, String reason) {
-		Optional<User> user = null;
-		// try {
-		// 	user = userRepository.getReferenceById(userId);
-		// } catch (EntityNotFoundException e) {
-		// 	log.warn("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
-		// 	throw new UserNotFoundException(userId);
-		// }
+		Optional<User> userOptional = userRepository.findById(userId);
 
-		//user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
-
-		user = userRepository.findById(userId);
-		if (user.isEmpty()) {
+		if (userOptional.isEmpty()) {
+			log.debug("탈퇴 요청 중 존재하지 않는 id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
 
 		Deactivation deactivation = Deactivation.builder()
 			.deactivationAt(LocalDateTime.now())
 			.reason(reason)
-			.user(user.get()).build();
+			.user(userOptional.get()).build();
 
 		Deactivation savedData = deactivationRepository.save(deactivation);
 
-		// if (userRepository.updateStatus(userId, UserStatus.WITHDRAW)) {
-		// 	log.error("계정 탈퇴 중 오류가 발생했습니다. : {} ", userId);
-		// 	throw new UnknownUserException(String.format("deactivate 이후 계정 상태 변경 중 오류가 발생했습니다. : %s ", userId));
-		// }
-		user.get().deactivate();
+		userOptional.get().deactivate();
 
-		userRepository.save(user.get());
+		userRepository.save(userOptional.get());
 
 		return savedData.getUser().getId().equals(userId);
 	}
