@@ -26,6 +26,7 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.user.DeactivationRepository;
+import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.implement.UserServiceImpl;
@@ -38,6 +39,8 @@ class UserServiceTest {
 	private GradeRepository gradeRepository;
 	@Mock
 	private DeactivationRepository deactivationRepository;
+	@Mock
+	private GradeLogRepository gradeLogRepository;
 
 	@InjectMocks
 	private UserServiceImpl userService;
@@ -79,6 +82,9 @@ class UserServiceTest {
 		Mockito.lenient().when(userRepository.save(Mockito.any(User.class)))
 			.thenReturn(convertToUser(registerUserRequest));
 
+		Mockito.when(gradeLogRepository.save(Mockito.any()))
+			.thenReturn(null);
+		
 		RegisterUserResponse response = userService.requestRegister(registerUserRequest);
 
 		Assertions.assertNotNull(response);
@@ -170,7 +176,7 @@ class UserServiceTest {
 
 	@Test
 	@DisplayName("탈퇴한 유저 로그인 시도")
-	void testRequestLoginShouldThrowDeactivateUserxception() {
+	void testRequestLoginShouldThrowDeactivateUserException() {
 		Mockito.when(userRepository.findByLoginId(Mockito.anyString()))
 			.thenAnswer(invocation -> {
 				String loginId = (String)invocation.getArguments()[0];
@@ -203,6 +209,16 @@ class UserServiceTest {
 			}
 		);
 
+		Mockito.when(userRepository.findGradeByUserId(Mockito.any())).thenAnswer(
+			invocation -> {
+				Long userId = (Long)invocation.getArguments()[0];
+
+				if (userId.equals(1L)) {
+					return Optional.of(grade);
+				}
+				return Optional.empty();
+			});
+
 		UserInfo responseInfo = userService.successLogin(registerUserRequest.loginId());
 
 		Assertions.assertNotNull(responseInfo);
@@ -217,6 +233,7 @@ class UserServiceTest {
 	private User convertToUser(RegisterUserRequest request) {
 
 		return User.builder()
+			.id(1L)
 			.loginId(request.loginId())
 			.name(request.name())
 			.birthday(request.birthday())
