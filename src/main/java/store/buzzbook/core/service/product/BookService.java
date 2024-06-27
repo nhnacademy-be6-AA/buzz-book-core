@@ -14,8 +14,6 @@ import store.buzzbook.core.dto.product.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.Publisher;
-import store.buzzbook.core.repository.product.AuthorRepository;
-import store.buzzbook.core.repository.product.BookAuthorRepository;
 import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.PublisherRepository;
@@ -24,8 +22,6 @@ import store.buzzbook.core.repository.product.PublisherRepository;
 @Service
 public class BookService {
 
-	private final BookAuthorRepository bookAuthorRepository;
-	private final AuthorRepository authorRepository;
 	private final BookRepository bookRepository;
 	private final PublisherRepository publisherRepository;
 	private final ProductRepository productRepository;
