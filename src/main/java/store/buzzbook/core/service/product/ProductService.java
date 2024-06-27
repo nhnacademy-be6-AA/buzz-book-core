@@ -1,7 +1,7 @@
 package store.buzzbook.core.service.product;
 
-import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
-import static store.buzzbook.core.dto.product.response.ProductResponse.*;
+import static store.buzzbook.core.dto.product.CategoryResponse.*;
+import static store.buzzbook.core.dto.product.ProductResponse.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
-import store.buzzbook.core.dto.product.response.ProductRequest;
-import store.buzzbook.core.dto.product.response.ProductResponse;
-import store.buzzbook.core.dto.product.response.ProductUpdateRequest;
+import store.buzzbook.core.dto.product.ProductRequest;
+import store.buzzbook.core.dto.product.ProductResponse;
+import store.buzzbook.core.dto.product.ProductUpdateRequest;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.CategoryRepository;

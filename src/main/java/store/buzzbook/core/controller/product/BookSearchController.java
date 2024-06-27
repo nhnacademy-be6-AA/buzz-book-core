@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import store.buzzbook.core.dto.product.response.BookApiRequest;
+import store.buzzbook.core.dto.product.BookApiRequest;
 import store.buzzbook.core.service.product.BookSearchService;
 
 import java.util.List;
