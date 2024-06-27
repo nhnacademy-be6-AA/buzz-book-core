@@ -47,4 +47,13 @@ public class Order {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = true)
 	private User user;
+
+	@NotNull
+	private String sender;
+
+	@NotNull
+	private String senderContactNumber;
+
+	@NotNull
+	private String receiverContactNumber;
 }
