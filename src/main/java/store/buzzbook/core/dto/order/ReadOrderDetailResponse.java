@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import store.buzzbook.core.entity.product.Product;
 
 @Builder
 @NoArgsConstructor
@@ -23,6 +22,6 @@ public class ReadOrderDetailResponse {
 	private LocalDateTime createdAt;
 	private ReadOrderStatusResponse orderStatus;
 	private ReadWrappingResponse wrapping;
-	private Product product;
+	private int productId;
 	// private ReadOrderResponse readOrderResponse;
 }
