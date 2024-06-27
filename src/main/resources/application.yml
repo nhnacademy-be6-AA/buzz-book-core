@@ -6,7 +6,7 @@ spring:
     name: core-api
 
   profiles:
-    default: dev
+    default: test
 
 
   jpa:

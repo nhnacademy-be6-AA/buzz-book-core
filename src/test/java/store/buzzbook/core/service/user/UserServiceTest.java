@@ -12,12 +12,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.common.service.UserProducerService;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -41,6 +43,10 @@ class UserServiceTest {
 	private DeactivationRepository deactivationRepository;
 	@Mock
 	private GradeLogRepository gradeLogRepository;
+	@Mock
+	private UserProducerService userProducerService;
+	@Spy
+	User user;
 
 	@InjectMocks
 	private UserServiceImpl userService;
@@ -84,7 +90,12 @@ class UserServiceTest {
 
 		Mockito.when(gradeLogRepository.save(Mockito.any()))
 			.thenReturn(null);
-		
+
+		Mockito.lenient().when(userRepository.findGradeByLoginId(Mockito.anyString()))
+			.thenReturn(Optional.of(grade));
+
+		Mockito.doNothing().when(userProducerService).sendWelcomeCouponRequest(Mockito.any());
+
 		RegisterUserResponse response = userService.requestRegister(registerUserRequest);
 
 		Assertions.assertNotNull(response);
@@ -124,6 +135,9 @@ class UserServiceTest {
 				return Optional.empty();
 			}
 		);
+
+		Mockito.when(userRepository.findGradeByLoginId(Mockito.anyString()))
+			.thenReturn(Optional.of(grade));
 
 		UserInfo responseInfo = userService.getUserInfoByLoginId(registerUserRequest.loginId());
 		Assertions.assertNotNull(responseInfo);
@@ -209,15 +223,22 @@ class UserServiceTest {
 			}
 		);
 
-		Mockito.when(userRepository.findGradeByUserId(Mockito.any())).thenAnswer(
+		Mockito.when(userRepository.findGradeByLoginId(Mockito.any())).thenAnswer(
 			invocation -> {
-				Long userId = (Long)invocation.getArguments()[0];
+				String loginId = (String)invocation.getArguments()[0];
 
-				if (userId.equals(1L)) {
+				if (loginId.equals(registerUserRequest.loginId())) {
 					return Optional.of(grade);
 				}
 				return Optional.empty();
 			});
+
+		Mockito.when(user.toUserInfo(Mockito.any())).thenReturn(registerUserRequest.toUser().toUserInfo(grade));
+
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(convertToUser(registerUserRequest));
+
+		Mockito.when(userRepository.findGradeByLoginId(Mockito.anyString()))
+			.thenReturn(Optional.of(grade));
 
 		UserInfo responseInfo = userService.successLogin(registerUserRequest.loginId());
 
@@ -245,4 +266,5 @@ class UserServiceTest {
 			.lastLoginAt(null)
 			.isAdmin(false).build();
 	}
+
 }

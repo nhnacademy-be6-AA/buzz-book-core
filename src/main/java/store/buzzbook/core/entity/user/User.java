@@ -106,7 +106,7 @@ public class User {
 		this.lastLoginAt = LocalDateTime.now();
 	}
 
-	public UserInfo toUserInfo() {
+	public UserInfo toUserInfo(Grade grade) {
 		return UserInfo.builder()
 			.id(this.getId())
 			.name(this.getName())

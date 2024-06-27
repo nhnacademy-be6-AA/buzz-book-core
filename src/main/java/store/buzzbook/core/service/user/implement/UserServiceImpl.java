@@ -67,11 +67,17 @@ public class UserServiceImpl implements UserService {
 			throw new UserNotFoundException(loginId);
 		}
 
+		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
+
+		if (gradeOptional.isEmpty()) {
+			throw new GradeNotFoundException(userOptional.get().getId());
+		}
+
 		userOptional.get().updateLastLoginAt();
 
 		User updatedUser = userRepository.save(userOptional.get());
 
-		return updatedUser.toUserInfo();
+		return updatedUser.toUserInfo(gradeOptional.get());
 	}
 
 	@Transactional
@@ -149,12 +155,18 @@ public class UserServiceImpl implements UserService {
 		userRepository.save(userOptional.get());
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
-		return user.toUserInfo();
+		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
+
+		if (gradeOptional.isEmpty()) {
+			throw new GradeNotFoundException(user.getId());
+		}
+
+		return user.toUserInfo(gradeOptional.get());
 	}
 
 	@Transactional
