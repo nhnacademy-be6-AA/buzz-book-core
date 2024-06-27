@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.buzzbook.core.dto.product.response.ProductResponse;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +19,9 @@ public class CreateOrderDetailRequest {
 	private String createDate;
 	private int orderStatusId;
 	private Integer wrappingId;
-	private int productId;
 	@Setter
 	private long orderId;
+	private int productId;
+	private String productName;
+	private String thumbnailPath;
 }
