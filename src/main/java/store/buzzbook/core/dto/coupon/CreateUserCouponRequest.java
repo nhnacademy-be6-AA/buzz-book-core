@@ -1,8 +1,7 @@
 package store.buzzbook.core.dto.coupon;
 
-public record CreateWelcomeCouponResponse(
+public record CreateUserCouponRequest(
 
-	int resultCode,
 	long userId,
 	long couponId
 ) {

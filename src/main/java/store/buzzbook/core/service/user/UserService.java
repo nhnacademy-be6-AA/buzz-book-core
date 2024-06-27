@@ -1,5 +1,6 @@
 package store.buzzbook.core.service.user;
 
+import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -18,4 +19,5 @@ public interface UserService {
 
 	UserInfo getUserInfoByLoginId(String loginId);
 
+	void addUserCoupon(CreateUserCouponRequest request);
 }

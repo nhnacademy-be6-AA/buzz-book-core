@@ -4,6 +4,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,13 +18,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitmqConfig {
 
-	public static final String REQUEST_EXCHANGE_NAME = "aa.coupon.welcome.request.exchange";
-	public static final String REQUEST_QUEUE_NAME = "aa.coupon.welcome.request.queue";
-	public static final String REQUEST_ROUTING_KEY = "aa.coupon.welcome.request.key";
+	public static final String REQUEST_EXCHANGE_NAME = "aa.coupon.welcome.exchange";
+	public static final String REQUEST_QUEUE_NAME = "aa.coupon.welcome.queue";
+	public static final String REQUEST_ROUTING_KEY = "aa.coupon.welcome.key";
 
-	public static final String RESPONSE_EXCHANGE_NAME = "aa.coupon.welcome.response.exchange";
-	public static final String RESPONSE_QUEUE_NAME = "aa.coupon.welcome.response.queue";
-	public static final String RESPONSE_ROUTING_KEY = "aa.coupon.welcome.response.key";
+	public static final String DLX_EXCHANGE_NAME = "aa.coupon.dlx.exchange";
+	public static final String DLQ_QUEUE_NAME = "aa.coupon.dlx.queue";
+	public static final String DLQ_ROUTING_KEY = "aa.coupon.dlx.key";
 
 	@Value("${spring.rabbitmq.host}")
 	private String host;
@@ -44,7 +45,10 @@ public class RabbitmqConfig {
 
 	@Bean
 	Queue requestQueue() {
-		return new Queue(REQUEST_QUEUE_NAME, false);
+		return QueueBuilder.durable(REQUEST_QUEUE_NAME)
+			.withArgument("x-dead-letter-exchange", DLX_EXCHANGE_NAME)
+			.withArgument("x-dead-letter-routing-key", DLQ_ROUTING_KEY)
+			.build();
 	}
 
 	@Bean
@@ -53,18 +57,18 @@ public class RabbitmqConfig {
 	}
 
 	@Bean
-	DirectExchange responseExchange() {
-		return new DirectExchange(RESPONSE_EXCHANGE_NAME);
+	DirectExchange dlxExchange() {
+		return new DirectExchange(DLX_EXCHANGE_NAME);
 	}
 
 	@Bean
-	Queue responseQueue() {
-		return new Queue(RESPONSE_QUEUE_NAME, false);
+	Queue dlqQueue() {
+		return new Queue(DLQ_QUEUE_NAME, true);
 	}
 
 	@Bean
-	Binding responseBinding(DirectExchange responseExchange, Queue responseQueue) {
-		return BindingBuilder.bind(responseQueue).to(responseExchange).with(RESPONSE_ROUTING_KEY);
+	Binding dlqBinding(DirectExchange dlxExchange, Queue dlqQueue) {
+		return BindingBuilder.bind(dlqQueue).to(dlxExchange).with(DLQ_ROUTING_KEY);
 	}
 
 	@Bean
