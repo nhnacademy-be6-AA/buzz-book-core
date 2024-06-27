@@ -30,12 +30,8 @@ public class BookService {
 	private final PublisherRepository publisherRepository;
 	private final ProductRepository productRepository;
 
-	public Book saveBook(Book book) {
-		return bookRepository.save(book);
-	}
-
-	public Book saveBook(BookRequest bookReq) {
-		Publisher publisher = publisherRepository.findByName(bookReq.getPublisher().strip());
+	public BookResponse saveBook(BookRequest bookReq) {
+		Publisher publisher = publisherRepository.findByName(bookReq.getPublisher());
 
 		if (publisher == null) {
 			publisher = publisherRepository.save(new Publisher(bookReq.getPublisher()));
@@ -48,7 +44,10 @@ public class BookService {
 			.publisher(publisher)
 			.publishDate(bookReq.getPublishDate())
 			.build();
-		return saveBook(newBook);
+
+		bookRepository.save(newBook);
+
+		return BookResponse.convertToBookResponse(newBook);
 	}
 
 	public List<BookResponse> getAllBooks() {

@@ -36,7 +36,7 @@ public class ProductService {
 			.description(productReq.getDescription() == null ? null : productReq.getDescription())
 			.price(productReq.getPrice())
 			.forwardDate(LocalDate.parse(productReq.getForwardDate()))
-			.score(productReq.getScore())
+			.score(0)
 			.thumbnailPath(productReq.getThumbnailPath())
 			.stockStatus(productReq.getStockStatus())
 			.category(category)
