@@ -2,7 +2,7 @@ POST http://localhost:8090/api/account/register
 Content-Type: application/json
 
 {
-  "loginId": "testtest",
+  "loginId": "tdsadsteset",
   "password": "test",
   "name": "test",
   "contactNumber": "01012341234",

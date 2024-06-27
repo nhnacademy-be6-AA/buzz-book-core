@@ -17,9 +17,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitmqConfig {
 
-	public static final String TOPIC_EXCHANGE_NAME = "aa.coupon.welcome.request.exchange";
-	public static final String TOPIC_QUEUE_NAME = "aa.coupon.welcome.request.queue";
-	public static final String TOPIC_ROUTING_KEY = "aa.coupon.welcome.request.key";
+	public static final String REQUEST_EXCHANGE_NAME = "aa.coupon.welcome.request.exchange";
+	public static final String REQUEST_QUEUE_NAME = "aa.coupon.welcome.request.queue";
+	public static final String REQUEST_ROUTING_KEY = "aa.coupon.welcome.request.key";
+
+	public static final String RESPONSE_EXCHANGE_NAME = "aa.coupon.welcome.response.exchange";
+	public static final String RESPONSE_QUEUE_NAME = "aa.coupon.welcome.response.queue";
+	public static final String RESPONSE_ROUTING_KEY = "aa.coupon.welcome.response.key";
 
 	@Value("${spring.rabbitmq.host}")
 	private String host;
@@ -34,18 +38,33 @@ public class RabbitmqConfig {
 	private int port;
 
 	@Bean
-	DirectExchange directExchange() {
-		return new DirectExchange(TOPIC_EXCHANGE_NAME);
+	DirectExchange requestExchange() {
+		return new DirectExchange(REQUEST_EXCHANGE_NAME);
 	}
 
 	@Bean
-	Queue queue() {
-		return new Queue(TOPIC_QUEUE_NAME, false);
+	Queue requestQueue() {
+		return new Queue(REQUEST_QUEUE_NAME, false);
 	}
 
 	@Bean
-	Binding binding(DirectExchange directExchange, Queue queue) {
-		return BindingBuilder.bind(queue).to(directExchange).with(TOPIC_ROUTING_KEY);
+	Binding requestBinding(DirectExchange requestExchange, Queue requestQueue) {
+		return BindingBuilder.bind(requestQueue).to(requestExchange).with(REQUEST_ROUTING_KEY);
+	}
+
+	@Bean
+	DirectExchange responseExchange() {
+		return new DirectExchange(RESPONSE_EXCHANGE_NAME);
+	}
+
+	@Bean
+	Queue responseQueue() {
+		return new Queue(RESPONSE_QUEUE_NAME, false);
+	}
+
+	@Bean
+	Binding responseBinding(DirectExchange responseExchange, Queue responseQueue) {
+		return BindingBuilder.bind(responseQueue).to(responseExchange).with(RESPONSE_ROUTING_KEY);
 	}
 
 	@Bean
@@ -59,14 +78,14 @@ public class RabbitmqConfig {
 	}
 
 	@Bean
-	MessageConverter messageConverter() {
+	MessageConverter jsonMessageConverter() {
 		return new Jackson2JsonMessageConverter();
 	}
 
 	@Bean
-	RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+	RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageConverter jsonMessageConverter) {
 		RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-		rabbitTemplate.setMessageConverter(messageConverter);
+		rabbitTemplate.setMessageConverter(jsonMessageConverter);
 		return rabbitTemplate;
 	}
 }
