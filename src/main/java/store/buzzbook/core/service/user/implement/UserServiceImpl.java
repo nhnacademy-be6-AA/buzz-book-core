@@ -13,6 +13,7 @@ import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
+import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
@@ -60,18 +61,17 @@ public class UserServiceImpl implements UserService {
 	public UserInfo successLogin(String loginId) {
 		log.debug("최근 로그인 일자 업데이트 : {} ", loginId);
 
-		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
+		Optional<User> userOptional = userRepository.findByLoginId(loginId);
 
-		user.updateLastLogin();
-
-		userRepository.save(user);
-		Optional<Grade> gradeOptional = userRepository.findGradeByUserId(user.getId());
-
-		if (gradeOptional.isEmpty()) {
-			throw new GradeNotFoundException(user.getId());
+		if (userOptional.isEmpty()) {
+			throw new UserNotFoundException(loginId);
 		}
 
-		return user.toUserInfo(gradeOptional.get());
+		userOptional.get().updateLastLoginAt();
+
+		User updatedUser = userRepository.save(userOptional.get());
+
+		return updatedUser.toUserInfo();
 	}
 
 	@Transactional
@@ -100,8 +100,8 @@ public class UserServiceImpl implements UserService {
 		gradeLogRepository.save(gradeLog);
 
 		userProducerService.sendWelcomeCouponRequest(CreateWelcomeCouponRequest.builder()
-				.userId(savedUser.getId())
-				.build());
+			.userId(savedUser.getId())
+			.build());
 
 		return RegisterUserResponse.builder()
 			.name(requestUser.getName())
@@ -138,6 +138,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void activate(String loginId) {
 		Optional<User> userOptional = userRepository.findByLoginId(loginId);
+
 		if (userOptional.isEmpty()) {
 			log.debug("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
 			throw new UserNotFoundException(loginId);
@@ -146,7 +147,6 @@ public class UserServiceImpl implements UserService {
 		userOptional.get().activate();
 
 		userRepository.save(userOptional.get());
-
 	}
 
 	@Transactional
@@ -154,15 +154,15 @@ public class UserServiceImpl implements UserService {
 	public UserInfo getUserInfoByLoginId(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
-		return UserInfo.builder()
-			.id(user.getId())
-			.name(user.getName())
-			.loginId(user.getLoginId())
-			.birthday(user.getBirthday())
-			.isAdmin(user.isAdmin())
-			.contactNumber(user.getContactNumber())
-			.email(user.getEmail())
-			.build();
+		return user.toUserInfo();
 	}
 
+	@Transactional
+	@Override
+	public void addUserCoupon(CreateUserCouponRequest request) {
+		User user = userRepository.findById(request.userId())
+			.orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+		user.getCoupons().add(request.couponId());
+	}
 }

@@ -32,7 +32,7 @@ public class CartController {
 
 	@GetMapping
 	@Operation(summary = "장바구니 조회(비회원)", description = "카트 id로 장바구니 내용을 가져온다.")
-	public ResponseEntity<GetCartResponse> getCartByCartId(@RequestParam("cartId") Long cartId) {
+	public ResponseEntity<GetCartResponse> getCartByCartId(@RequestParam Long cartId) {
 		log.debug("장바구니 아이디로 장바구니 조회 요청 : {}", cartId);
 
 		GetCartResponse response = null;
@@ -56,28 +56,37 @@ public class CartController {
 
 	@DeleteMapping("/{cartDetailId}")
 	@Operation(summary = "장바구니 물건 제거", description = "장바구니 내용을 제거한다.")
-	public ResponseEntity<Void> deleteCartDetail(@PathVariable("cartDetailId") Long cartDetailId) {
-		cartService.deleteCartDetail(cartDetailId);
+	public ResponseEntity<GetCartResponse> deleteCartDetail(@RequestParam("cartId") Long cartId,
+		@PathVariable("cartDetailId") Long cartDetailId) {
 
-		return ResponseEntity.ok().build();
+		GetCartResponse getCartResponse = cartService.deleteCartDetail(cartId, cartDetailId);
+
+		if (getCartResponse == null) {
+			return ResponseEntity.badRequest().build();
+		}
+
+		return ResponseEntity.ok().body(getCartResponse);
 	}
 
 	@DeleteMapping
 	@Operation(summary = "장바구니 물건 모두 제거", description = "장바구니 내용을 모두 제거한다.")
-	public ResponseEntity<Void> deleteAllCartDetail(@RequestParam("cartId") Long cartId) {
-		cartService.deleteAll(cartId);
+	public ResponseEntity<Void> deleteAllCartDetail(@RequestParam Long cartDetailId) {
+		cartService.deleteAll(cartDetailId);
 
 		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping
-	@Operation(summary = "장바구니 상품의 갯수 변경", description = "장바구니 상품의 갯수를 변경한다. Create와 유사하다.")
-	public ResponseEntity<Void> updateCartDetail(@RequestBody UpdateCartRequest updateCartRequest) {
+	@Operation(summary = "장바구니 내용 변경", description = "장바구니 내용을 변경한다. Create와 유사하다.")
+	public ResponseEntity<GetCartResponse> updateCartDetail(@RequestBody UpdateCartRequest updateCartRequest) {
+		GetCartResponse response = null;
+
 		try {
-			cartService.updateCartDetail(updateCartRequest);
-		} catch (CartNotExistsException e) {
+			response = cartService.updateCart(updateCartRequest);
+		} catch (IllegalArgumentException | CartNotExistsException e) {
 			return ResponseEntity.badRequest().build();
 		}
-		return ResponseEntity.ok().build();
+
+		return ResponseEntity.ok().body(response);
 	}
 }

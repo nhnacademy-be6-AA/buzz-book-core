@@ -51,6 +51,7 @@ public class CartDetail {
 			.productId(this.product.getId())
 			.productName(this.product.getProductName())
 			.quantity(this.getQuantity())
+			.thumbnailPath(thumbnailPath)
 			.build();
 	}
 
