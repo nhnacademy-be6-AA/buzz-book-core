@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
 		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
 		if (isDeactivate) {
-			log.warn("로그인 실패 : 탈퇴한 유저의 아이디({})입니다.", user.getId());
+			log.debug("로그인 실패 : 탈퇴한 유저의 아이디 {} 입니다.", user.getId());
 			throw new DeactivateUserException(loginId);
 		}
 
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
 
 		if (userRepository.existsByLoginId(loginId)) {
-			log.warn("유저 아이디 {} 중복 회원가입 실패 ", loginId);
+			log.debug("유저 아이디 {} 중복 회원가입 실패 ", loginId);
 			throw new UserAlreadyExistsException(loginId);
 		}
 

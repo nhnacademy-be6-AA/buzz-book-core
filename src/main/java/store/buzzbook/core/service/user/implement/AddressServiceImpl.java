@@ -34,14 +34,14 @@ public class AddressServiceImpl implements AddressService {
 		try {
 			user = userRepository.getReferenceById(userId);
 		} catch (EntityNotFoundException e) {
-			log.warn("회원 주소 추가 중 존재하지 않는 user id의 요청 발생 : {}", userId);
+			log.debug("회원 주소 추가 중 존재하지 않는 user id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
 
 		Integer addressCount = addressRepository.countAllByUserId(userId);
 
 		if (addressCount >= 10) {
-			log.warn("회원 주소 추가에 실패했습니다. 저장된 주소의 갯수가 최대입니다.");
+			log.debug("회원 주소 추가에 실패했습니다. 저장된 주소의 갯수가 최대입니다.");
 			throw new AddressMaxCountException(userId);
 		}
 
@@ -54,7 +54,7 @@ public class AddressServiceImpl implements AddressService {
 	@Override
 	public void deleteAddress(Long addressId, Long userId) {
 		if (!addressRepository.deleteByIdAndUserId(addressId, userId)) {
-			log.warn("잘못된 회원의 주소 삭제 요청입니다. : user : {}, address : {} ", userId, addressId);
+			log.debug("잘못된 회원의 주소 삭제 요청입니다. : user : {}, address : {} ", userId, addressId);
 			throw new UserNotFoundException(userId);
 		}
 	}
@@ -67,7 +67,7 @@ public class AddressServiceImpl implements AddressService {
 		try {
 			user = userRepository.getReferenceById(userId);
 		} catch (EntityNotFoundException e) {
-			log.warn("회원 주소 수정 중 존재하지 않는 user id의 요청 발생 : {}", userId);
+			log.debug("회원 주소 수정 중 존재하지 않는 user id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
 
@@ -79,7 +79,7 @@ public class AddressServiceImpl implements AddressService {
 	@Override
 	public List<Address> getAddressList(Long userId) {
 		if (!userRepository.existsById(userId)) {
-			log.warn("존재 하지 않는 회원의 주소 조회 요청입니다. : {}", userId);
+			log.debug("존재 하지 않는 회원의 주소 조회 요청입니다. : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
 

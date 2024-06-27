@@ -26,14 +26,14 @@ public class MyPageController {
 
 	@PatchMapping("/password")
 	@Operation(summary = "비밀번호 변경", description = "encoded password만 받는다. 비밀번호 변경용.")
-	public ResponseEntity<?> changePassword(@PathVariable("userId") Long userId) {
+	public ResponseEntity<Void> changePassword(@PathVariable("userId") Long userId) {
 
 		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping
 	@Operation(summary = "유저 정보 변경", description = "비밀번호를 제외한 일반 개인 정보들을 변경한다.")
-	public ResponseEntity<?> updateUser(@PathVariable("userId") Long userId,
+	public ResponseEntity<Void> updateUser(@PathVariable("userId") Long userId,
 		@RequestBody UpdateUserRequest updateUserRequest) {
 
 		return ResponseEntity.ok().build();
@@ -41,13 +41,13 @@ public class MyPageController {
 
 	@PatchMapping("/deactivate")
 	@Operation(summary = "탈퇴 요청", description = "탈퇴용 컨트롤러. userId를 넘겨야한다.")
-	public ResponseEntity<?> deactivateUser(@PathVariable("userId") Long userId, @RequestBody String reason) {
+	public ResponseEntity<Void> deactivateUser(@PathVariable("userId") Long userId, @RequestBody String reason) {
 		if (!userService.deactivate(userId, reason)) {
-			log.warn("탈퇴 처리 오류 id : {}", userId);
+			log.debug("탈퇴 처리 오류 id : {}", userId);
 			return ResponseEntity.internalServerError().build();
 		}
 
-		log.info("탈퇴 처리 완료 id : {}", userId);
+		log.debug("탈퇴 처리 완료 id : {}", userId);
 		return ResponseEntity.ok().build();
 	}
 
