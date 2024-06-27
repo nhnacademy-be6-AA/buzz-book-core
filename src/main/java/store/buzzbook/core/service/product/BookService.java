@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
-import store.buzzbook.core.dto.product.response.BookRequest;
-import store.buzzbook.core.dto.product.response.BookResponse;
+import store.buzzbook.core.dto.product.BookRequest;
+import store.buzzbook.core.dto.product.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.Publisher;
