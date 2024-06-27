@@ -1,8 +1,6 @@
 package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -17,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.dto.product.response.BookApiRequest;
+import store.buzzbook.core.dto.product.BookApiRequest;
 import store.buzzbook.core.entity.product.Author;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.BookAuthor;
@@ -169,6 +167,8 @@ public class BookSearchService {
 				Product product = Product.builder()
 					.stock(stock)
 					.productName(productName)
+					// TODO 알라딘 api에서 가져온 도서를 상품에 등록할때 상품의 설명 처리해야함.
+					.description(null)
 					.price(price)
 					.forwardDate(forwardDate)
 					.score(score)
