@@ -18,7 +18,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
@@ -42,8 +41,8 @@ public class User {
 
 	@ElementCollection
 	@CollectionTable(name = "user_coupon", joinColumns = {@JoinColumn(name = "user_id")})
-	@Column(name = "coupon_code")
-	private Set<String> coupons = new HashSet<>();
+	@Column(name = "coupon_id")
+	private Set<Long> coupons = new HashSet<>();
 
 	@NotNull
 	@Size(min = 6, max = 20)
@@ -61,7 +60,6 @@ public class User {
 
 	@NotNull
 	@Size(max = 255)
-	@Email
 	private String email;
 
 	@NotNull
@@ -104,19 +102,19 @@ public class User {
 		this.status = UserStatus.ACTIVE;
 	}
 
-	public void updateLastLogin() {
+	public void updateLastLoginAt() {
 		this.lastLoginAt = LocalDateTime.now();
 	}
 
-	public UserInfo toUserInfo(Grade grade) {
+	public UserInfo toUserInfo() {
 		return UserInfo.builder()
-			.email(this.email)
-			.id(this.id)
-			.contactNumber(this.contactNumber)
-			.isAdmin(this.isAdmin)
-			.birthday(this.birthday)
-			.grade(grade)
-			.loginId(this.loginId)
-			.name(this.name).build();
+			.id(this.getId())
+			.name(this.getName())
+			.loginId(this.getLoginId())
+			.birthday(this.getBirthday())
+			.isAdmin(this.isAdmin())
+			.contactNumber(this.getContactNumber())
+			.email(this.getEmail())
+			.build();
 	}
 }
