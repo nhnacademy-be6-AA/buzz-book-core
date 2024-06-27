@@ -32,6 +32,9 @@ public class OrderMapper {
 			.request(order.getRequest())
 			.zipcode(order.getZipcode())
 			.loginId(loginId)
+			.senderContactNumber(order.getSenderContactNumber())
+			.receiverContactNumber(order.getReceiverContactNumber())
+			.sender(order.getSender())
 			.build();
 	}
 
@@ -47,6 +50,9 @@ public class OrderMapper {
 			.address(createOrderRequest.getAddress())
 			.addressDetail(createOrderRequest.getAddressDetail())
 			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate(), formatter))
+			.sender(createOrderRequest.getSender())
+			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
+			.senderContactNumber(createOrderRequest.getContactNumber())
 			.build();
 	}
 }
