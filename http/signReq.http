@@ -1,3 +1,16 @@
+POST http://localhost:8090/api/account/register
+Content-Type: application/json
+
+{
+  "loginId": "tdsadsteset",
+  "password": "test",
+  "name": "test",
+  "contactNumber": "01012341234",
+  "email": "a@a",
+  "birthday": "2024-06-26"
+}
+
+###
 POST http://localhost:8080/api/account/register
 Content-Type: application/json
 
@@ -6,3 +19,5 @@ Content-Type: application/json
 }
 
 ###
+
+
