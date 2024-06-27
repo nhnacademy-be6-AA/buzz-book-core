@@ -11,9 +11,11 @@ public interface CartService {
 
 	GetCartResponse getCartByUserId(Long userId);
 
+	GetCartResponse updateCart(UpdateCartRequest updateCartRequest);
+
 	void createCartDetail(CreateCartDetailRequest createCartDetailRequest);
 
-	void deleteCartDetail(Long cartDetailId);
+	GetCartResponse deleteCartDetail(Long cartId, Long cartDetailId);
 
 	void deleteAll(Long cartId);
 
