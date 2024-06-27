@@ -1,12 +1,9 @@
 package store.buzzbook.core.dto.order;
 
-import java.time.ZonedDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import store.buzzbook.core.dto.product.response.ProductResponse;
 
 @NoArgsConstructor
 @AllArgsConstructor
