@@ -85,12 +85,8 @@ public class AddressController {
 	@Operation(summary = "주소 리스트 조회", description = "유저의 개인 주소 수정.")
 	public ResponseEntity<List<Address>> getAddressList(@PathVariable("userId") Long userId) {
 		List<Address> addressList;
-		try {
-			addressList = addressService.getAddressList(userId);
-		} catch (UserNotFoundException e) {
-			log.debug("알 수 없는 유저의 주소 리스트 요청. : {}", userId);
-			return ResponseEntity.badRequest().build();
-		}
+
+		addressList = addressService.getAddressList(userId);
 
 		if (addressList.isEmpty()) {
 			return ResponseEntity.noContent().build();
