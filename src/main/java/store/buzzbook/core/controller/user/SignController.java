@@ -48,7 +48,7 @@ public class SignController {
 	@PostMapping("/register")
 	@Operation(summary = "회원가입 요청", description = "회원가입 처리용 post 컨트롤러")
 	public ResponseEntity<RegisterUserResponse> register(@RequestBody RegisterUserRequest registerUserRequest) {
-		log.info("RegisterUserRequest: {}", registerUserRequest);
+		log.debug("RegisterUserRequest: {}", registerUserRequest);
 		RegisterUserResponse response;
 
 		try {
@@ -57,7 +57,7 @@ public class SignController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
-		log.info("유저 회원가입 성공");
+		log.debug("유저 회원가입 성공");
 
 		return ResponseEntity.ok(response);
 	}
