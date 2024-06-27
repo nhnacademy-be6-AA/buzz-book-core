@@ -87,7 +87,13 @@ class UserRepositoryTest {
 
 	@Test
 	void testUpdateLoginDate() {
-		userRepository.updateLoginDate(user.getLoginId());
+		User targetUser = userRepository.findByLoginId(user.getLoginId()).orElse(null);
+
+		Assertions.assertNotNull(targetUser);
+
+		targetUser.updateLastLogin();
+
+		userRepository.save(targetUser);
 
 		User updatedUser = userRepository.findById(user.getId()).orElse(null);
 
