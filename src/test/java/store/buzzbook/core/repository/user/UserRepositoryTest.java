@@ -85,32 +85,4 @@ class UserRepositoryTest {
 		Assertions.assertEquals(user.getName(), result.getName());
 	}
 
-	@Test
-	void testUpdateLoginDate() {
-		userRepository.updateLoginDate(user.getLoginId());
-
-		User updatedUser = userRepository.findById(user.getId()).orElse(null);
-
-		Assertions.assertNotNull(updatedUser);
-		Assertions.assertEquals(user.getLoginId(), updatedUser.getLoginId());
-		log.info("last login date: {}", user.getLastLoginAt());
-	}
-
-	@Test
-	void testUpdateStatus() {
-		User savedUser = userRepository.findById(user.getId()).orElse(null);
-
-		Assertions.assertNotNull(savedUser);
-		Assertions.assertEquals(UserStatus.ACTIVE, savedUser.getStatus());
-
-		em.flush();
-		em.clear();
-
-		Assertions.assertTrue(userRepository.updateStatus(user.getLoginId(), UserStatus.DORMANT));
-
-		User updatedUser = userRepository.findById(user.getId()).orElse(null);
-		Assertions.assertNotNull(updatedUser);
-		Assertions.assertEquals(UserStatus.DORMANT, updatedUser.getStatus());
-
-	}
 }

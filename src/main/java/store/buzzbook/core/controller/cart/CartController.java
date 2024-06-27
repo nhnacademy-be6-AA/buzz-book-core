@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.cart.CartNotExistsException;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
 import store.buzzbook.core.dto.cart.GetCartResponse;
+import store.buzzbook.core.dto.cart.UpdateCartRequest;
 import store.buzzbook.core.service.cart.CartService;
 
 @RestController
@@ -36,12 +36,7 @@ public class CartController {
 
 		GetCartResponse response = null;
 
-		try {
-			response = cartService.getCartByCartId(cartId);
-		} catch (CartNotExistsException e) {
-			log.debug("잘못된 장바구니 요청입니다.");
-			return ResponseEntity.badRequest().build();
-		}
+		response = cartService.getCartByCartId(cartId);
 
 		return ResponseEntity.ok(response);
 	}
@@ -55,10 +50,12 @@ public class CartController {
 
 	@DeleteMapping("/{cartDetailId}")
 	@Operation(summary = "장바구니 물건 제거", description = "장바구니 내용을 제거한다.")
-	public ResponseEntity<Void> deleteCartDetail(@PathVariable("cartDetailId") Long cartDetailId) {
-		cartService.deleteCartDetail(cartDetailId);
+	public ResponseEntity<GetCartResponse> deleteCartDetail(@RequestParam("cartId") Long cartId,
+		@PathVariable("cartDetailId") Long cartDetailId) {
 
-		return ResponseEntity.ok().build();
+		GetCartResponse getCartResponse = cartService.deleteCartDetail(cartId, cartDetailId);
+
+		return ResponseEntity.ok().body(getCartResponse);
 	}
 
 	@DeleteMapping
@@ -71,8 +68,11 @@ public class CartController {
 
 	@PutMapping
 	@Operation(summary = "장바구니 내용 변경", description = "장바구니 내용을 변경한다. Create와 유사하다.")
-	public ResponseEntity<Void> updateCartDetail(@RequestBody CreateCartDetailRequest createCartDetailRequest) {
-		cartService.createCartDetail(createCartDetailRequest);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<GetCartResponse> updateCartDetail(@RequestBody UpdateCartRequest updateCartRequest) {
+		GetCartResponse response = null;
+
+		response = cartService.updateCart(updateCartRequest);
+
+		return ResponseEntity.ok().body(response);
 	}
 }

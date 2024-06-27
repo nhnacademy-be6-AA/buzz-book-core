@@ -8,5 +8,5 @@ public interface CartRepositoryCustom {
 	Optional<GetCartResponse> findCartByCartId(Long cartId);
 
 	Optional<GetCartResponse> findCartByUserId(Long userId);
-
+	
 }

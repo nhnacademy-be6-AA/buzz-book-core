@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
-import store.buzzbook.core.common.exception.user.UnknownUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
@@ -25,7 +24,6 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
@@ -51,7 +49,7 @@ public class UserServiceImpl implements UserService {
 		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
 		if (isDeactivate) {
-			log.warn("로그인 실패 : 탈퇴한 유저의 아이디({})입니다.", user.getId());
+			log.debug("로그인 실패 : 탈퇴한 유저의 아이디 {} 입니다.", user.getId());
 			throw new DeactivateUserException(loginId);
 		}
 
@@ -61,14 +59,25 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public UserInfo successLogin(String loginId) {
-		log.info("최근 로그인 일자 업데이트 : {} ", loginId);
+		log.debug("최근 로그인 일자 업데이트 : {} ", loginId);
 
-		if (!userRepository.updateLoginDate(loginId)) {
-			log.warn("최근 로그인 일자 변경 재시도");
-			userRepository.updateLoginDate(loginId);
+		Optional<User> userOptional = userRepository.findByLoginId(loginId);
+
+		if (userOptional.isEmpty()) {
+			throw new UserNotFoundException(loginId);
 		}
 
-		return getUserInfoByLoginId(loginId);
+		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
+
+		if (gradeOptional.isEmpty()) {
+			throw new GradeNotFoundException(userOptional.get().getId());
+		}
+
+		userOptional.get().updateLastLoginAt();
+
+		User updatedUser = userRepository.save(userOptional.get());
+
+		return updatedUser.toUserInfo(gradeOptional.get());
 	}
 
 	@Transactional
@@ -81,7 +90,7 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
 
 		if (userRepository.existsByLoginId(loginId)) {
-			log.warn("유저 아이디 {} 중복 회원가입 실패 ", loginId);
+			log.debug("유저 아이디 {} 중복 회원가입 실패 ", loginId);
 			throw new UserAlreadyExistsException(loginId);
 		}
 
@@ -97,8 +106,8 @@ public class UserServiceImpl implements UserService {
 		gradeLogRepository.save(gradeLog);
 
 		userProducerService.sendWelcomeCouponRequest(CreateWelcomeCouponRequest.builder()
-				.userId(savedUser.getId())
-				.build());
+			.userId(savedUser.getId())
+			.build());
 
 		return RegisterUserResponse.builder()
 			.name(requestUser.getName())
@@ -134,33 +143,30 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public void activate(String loginId) {
+		Optional<User> userOptional = userRepository.findByLoginId(loginId);
 
-		if (!userRepository.existsByLoginId(loginId)) {
-			log.warn("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
+		if (userOptional.isEmpty()) {
+			log.debug("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
 			throw new UserNotFoundException(loginId);
 		}
 
-		if (userRepository.updateStatus(loginId, UserStatus.ACTIVE)) {
-			log.error("계정 활성화 중 오류가 발생했습니다. : {}", loginId);
-			throw new UnknownUserException(String.format("계정 상태 활성화 중 오류가 발생했습니다. : %s ", loginId));
-		}
+		userOptional.get().activate();
 
+		userRepository.save(userOptional.get());
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
 
-		return UserInfo.builder()
-			.id(user.getId())
-			.name(user.getName())
-			.loginId(user.getLoginId())
-			.birthday(user.getBirthday())
-			.isAdmin(user.isAdmin())
-			.contactNumber(user.getContactNumber())
-			.email(user.getEmail())
-			.build();
+		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
+
+		if (gradeOptional.isEmpty()) {
+			throw new GradeNotFoundException(user.getId());
+		}
+
+		return user.toUserInfo(gradeOptional.get());
 	}
 
 	@Transactional

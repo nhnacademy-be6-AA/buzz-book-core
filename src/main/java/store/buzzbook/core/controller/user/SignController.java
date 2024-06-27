@@ -14,9 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.common.exception.user.DeactivateUserException;
-import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
-import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -35,12 +32,8 @@ public class SignController {
 	@Operation(summary = "로그인 요청", description = "유저의 로그인 id를 이용해 login id와 encoded password를 준다. ")
 	public ResponseEntity<LoginUserResponse> login(@RequestBody String loginId) {
 		LoginUserResponse loginUserResponse = null;
-		try {
-			loginUserResponse = userService.requestLogin(loginId);
 
-		} catch (UserNotFoundException | DeactivateUserException e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
+		loginUserResponse = userService.requestLogin(loginId);
 
 		return ResponseEntity.ok(loginUserResponse);
 	}
@@ -48,16 +41,12 @@ public class SignController {
 	@PostMapping("/register")
 	@Operation(summary = "회원가입 요청", description = "회원가입 처리용 post 컨트롤러")
 	public ResponseEntity<RegisterUserResponse> register(@RequestBody RegisterUserRequest registerUserRequest) {
-		log.info("RegisterUserRequest: {}", registerUserRequest);
+		log.debug("RegisterUserRequest: {}", registerUserRequest);
 		RegisterUserResponse response;
 
-		try {
-			response = userService.requestRegister(registerUserRequest);
-		} catch (UserAlreadyExistsException e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
+		response = userService.requestRegister(registerUserRequest);
 
-		log.info("유저 회원가입 성공");
+		log.debug("유저 회원가입 성공");
 
 		return ResponseEntity.ok(response);
 	}

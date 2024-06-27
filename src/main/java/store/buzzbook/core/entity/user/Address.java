@@ -52,6 +52,7 @@ public class Address {
 
 	@NotNull
 	@Column(name = "nation")
+	@Size(min = 1, max = 50)
 	private String nation;
 
 	@NotNull
