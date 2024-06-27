@@ -25,4 +25,6 @@ public class CreateOrderRequest {
 	private String contactNumber;
 	private String email;
 	private Integer orderStatusId;
+	private String sender;
+	private String receiverContactNumber;
 }
