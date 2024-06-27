@@ -1,4 +1,4 @@
-package store.buzzbook.core.dto.product.response;
+package store.buzzbook.core.dto.product;
 
 import java.time.LocalDate;
 import java.util.List;

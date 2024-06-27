@@ -15,8 +15,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
-import store.buzzbook.core.dto.product.response.BookRequest;
-import store.buzzbook.core.dto.product.response.BookResponse;
+import store.buzzbook.core.dto.product.BookRequest;
+import store.buzzbook.core.dto.product.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.service.product.BookService;
 
