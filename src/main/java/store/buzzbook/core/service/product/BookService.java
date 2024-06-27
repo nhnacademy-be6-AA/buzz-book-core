@@ -8,8 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.dto.product.response.BookRequest;
-import store.buzzbook.core.dto.product.response.BookResponse;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
+import store.buzzbook.core.dto.product.BookRequest;
+import store.buzzbook.core.dto.product.BookResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.Publisher;
@@ -76,7 +77,7 @@ public class BookService {
 	public BookResponse getBookById(long id) {
 		Book book = bookRepository.findById(id).orElse(null);
 		if (book == null) {
-			throw new RuntimeException("book not found");
+			throw new DataNotFoundException("book", id);
 		}
 		return BookResponse.convertToBookResponse(book);
 	}
@@ -84,7 +85,7 @@ public class BookService {
 	public BookResponse getBookByProductId(int productId) {
 		Book book = bookRepository.findByProductId(productId);
 		if (book == null) {
-			throw new RuntimeException("book not found = no exist product id");
+			throw new DataNotFoundException("book.productId", productId);
 		}
 		return BookResponse.convertToBookResponse(book);
 	}
@@ -95,7 +96,12 @@ public class BookService {
 	}
 
 	public BookResponse deleteBookById(long id) {
-		Book book = bookRepository.findById(id).orElseThrow();
+
+		Book book = bookRepository.findById(id).orElse(null);
+		if (book == null) {
+			throw new DataNotFoundException("book", id);
+		}
+
 		Product product = productRepository.findById(book.getProduct().getId()).orElseThrow();
 		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(), product.getPrice(),
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,

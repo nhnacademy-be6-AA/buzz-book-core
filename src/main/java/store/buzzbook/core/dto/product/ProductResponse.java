@@ -1,9 +1,8 @@
-package store.buzzbook.core.dto.product.response;
+package store.buzzbook.core.dto.product;
 
-import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
+import static store.buzzbook.core.dto.product.CategoryResponse.*;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
