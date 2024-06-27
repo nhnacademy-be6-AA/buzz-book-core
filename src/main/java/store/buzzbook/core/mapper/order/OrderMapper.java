@@ -35,7 +35,7 @@ public class OrderMapper {
 			.build();
 	}
 
-	public static Order toEntity(CreateOrderRequest createOrderRequest, DeliveryPolicy deliveryPolicy, User user) {
+	public static Order toEntity(CreateOrderRequest createOrderRequest, User user) {
 
 		return Order.builder()
 			.user(user)
@@ -46,7 +46,7 @@ public class OrderMapper {
 			.zipcode(createOrderRequest.getZipcode())
 			.address(createOrderRequest.getAddress())
 			.addressDetail(createOrderRequest.getAddressDetail())
-			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate()))
+			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate(), formatter))
 			.build();
 	}
 }
