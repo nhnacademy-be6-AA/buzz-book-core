@@ -1,9 +1,8 @@
-package store.buzzbook.core.dto.product.response;
+package store.buzzbook.core.dto.product;
 
-import static store.buzzbook.core.dto.product.response.CategoryResponse.*;
+import static store.buzzbook.core.dto.product.CategoryResponse.*;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +16,7 @@ public class ProductResponse {
 	private int id;
 	private int stock;
 	private String productName;
+	private String description;
 	private int price;
 	private LocalDate forwardDate;
 	private int score;
@@ -29,6 +29,7 @@ public class ProductResponse {
 			.id(product.getId())
 			.stock(product.getStock())
 			.productName(product.getProductName())
+			.description(product.getDescription())
 			.price(product.getPrice())
 			.forwardDate(product.getForwardDate())
 			.score(product.getScore())
