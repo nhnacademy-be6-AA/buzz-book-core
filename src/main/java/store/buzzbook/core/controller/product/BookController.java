@@ -1,6 +1,5 @@
 package store.buzzbook.core.controller.product;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,70 +13,64 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.BookRequest;
 import store.buzzbook.core.dto.product.BookResponse;
-import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.service.product.BookService;
 
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
-@Tag(name = "Book Management API", description = "도서 정보 CRUD API")
+@Tag(name = "도서 관리", description = "도서 CR_D")
 public class BookController {
 
 	private final BookService bookService;
 
-	@GetMapping("/{id}")
-	@Operation(summary = "도서 조회", description = "주어진 id(long)에 해당하는 도서 정보를 조회합니다.")
-	@ApiResponses(value =
-		{@ApiResponse(responseCode = "200", description = "성공적으로 도서 정보를 조회한 경우"),
-		@ApiResponse(responseCode = "404", description = "주어진 ID에 해당하는 도서가 없는 경우")})
 
-	public ResponseEntity<BookResponse> getBookById(
-		@PathVariable @Parameter(description = "조회할 도서의 ID", required = true) long id) {
+	@GetMapping("/{id}")
+	@Operation(summary = "도서 조회", description = "주어진 id(long)에 해당하는 도서 정보 조회")
+	@ApiResponse(responseCode = "200", description = "도서 조회가 성공시 도서의 BookResponse 반환")
+
+	public ResponseEntity<BookResponse> getBookById(@PathVariable long id) {
 		BookResponse book = bookService.getBookById(id);
 		return ResponseEntity.ok(book);
 	}
 
-	@PostMapping
-	@Operation(summary = "도서 추가", description = "새로운 도서를 추가합니다. 요청 본문에는 BookRequest DTO를 사용합니다.")
-	@ApiResponses(value =
-		{@ApiResponse(responseCode = "200", description = "도서 추가가 성공하고 추가된 도서 정보를 반환한 경우"),
-		@ApiResponse(responseCode = "400", description = "요청 본문의 데이터가 유효하지 않은 경우")})
 
-	public ResponseEntity<Book> createBook(
-		@RequestBody @Parameter(description = "추가할 도서의 정보", required = true) BookRequest bookReq) {
-		Book savedBook = bookService.saveBook(bookReq);
+	@PostMapping
+	@Operation(summary = "도서 추가", description = "새로운 도서를 추가.<br>요청 본문에는 BookRequest DTO 사용.")
+	@ApiResponse(responseCode = "200", description = "도서 추가 성공시 추가된 도서의 BookResponse 반환")
+
+	public ResponseEntity<BookResponse> createBook(
+		@RequestBody @Parameter(description = "추가할 도서의 정보(BookRequest)", required = true) BookRequest bookReq) {
+		BookResponse savedBook = bookService.saveBook(bookReq);
 		return ResponseEntity.ok(savedBook);
 	}
 
+
 	@DeleteMapping("/{id}")
-	@Operation(summary = "도서 삭제", description = "PathVariable long id로 도서 논리 삭제(product.product_status=SOLD_OUT, product.stock=0, book.product_id=null)")
+	@Operation(summary = "도서 삭제", description = "주어진 id(long)에 해당하는 도서 삭제.<br>데이터가 물리적으로 삭제되지는 않음.<br>(product.product_status=SOLD_OUT, product.stock=0, book.product_id=null)")
+	@ApiResponse(responseCode = "200", description = "도서 삭제 성공시 삭제된 도서의 BookResponse 반환")
+
 	public ResponseEntity<BookResponse> deleteBookById(@PathVariable long id) {
-		BookResponse bookResponse;
-		try {
-			bookResponse = bookService.deleteBookById(id);
-		} catch (DataNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-		}
-		return ResponseEntity.ok(bookResponse);
+		return ResponseEntity.ok(bookService.deleteBookById(id));
 	}
 
-	@GetMapping
-	@Operation(summary = "조건으로 책 목록 조회", description = """
-		조건이 없을경우 모든 책 조회후 page<bookResponse>로 반환
-		boolean hasProduct=true : 상품으로 등록된 책들만 조회
-		int productId = {product_id} : product_id로 단일 책 조회 후 bookResponse 반환
-		""")
 
-	public ResponseEntity<?> getBooks(@RequestParam(required = false, defaultValue = "0") Integer pageNo,
-		@RequestParam(required = false, defaultValue = "10") Integer pageSize,
-		@RequestParam(required = false, defaultValue = "false") Boolean hasProduct,
-		@RequestParam(required = false) Integer productId) {
+	@GetMapping
+	@Operation(summary = "조건으로 책 목록 조회", description = "책을 id 순서로 조회")
+	@ApiResponse(responseCode = "200", description = "조회 성공시 page<bookResponse> 반환<br>상품 id(int) 값이 존재하고 조회 성공시 bookResponse 반환")
+
+	public ResponseEntity<?> getBooks(
+		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호")
+		Integer pageNo,
+		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수")
+		Integer pageSize,
+		@RequestParam(required = false, defaultValue = "false") @Parameter(description = "상품으로 등록된 책들만 조회할지 여부")
+		Boolean hasProduct,
+		@RequestParam(required = false) @Parameter(description = "상품 id(int)로 책을 조회할 경우 사용")
+		Integer productId) {
 
 		if (productId != null) {
 			BookResponse book = bookService.getBookByProductId(productId);

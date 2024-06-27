@@ -19,4 +19,5 @@ public class CustomExceptionHandler {
 	public ResponseEntity<String> handleDataNotFoundException(DataNotFoundException ex) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
 	}
+
 }

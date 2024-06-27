@@ -16,19 +16,21 @@ public class TagService {
 
 	private final TagRepository tagRepository;
 
-	public Tag saveTag(String tagName) {
-		return tagRepository.save(new Tag(tagName));
+	public TagResponse saveTag(String tagName) {
+		Tag tag = new Tag(tagName);
+			tagRepository.save(tag);
+		return TagResponse.convertToTagResponse(tag);
 	}
 
 	public List<TagResponse> getAllTags() {
 		List<Tag> tagList = tagRepository.findAll();
-		return tagList.stream().map(TagResponse::new).toList();
+		return tagList.stream().map(TagResponse::convertToTagResponse).toList();
 	}
 
 	public TagResponse getTagById(int tagId) {
 		Tag tag = tagRepository.findById(tagId)
 			.orElseThrow(() -> new DataNotFoundException("tag", tagId));
-		return new TagResponse(tag);
+		return TagResponse.convertToTagResponse(tag);
 	}
 
 	public TagResponse getTagByName(String tagName) {
@@ -36,7 +38,7 @@ public class TagService {
 		if (tag == null) {
 			throw new DataNotFoundException("tag", tagName);
 		}
-		return new TagResponse(tag);
+		return TagResponse.convertToTagResponse(tag);
 	}
 
 	public void deleteTag(int tagId) {
