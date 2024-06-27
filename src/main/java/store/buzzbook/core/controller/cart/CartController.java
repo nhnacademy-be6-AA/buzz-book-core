@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.cart.CartNotExistsException;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
 import store.buzzbook.core.dto.cart.GetCartResponse;
 import store.buzzbook.core.dto.cart.UpdateCartRequest;
@@ -37,12 +36,7 @@ public class CartController {
 
 		GetCartResponse response = null;
 
-		try {
-			response = cartService.getCartByCartId(cartId);
-		} catch (CartNotExistsException e) {
-			log.debug("잘못된 장바구니 요청입니다.");
-			return ResponseEntity.badRequest().build();
-		}
+		response = cartService.getCartByCartId(cartId);
 
 		return ResponseEntity.ok(response);
 	}
@@ -61,10 +55,6 @@ public class CartController {
 
 		GetCartResponse getCartResponse = cartService.deleteCartDetail(cartId, cartDetailId);
 
-		if (getCartResponse == null) {
-			return ResponseEntity.badRequest().build();
-		}
-
 		return ResponseEntity.ok().body(getCartResponse);
 	}
 
@@ -81,11 +71,7 @@ public class CartController {
 	public ResponseEntity<GetCartResponse> updateCartDetail(@RequestBody UpdateCartRequest updateCartRequest) {
 		GetCartResponse response = null;
 
-		try {
-			response = cartService.updateCart(updateCartRequest);
-		} catch (IllegalArgumentException | CartNotExistsException e) {
-			return ResponseEntity.badRequest().build();
-		}
+		response = cartService.updateCart(updateCartRequest);
 
 		return ResponseEntity.ok().body(response);
 	}
