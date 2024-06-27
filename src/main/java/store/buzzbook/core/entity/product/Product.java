@@ -75,7 +75,6 @@ public class Product {
 		this.category = category;
 	}
 
-
 	public enum StockStatus {
 		SALE, SOLD_OUT, OUT_OF_STOCK
 	}
