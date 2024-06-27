@@ -51,6 +51,11 @@ public class CartDetail {
 			.productId(this.product.getId())
 			.productName(this.product.getProductName())
 			.quantity(this.getQuantity())
+			.thumbnailPath(thumbnailPath)
 			.build();
+	}
+
+	public void changeQuantity(int quantity) {
+		this.quantity = quantity;
 	}
 }

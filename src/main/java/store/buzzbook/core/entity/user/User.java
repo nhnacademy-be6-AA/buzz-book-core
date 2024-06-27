@@ -26,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.UserInfo;
 
 @Builder
 @Getter
@@ -95,5 +96,25 @@ public class User {
 
 	public void deactivate() {
 		this.status = UserStatus.WITHDRAW;
+	}
+
+	public void activate() {
+		this.status = UserStatus.ACTIVE;
+	}
+
+	public void updateLastLoginAt() {
+		this.lastLoginAt = LocalDateTime.now();
+	}
+
+	public UserInfo toUserInfo() {
+		return UserInfo.builder()
+			.id(this.getId())
+			.name(this.getName())
+			.loginId(this.getLoginId())
+			.birthday(this.getBirthday())
+			.isAdmin(this.isAdmin())
+			.contactNumber(this.getContactNumber())
+			.email(this.getEmail())
+			.build();
 	}
 }
