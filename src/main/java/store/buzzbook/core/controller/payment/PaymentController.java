@@ -60,19 +60,19 @@ public class PaymentController {
 	}
 
 	@Operation(summary = "결제 수단 이력 조회", description = "결제 수단 이력 조회")
-	@GetMapping("/payament-log/{id}")
+	@GetMapping("/payment-log/{id}")
 	public ResponseEntity<ReadPaymentLogResponse> getPaymentLog(@PathVariable("id") long id) {
 		return null;
 	}
 
 	@Operation(summary = "결제 수단 이력 모두 조회", description = "결제 수단 이력 모두 조회")
-	@GetMapping("/payament-log")
+	@GetMapping("/payment-log")
 	public ResponseEntity<List<ReadPaymentLogResponse>> getAllPaymentLogs() {
 		return null;
 	}
 
 	@Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
-	@PostMapping("/payament-log")
+	@PostMapping("/payment-log")
 	public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody CreatePaymentLogRequest request) {
 		return null;
 	}

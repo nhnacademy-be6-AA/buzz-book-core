@@ -136,14 +136,12 @@ public class OrderService {
 
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
-		log.warn("OrderService createOrder {}", createOrderRequest.getDeliveryPolicyId());
-
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 
-		UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
 
-		User user = userRepository.findById(userInfo.id())
-			.orElseThrow(() -> new IllegalArgumentException("User not found"));
+		User user = userRepository.findById(userInfo.id()).get();
+
 		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
@@ -160,6 +158,9 @@ public class OrderService {
 
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(()-> new IllegalArgumentException("Product not found"));
+
+			detail.setPrice(product.getPrice());
+
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
 			orderDetail = orderDetailRepository.save(orderDetail);
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail));

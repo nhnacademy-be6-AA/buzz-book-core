@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import store.buzzbook.core.common.util.PageRequestInfo;
 import store.buzzbook.core.dto.user.UserInfo;
 
@@ -14,6 +15,7 @@ import store.buzzbook.core.dto.user.UserInfo;
 @AllArgsConstructor
 @Getter
 @Builder
+@ToString
 public class ReadOrderResponse {
 	private long id;
 	private String orderStr;

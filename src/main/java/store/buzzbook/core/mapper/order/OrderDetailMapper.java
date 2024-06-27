@@ -1,15 +1,9 @@
 package store.buzzbook.core.mapper.order;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
-import store.buzzbook.core.dto.order.ReadOrderResponse;
-import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
@@ -17,8 +11,6 @@ import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 
 public class OrderDetailMapper {
-	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
 
 	public static ReadOrderDetailResponse toDto(OrderDetail orderDetail) {
 		return ReadOrderDetailResponse.builder()
@@ -27,8 +19,7 @@ public class OrderDetailMapper {
 			.wrap(orderDetail.isWrap())
 			.createdAt(orderDetail.getCreateAt())
 			.orderStatus(OrderStatusMapper.toDto(orderDetail.getOrderStatus()))
-			.quantity(orderDetail.getQuantity())
-			.product(orderDetail.getProduct())
+			.quantity(orderDetail.getQuantity()).productId(orderDetail.getProduct().getId())
 			.wrapping(WrappingMapper.toDto(orderDetail.getWrapping()))
 			// .readOrderResponse(readOrderResponse)
 			.build();

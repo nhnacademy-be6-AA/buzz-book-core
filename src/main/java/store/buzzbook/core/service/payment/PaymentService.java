@@ -1,7 +1,6 @@
 package store.buzzbook.core.service.payment;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,8 +40,8 @@ public class PaymentService {
 			OrderDetailMapper::toDto).toList();
 		BillLog billLog = billLogRepository.save(BillLog.builder().price(readPaymentResponse.getTotalAmount()).paymentKey(
 				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
-			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).paymentDate(
-				LocalDate.now()).build());
+			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).payAt(
+				LocalDateTime.now()).build());
 		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
 			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
 			.birthday(order.getUser().getBirthday()).build();

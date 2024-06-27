@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.order;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import lombok.Getter;
@@ -16,7 +17,7 @@ public class ReadOrderRequest extends PageRequestInfo {
 	private String address;
 	private String addressDetail;
 	private int zipcode;
-	private ZonedDateTime desiredDeliveryDate;
+	private LocalDateTime desiredDeliveryDate;
 	private String receiver;
 	private DeliveryPolicy deliveryPolicy;
 	private String userId;
