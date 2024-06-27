@@ -29,4 +29,7 @@ public class ReadOrderResponse {
 	private String receiver;
 	private ReadDeliveryPolicyResponse deliveryPolicy;
 	private List<ReadOrderDetailResponse> details;
+	private String sender;
+	private String receiverContactNumber;
+	private String senderContactNumber;
 }
