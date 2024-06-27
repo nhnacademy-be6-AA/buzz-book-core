@@ -55,7 +55,7 @@ public class CartDetail {
 			.build();
 	}
 
-	public void changeQuantity(Integer quantity) {
+	public void changeQuantity(int quantity) {
 		this.quantity = quantity;
 	}
 }

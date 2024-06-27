@@ -63,30 +63,25 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public GetCartResponse updateCart(UpdateCartRequest updateCartRequest) {
-		return null;
+		Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(updateCartRequest.id());
+
+		if (cartDetailOptional.isEmpty()) {
+			log.debug("잘못된 id로 장바구니 상세 변경 요청입니다. : {}", updateCartRequest.id());
+			throw new IllegalArgumentException();
+		}
+
+		cartDetailOptional.get().changeQuantity(updateCartRequest.quantity());
+
+		cartDetailRepository.save(cartDetailOptional.get());
+		Optional<GetCartResponse> cart = cartRepository.findCartByCartId(updateCartRequest.cartId());
+
+		if (cart.isEmpty()) {
+			log.debug("잘못된 id로 장바구니 find 실패했습니다. : {}", updateCartRequest.cartId());
+			throw new CartNotExistsException(updateCartRequest.cartId());
+		}
+
+		return cart.get();
 	}
-	//
-	// @Override
-	// public GetCartResponse updateCart(UpdateCartRequest updateCartRequest) {
-	// 	Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(updateCartRequest.id());
-	//
-	// 	if (cartDetailOptional.isEmpty()) {
-	// 		log.debug("잘못된 id로 장바구니 상세 변경 요청입니다. : {}", updateCartRequest.id());
-	// 		throw new IllegalArgumentException();
-	// 	}
-	//
-	// 	cartDetailOptional.get().changeQuantity(updateCartRequest.quantity());
-	//
-	// 	cartDetailRepository.save(cartDetailOptional.get());
-	// 	Optional<GetCartResponse> cart = cartRepository.findCartByCartId(updateCartRequest.cartId());
-	//
-	// 	if (cart.isEmpty()) {
-	// 		log.debug("잘못된 id로 장바구니 find 실패했습니다. : {}", updateCartRequest.cartId());
-	// 		throw new CartNotExistsException(updateCartRequest.cartId());
-	// 	}
-	//
-	// 	return cart.get();
-	// }
 
 	@Transactional
 	@Override
@@ -113,21 +108,6 @@ public class CartServiceImpl implements CartService {
 		Cart cart = cartRepository.getReferenceById(cartId);
 		cartRepository.deleteById(cartId);
 		cartDetailRepository.deleteByCart(cart);
-	}
-
-	@Transactional
-	@Override
-	public void updateCartDetail(UpdateCartRequest updateCartRequest) {
-		Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(updateCartRequest.id());
-
-		if (cartDetailOptional.isEmpty()) {
-			log.debug("존재하지 않는 장바구니 상세 id의 업데이트 요청 : {}", updateCartRequest.id());
-			throw new CartNotExistsException(updateCartRequest.id());
-		}
-
-		cartDetailOptional.get().changeQuantity(updateCartRequest.quantity());
-
-		cartDetailRepository.save(cartDetailOptional.get());
 	}
 
 	@Transactional
