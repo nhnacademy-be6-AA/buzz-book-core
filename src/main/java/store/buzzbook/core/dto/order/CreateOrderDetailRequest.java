@@ -1,5 +1,7 @@
 package store.buzzbook.core.dto.order;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +15,7 @@ public class CreateOrderDetailRequest {
 	private int price;
 	private int quantity;
 	private boolean wrap;
-	private String createDate;
+	private LocalDateTime createDate;
 	private int orderStatusId;
 	private Integer wrappingId;
 	@Setter
