@@ -2,6 +2,7 @@ package store.buzzbook.core.controller.payment;
 
 import java.util.List;
 
+import org.json.simple.JSONObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,7 @@ public class PaymentController {
 
 	@Operation(summary = "결제 내역 추가", description = "결제 내역 추가")
 	@PostMapping("/bill-log")
-	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody ReadPaymentResponse createBillLogRequest) {
+	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody JSONObject createBillLogRequest) {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
 	}
 
