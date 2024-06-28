@@ -54,7 +54,7 @@ public class BillLog {
 	private BillStatus status;
 
 	@NotNull
-	private UUID paymentKey;
+	private String paymentKey;
 
 	private String cancelReason;
 }

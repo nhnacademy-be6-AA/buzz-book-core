@@ -5,10 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.json.simple.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -33,13 +36,19 @@ public class PaymentService {
 	private final PaymentLogRepository paymentLogRepository;
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
+	private final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper objectMapper;
 
-	public ReadBillLogResponse createBillLog(ReadPaymentResponse readPaymentResponse) {
+	public ReadBillLogResponse createBillLog(JSONObject jsonResponse) {
+
+		ReadPaymentResponse readPaymentResponse = new ReadPaymentResponse();
+		readPaymentResponse = objectMapper.convertValue(jsonResponse, ReadPaymentResponse.class);
+
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
 			OrderDetailMapper::toDto).toList();
 		BillLog billLog = billLogRepository.save(BillLog.builder().price(readPaymentResponse.getTotalAmount()).paymentKey(
-				UUID.fromString(readPaymentResponse.getPaymentKey())).order(order)
+				readPaymentResponse.getPaymentKey()).order(order)
 			.status(BillStatus.valueOf(readPaymentResponse.getStatus())).payment(readPaymentResponse.getMethod()).payAt(
 				LocalDateTime.now()).build());
 		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
