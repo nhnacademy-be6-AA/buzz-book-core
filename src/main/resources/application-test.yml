@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+    type: org.apache.commons.dbcp2.BasicDataSource
+    initial-size: 3
+    max-total: 5
+    max-idle: 3
+    min-idle: 1
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      format_sql: true
+      use_sql_comments: true
+      highlight_sql: true
+      auto_quote_keyword: true
+      hibernate:
+        globally_quoted_identifiers: true
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.cart;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,20 +12,21 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.entity.product.Product;
 
 @Builder
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
 @Table(name = "cart_detail")
 public class CartDetail {
-	//todo cart detail id 추가
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -33,11 +36,26 @@ public class CartDetail {
 	private Cart cart;
 
 	@NotNull
-	@Min(value = 0)
+	@ColumnDefault(value = "1")
+	@Min(value = 1)
 	private int quantity;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id", nullable = false)
 	private Product product;
+
+	public CartDetailResponse toResponse(String thumbnailPath) {
+		return CartDetailResponse.builder()
+			.id(this.id)
+			.productId(this.product.getId())
+			.productName(this.product.getProductName())
+			.quantity(this.getQuantity())
+			.thumbnailPath(thumbnailPath)
+			.build();
+	}
+
+	public void changeQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
 }

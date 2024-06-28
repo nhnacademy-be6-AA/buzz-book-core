@@ -1,12 +1,12 @@
 package store.buzzbook.core.dto.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 public record UpdateUserRequest(
 	String loginId,
 	String name,
 	String contactNumber,
 	String email,
-	ZonedDateTime birthday
+	LocalDate birthday
 ) {
 }

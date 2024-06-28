@@ -34,4 +34,5 @@ public class ZonedDateTimeParser {
 	public static String toStringDateTime(ZonedDateTime zonedDateTime) {
 		return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 	}
+
 }

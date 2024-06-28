@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import store.buzzbook.core.common.config.JacksonConfig;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.service.user.UserService;
@@ -53,7 +52,7 @@ class SignControllerTest {
 
 		registerUserRequest = RegisterUserRequest.builder()
 			.name("test")
-			.birthday(ZonedDateTimeParser.toStringDate(ZonedDateTime.now()))
+			.birthday(LocalDate.now())
 			.password("asdi2u34911!oj$@eI723")
 			.contactNumber("010-0000-1111")
 			.email("asd123@han.com")

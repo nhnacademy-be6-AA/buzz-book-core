@@ -1,16 +1,9 @@
 package store.buzzbook.core.repository.user;
 
-import java.util.List;
+import java.util.Optional;
 
-import store.buzzbook.core.dto.user.UserInfo;
-import store.buzzbook.core.entity.user.UserStatus;
+import store.buzzbook.core.entity.user.Grade;
 
 public interface UserRepositoryCustom {
-	List<UserInfo> findAllByBirthday(UserInfo userInfo);
-
-	boolean updateLoginDate(String loginId);
-
-	boolean updateStatus(Long userId, UserStatus status);
-
-	boolean updateStatus(String loginId, UserStatus status);
+	Optional<Grade> findGradeByLoginId(String loginId);
 }

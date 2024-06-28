@@ -2,7 +2,8 @@ package store.buzzbook.core.repository.user;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,19 +54,18 @@ class PointLogRepositoryTest {
 		testUser = User.builder()
 			.loginId("ewqur32847")
 			.name("john doe")
-			.grade(testGrade)
 			.email("email123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.birthday(ZonedDateTime.now())
-			.modifyDate(ZonedDateTime.now())
-			.createDate(ZonedDateTime.now())
+			.birthday(LocalDate.now())
+			.modifyAt(LocalDateTime.now())
+			.createAt(LocalDateTime.now())
 			.password("encrytedsolongpassword123345")
-			.lastLoginDate(ZonedDateTime.now())
+			.lastLoginAt(LocalDateTime.now())
 			.status(UserStatus.ACTIVE)
 			.build();
 
 		testPointLog = PointLog.builder()
-			.createDate(ZonedDateTime.now())
+			.createdAt(LocalDateTime.now())
 			.inquiry("book")
 			.delta(-10000)
 			.user(testUser)
@@ -82,7 +82,7 @@ class PointLogRepositoryTest {
 	void save() {
 		// given
 		PointLog newPointLog = PointLog.builder()
-			.createDate(ZonedDateTime.now())
+			.createdAt(LocalDateTime.now())
 			.inquiry("book")
 			.delta(50000)
 			.user(testUser)
@@ -104,7 +104,7 @@ class PointLogRepositoryTest {
 	void findByUserId() {
 		// given
 		PointLog newPointLog = PointLog.builder()
-			.createDate(ZonedDateTime.now())
+			.createdAt(LocalDateTime.now())
 			.inquiry("book")
 			.delta(50000)
 			.user(testUser)

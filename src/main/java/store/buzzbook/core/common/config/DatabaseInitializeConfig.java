@@ -25,7 +25,7 @@ public class DatabaseInitializeConfig {
 		return args -> {
 			for (int i = 0; i < GradeName.values().length; i++) {
 				GradeName gradeName = GradeName.values()[i];
-				log.info("Initializing grade name : {}", gradeName);
+				log.debug("Initializing grade name : {}", gradeName);
 
 				Grade grade = Grade.builder()
 					.name(gradeName)

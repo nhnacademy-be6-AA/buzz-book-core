@@ -6,7 +6,7 @@ spring:
     name: core-api
 
   profiles:
-    active: dev
+    default: test
 
 
   jpa:
@@ -25,6 +25,12 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+
+  rabbitmq:
+    host: 133.186.241.167
+    port: 5672
+    username: admin
+    password: nhnacademy123!
 
 aladin:
   api:

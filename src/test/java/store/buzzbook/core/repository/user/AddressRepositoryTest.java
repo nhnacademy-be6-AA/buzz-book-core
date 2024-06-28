@@ -1,6 +1,7 @@
 package store.buzzbook.core.repository.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -52,14 +53,13 @@ class AddressRepositoryTest {
 		user = User.builder()
 			.loginId("iojerw398")
 			.name("john doe")
-			.grade(grade)
 			.email("email123@nhn.com")
 			.contactNumber("010-0000-1111")
-			.birthday(ZonedDateTime.now())
-			.modifyDate(ZonedDateTime.now())
-			.createDate(ZonedDateTime.now())
+			.birthday(LocalDate.now())
+			.modifyAt(LocalDateTime.now())
+			.createAt(LocalDateTime.now())
 			.password("encrytedsolongpassword123345")
-			.lastLoginDate(ZonedDateTime.now())
+			.lastLoginAt(LocalDateTime.now())
 			.status(UserStatus.ACTIVE).build();
 		userRepository.save(user);
 

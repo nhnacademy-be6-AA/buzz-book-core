@@ -1,6 +1,6 @@
 package store.buzzbook.core.entity.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,15 +37,18 @@ public class UserAuth {
 	private User user;
 
 	@NotNull
+	@Size(max = 20)
 	@Column(name = "provider")
 	private String provider;
 
 	@NotNull
+	@Size(max = 255)
 	@Column(name = "token")
-	private String authToken;
+	private String token;
 
 	@NotNull
-	@Column(name = "create_date")
-	private ZonedDateTime authCreateDate;
+	@Past
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 }

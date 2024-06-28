@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.user;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,14 +56,13 @@ class AddressServiceTest {
 		user = User.builder()
 			.id(100L)
 			.password("ds4f6a4fd6@#8rfe84r64er")
-			.createDate(ZonedDateTime.now())
-			.birthday(ZonedDateTime.now())
+			.createAt(LocalDateTime.now())
+			.birthday(LocalDate.now())
 			.status(UserStatus.ACTIVE)
 			.loginId("asd123")
 			.name("테스트")
 			.email("qqqq132@test.com")
-			.contactNumber("01097946333")
-			.grade(grade).build();
+			.contactNumber("01097946333").build();
 
 		createAddressRequest =
 			new CreateAddressRequest("광주광역시",

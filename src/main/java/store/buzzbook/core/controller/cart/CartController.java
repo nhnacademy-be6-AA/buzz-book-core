@@ -1,5 +1,8 @@
 package store.buzzbook.core.controller.cart;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -7,54 +10,69 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
-import store.buzzbook.core.dto.cart.DeleteCartDetailRequest;
-import store.buzzbook.core.service.user.CartService;
+import store.buzzbook.core.dto.cart.GetCartResponse;
+import store.buzzbook.core.dto.cart.UpdateCartRequest;
+import store.buzzbook.core.service.cart.CartService;
 
 @RestController
 @RequestMapping("/api/cart")
-@Api("장바구니 관련 api")
+@Tag(name = "장바구니 관련 api")
+@RequiredArgsConstructor
 public class CartController {
-	private CartService cartService;
+	private static final Logger log = LoggerFactory.getLogger(CartController.class);
+	private final CartService cartService;
 
-	@GetMapping("/{cartId}")
-	@ApiOperation("장바구니 내용을 가져온다. cartId를 넘기되, null 혹은 음수라면 새로운 장바구니로 인식한다.")
-	public void getCartByCartId(@PathVariable Long cartId) {
-		if (cartId < 0L) {
-			cartService.createNewCart(null);
-		}
+	@GetMapping
+	@Operation(summary = "장바구니 조회(비회원)", description = "카트 id로 장바구니 내용을 가져온다.")
+	public ResponseEntity<GetCartResponse> getCartByCartId(@RequestParam Long cartId) {
+		log.debug("장바구니 아이디로 장바구니 조회 요청 : {}", cartId);
 
-		//todo 비회원 회원 구분을 위한 바디 원함.
-		if (cartId > -1L) {
-			//cartService.createNewCart()
-		}
+		GetCartResponse response = null;
+
+		response = cartService.getCartByCartId(cartId);
+
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping
-	@ApiOperation("장바구니 내용을 추가한다. cartId, product id를 넘기되, null 혹은 음수라면 새로운 장바구니로 인식한다.")
-	public void createCartDetail(@RequestBody CreateCartDetailRequest createCartDetailRequest) {
-		/* todo cart id가 null or -1이라면 새로운 cart
-		user id가 null or -1이라면 비회원
-		카트 내용 변경시 create date 변경
+	@Operation(summary = "장바구니 내용물 생성", description = "장바구니 내용을 추가한다. 상품, 상품 갯수 필요")
+	public ResponseEntity<Void> createCartDetail(@RequestBody CreateCartDetailRequest createCartDetailRequest) {
+		cartService.createCartDetail(createCartDetailRequest);
+		return ResponseEntity.ok().build();
+	}
 
-		비회원 + 새로운 카트라면 return으로 프론트엔드에서
-		Redis에 새로운 비회원 카트 아이디를 저장하도록 명령.
-		 */
+	@DeleteMapping("/{cartDetailId}")
+	@Operation(summary = "장바구니 물건 제거", description = "장바구니 내용을 제거한다.")
+	public ResponseEntity<GetCartResponse> deleteCartDetail(@RequestParam("cartId") Long cartId,
+		@PathVariable("cartDetailId") Long cartDetailId) {
+
+		GetCartResponse getCartResponse = cartService.deleteCartDetail(cartId, cartDetailId);
+
+		return ResponseEntity.ok().body(getCartResponse);
 	}
 
 	@DeleteMapping
-	@ApiOperation("장바구니 내용을 제거한다. cartId와 상품Id를 넘겨 받는다.")
-	public void deleteCartDetail(@RequestBody DeleteCartDetailRequest deleteCartDetailRequest) {
+	@Operation(summary = "장바구니 물건 모두 제거", description = "장바구니 내용을 모두 제거한다.")
+	public ResponseEntity<Void> deleteAllCartDetail(@RequestParam Long cartDetailId) {
+		cartService.deleteAll(cartDetailId);
 
+		return ResponseEntity.ok().build();
 	}
 
 	@PutMapping
-	@ApiOperation("장바구니 내용을 변경한다. Create와 유사하다. cart id가 null 혹은 음수일 경우 오류로 인식한다.")
-	public void updateCartDetail(@RequestBody CreateCartDetailRequest createCartDetailRequest) {
+	@Operation(summary = "장바구니 내용 변경", description = "장바구니 내용을 변경한다. Create와 유사하다.")
+	public ResponseEntity<GetCartResponse> updateCartDetail(@RequestBody UpdateCartRequest updateCartRequest) {
+		GetCartResponse response = null;
 
+		response = cartService.updateCart(updateCartRequest);
+
+		return ResponseEntity.ok().body(response);
 	}
 }
