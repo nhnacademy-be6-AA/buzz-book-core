@@ -15,15 +15,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
+import store.buzzbook.core.dto.payment.CreatePaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
+import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
+import store.buzzbook.core.entity.payment.PaymentLog;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
+import store.buzzbook.core.mapper.payment.PaymentLogMapper;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
@@ -36,13 +40,11 @@ public class PaymentService {
 	private final PaymentLogRepository paymentLogRepository;
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
-	private final ObjectMapper mapper = new ObjectMapper();
 	private final ObjectMapper objectMapper;
 
-	public ReadBillLogResponse createBillLog(JSONObject jsonResponse) {
+	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
-		ReadPaymentResponse readPaymentResponse = new ReadPaymentResponse();
-		readPaymentResponse = objectMapper.convertValue(jsonResponse, ReadPaymentResponse.class);
+		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject, ReadPaymentResponse.class);
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
@@ -104,5 +106,21 @@ public class PaymentService {
 			.birthday(order.getUser().getBirthday()).build();
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+	}
+
+	public ReadPaymentLogResponse createPaymentLog(JSONObject paymentRequestObject) {
+		CreatePaymentLogRequest createPaymentLogRequest = objectMapper.convertValue(paymentRequestObject, CreatePaymentLogRequest.class);
+
+		BillLog billLog = billLogRepository.findById(createPaymentLogRequest.getBillLogId()).orElseThrow(() -> new IllegalArgumentException("Bill log not found"));
+
+		PaymentLog paymentLog = paymentLogRepository.save(PaymentLogMapper.toEntity(createPaymentLogRequest, billLog));
+
+		Order order = orderRepository.findByOrderStr(createPaymentLogRequest.getOrderId());
+
+		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday()).build();
+
+		return PaymentLogMapper.toDto(paymentLog, readBillLog(userInfo.id(), order.getOrderStr()));
 	}
 }

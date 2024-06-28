@@ -62,7 +62,6 @@ public class OrderController {
 	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
 		ReadOrderResponse response = orderService.createOrder(createOrderRequest);
-		log.warn(response.toString());
 		return ResponseEntity.ok(response);
 	}
 
