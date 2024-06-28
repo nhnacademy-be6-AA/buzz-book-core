@@ -11,7 +11,8 @@ import store.buzzbook.core.entity.payment.BillLog;
 @Getter
 public class CreatePaymentLogRequest {
 	private long billLogId;
-
 	private String name;
-	private int price;
+	private int amount;
+	private String loginId;
+	private String orderId;
 }

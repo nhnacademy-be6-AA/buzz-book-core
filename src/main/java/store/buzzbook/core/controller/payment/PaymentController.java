@@ -74,8 +74,8 @@ public class PaymentController {
 
 	@Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
 	@PostMapping("/payment-log")
-	public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody CreatePaymentLogRequest request) {
-		return null;
+	public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
+		return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
 	}
 
 }
