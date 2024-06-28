@@ -19,6 +19,6 @@ public class CashReceipt {
 	private String transactionType;
 	private String issueStatus;
 	private Failure failure;
-	private CustomerIdentityNumber customerIdentityNumber;
+	private String customerIdentityNumber;
 	private String requestedAt;
 }

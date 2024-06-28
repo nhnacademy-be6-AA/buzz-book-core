@@ -23,7 +23,7 @@ public class ReadBillLogResponse {
 
 	private BillStatus status;
 
-	private UUID paymentKey;
+	private String paymentKey;
 	private ReadOrderResponse readOrderResponse;
 	private String cancelReason;
 }
