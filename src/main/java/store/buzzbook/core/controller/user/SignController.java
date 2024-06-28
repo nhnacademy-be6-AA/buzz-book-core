@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,7 +51,7 @@ public class SignController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PatchMapping("/login")
+	@PutMapping("/login")
 	@Operation(summary = "로그인 성공 처리", description = "로그인 성공시 해당 회원 정보 리턴")
 	public ResponseEntity<UserInfo> successLogin(@RequestBody String loginId) {
 		UserInfo userInfo = userService.successLogin(loginId);
