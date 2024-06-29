@@ -3,13 +3,10 @@ POST http://127.0.0.1:8090/api/orders/list
 Content-Type: application/json
 
 {
-  "price": 1000,
-  "loginId": "ps",
-  "deliveryPolicyId": "1",
-  "isAdmin": true,
-  "page": 0,
+  "loginId": "parkseol",
+  "page": 1,
   "size": 5,
-  "sortBy": ["price", "loginId", "deliveryPolicyId"],
+  "sortBy": ["price", "orderStr", "desiredDeliveryDate"],
   "sortDesc": [true, true, true]
 }
 
