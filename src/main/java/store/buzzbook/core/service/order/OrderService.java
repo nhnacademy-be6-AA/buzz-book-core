@@ -92,17 +92,6 @@ public class OrderService {
 		return data;
 	}
 
-	public ReadOrderResponse readOrder(long orderId, String loginId) {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(orderId, loginId);
-		List<ReadOrderDetailResponse> details = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			// details.add(OrderDetailMapper.toDto(orderDetail, readOrderResponse));
-		}
-
-		return OrderMapper.toDto(order, details, loginId);
-	}
-
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
