@@ -78,12 +78,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
 	}
 
-	@Operation(summary = "주문 단건 조회", description = "주문 단건 조회")
-	@GetMapping("/{id}")
-	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("login-id") String loginId) {
-		return ResponseEntity.ok(orderService.readOrder(id, loginId));
-	}
-
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
 	@GetMapping("/{id}/details")
 	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable long id) {
