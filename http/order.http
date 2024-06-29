@@ -5,8 +5,6 @@ Content-Type: application/json
 {
   "loginId": "parkseol",
   "page": 1,
-  "size": 5,
-  "sortBy": ["price", "orderStr", "desiredDeliveryDate"],
-  "sortDesc": [true, true, true]
+  "size": 5
 }
 
