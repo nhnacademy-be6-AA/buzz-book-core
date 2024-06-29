@@ -90,9 +90,9 @@ public class PaymentService {
 		return data;
 	}
 
-	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderId) {
+	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderStr) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
-		List<BillLog> billLogs = billLogRepository.findByUserIdAndId(userId, orderId);
+		List<BillLog> billLogs = billLogRepository.findByUserIdAndOrderStr(userId, orderStr);
 
 		for (BillLog newBillLog : billLogs) {
 			responses.add(BillLogMapper.toDtoWithoutOrder(newBillLog));
