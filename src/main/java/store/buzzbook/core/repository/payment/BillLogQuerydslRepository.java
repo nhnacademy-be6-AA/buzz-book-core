@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
-import store.buzzbook.core.dto.payment.ReadBillLogRequest;
+import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 
 public interface BillLogQuerydslRepository {
-	Page<ReadBillLogProjectionResponse> findAll(ReadBillLogRequest request, Pageable pageable);
+	Page<ReadBillLogProjectionResponse> findAll(ReadBillLogsRequest request, Pageable pageable);
 }
