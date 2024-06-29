@@ -13,6 +13,4 @@ import store.buzzbook.core.entity.order.DeliveryPolicy;
 @NoArgsConstructor
 public class ReadOrderRequest extends PageRequestInfo {
 	private String loginId;
-	private LocalDate startDate;
-	private LocalDate endDate;
 }
