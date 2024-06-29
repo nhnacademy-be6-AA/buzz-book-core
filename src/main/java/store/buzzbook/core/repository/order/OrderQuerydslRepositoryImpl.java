@@ -4,8 +4,6 @@ import static store.buzzbook.core.entity.order.QOrder.*;
 import static store.buzzbook.core.entity.order.QOrderDetail.*;
 import static store.buzzbook.core.entity.user.QUser.*;
 
-import java.time.LocalDate;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -13,16 +11,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.util.FunctionUtil;
 import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
