@@ -80,5 +80,4 @@ public class PaymentController {
 	// public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
 	// 	return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
 	// }
-
 }
