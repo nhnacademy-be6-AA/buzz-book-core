@@ -17,7 +17,7 @@ public class ReadOrderWithoutDetailsProjectionResponse {
 	private Long orderId;
 	private String orderStr;
 	private String loginId;
-	private Integer price;
+	private Integer orderPrice;
 	private String request;
 	private String address;
 	private String addressDetail;

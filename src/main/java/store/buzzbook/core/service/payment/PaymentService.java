@@ -82,7 +82,7 @@ public class PaymentService {
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
 		Page<ReadBillLogProjectionResponse> pageBillLogs = billLogRepository.findAll(request, pageable);
-		List<ReadBillLogProjectionResponse> billLogs = new ArrayList<>();
+		List<ReadBillLogProjectionResponse> billLogs = pageBillLogs.getContent();
 
 		data.put("responseData", billLogs);
 		data.put("total", pageBillLogs.getTotalElements());
