@@ -33,7 +33,9 @@ import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.order.OrderService;
+import store.buzzbook.core.service.user.UserService;
 
 @CrossOrigin(origins = "*")
 @Tag(name = "Orders API", description = "주문 관련 API")
@@ -45,12 +47,14 @@ public class OrderController {
 	private static final String SUCCESS = "Deleted";
 
 	private final OrderService orderService;
+	private final UserService userService;
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
 	public ResponseEntity<?> getOrders(@RequestBody ReadOrderRequest request) {
 		Map<String, Object> data = null;
-		if (request.isAdmin()) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
 			data = orderService.readOrders(request);
 		} else {
 			data = orderService.readMyOrders(request);

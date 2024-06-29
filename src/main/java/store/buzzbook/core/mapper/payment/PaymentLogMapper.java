@@ -20,7 +20,7 @@ public class PaymentLogMapper {
 	public static PaymentLog toEntity(CreatePaymentLogRequest createPaymentLogRequest, BillLog billLog) {
 		return PaymentLog.builder()
 			.billLog(billLog)
-			.price(createPaymentLogRequest.getPrice())
+			.price(createPaymentLogRequest.getAmount())
 			.name(createPaymentLogRequest.getName())
 			.build();
 	}
