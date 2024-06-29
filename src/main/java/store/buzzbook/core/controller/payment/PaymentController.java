@@ -35,7 +35,7 @@ public class PaymentController {
 	private final UserService userService;
 
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
-	@PostMapping("/bill-log")
+	@PostMapping("/bill-logs")
 	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest request) {
 		long userId = userService.getUserInfoByLoginId(request.getLoginId()).id();
 
