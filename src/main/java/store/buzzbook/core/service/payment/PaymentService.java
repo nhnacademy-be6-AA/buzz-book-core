@@ -3,7 +3,6 @@ package store.buzzbook.core.service.payment;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.json.simple.JSONObject;
 import org.springframework.data.domain.Page;
@@ -17,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.payment.CreatePaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -96,31 +96,30 @@ public class PaymentService {
 		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
 	}
 
-	public ReadBillLogResponse readBillLog(long userId, String orderId) {
-		BillLog billLog = billLogRepository.findByUserIdAndId(userId, orderId);
-		Order order = orderRepository.findByOrderStr(orderId);
-		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
-			OrderDetailMapper::toDto).toList();
-		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday()).build();
+	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderId) {
+		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
+		List<BillLog> billLogs = billLogRepository.findByUserIdAndId(userId, orderId);
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+		for (BillLog newBillLog : billLogs) {
+			responses.add(BillLogMapper.toDtoWithoutOrder(newBillLog));
+		}
+
+		return responses;
 	}
 
-	public ReadPaymentLogResponse createPaymentLog(JSONObject paymentRequestObject) {
-		CreatePaymentLogRequest createPaymentLogRequest = objectMapper.convertValue(paymentRequestObject, CreatePaymentLogRequest.class);
-
-		BillLog billLog = billLogRepository.findById(createPaymentLogRequest.getBillLogId()).orElseThrow(() -> new IllegalArgumentException("Bill log not found"));
-
-		PaymentLog paymentLog = paymentLogRepository.save(PaymentLogMapper.toEntity(createPaymentLogRequest, billLog));
-
-		Order order = orderRepository.findByOrderStr(createPaymentLogRequest.getOrderId());
-
-		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday()).build();
-
-		return PaymentLogMapper.toDto(paymentLog, readBillLog(userInfo.id(), order.getOrderStr()));
-	}
+	// public ReadPaymentLogResponse createPaymentLog(JSONObject paymentRequestObject) {
+	// 	CreatePaymentLogRequest createPaymentLogRequest = objectMapper.convertValue(paymentRequestObject, CreatePaymentLogRequest.class);
+	//
+	// 	BillLog billLog = billLogRepository.findById(createPaymentLogRequest.getBillLogId()).orElseThrow(() -> new IllegalArgumentException("Bill log not found"));
+	//
+	// 	PaymentLog paymentLog = paymentLogRepository.save(PaymentLogMapper.toEntity(createPaymentLogRequest, billLog));
+	//
+	// 	Order order = orderRepository.findByOrderStr(createPaymentLogRequest.getOrderId());
+	//
+	// 	UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+	// 		.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+	// 		.birthday(order.getUser().getBirthday()).build();
+	//
+	// 	return PaymentLogMapper.toDto(paymentLog, readBillLog(userInfo.id(), order.getOrderStr()));
+	// }
 }
