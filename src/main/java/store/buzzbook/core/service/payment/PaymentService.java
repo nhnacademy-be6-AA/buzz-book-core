@@ -8,9 +8,7 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
-import store.buzzbook.core.dto.payment.ReadBillLogRequest;
+import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
@@ -79,7 +77,7 @@ public class PaymentService {
 	// 	return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
 	// }
 
-	public Map<String, Object> readBillLogs(ReadBillLogRequest request) {
+	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 

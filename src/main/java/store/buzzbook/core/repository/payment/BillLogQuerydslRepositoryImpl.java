@@ -15,14 +15,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderWithoutDetailsProjectionResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
-import store.buzzbook.core.dto.payment.ReadBillLogRequest;
+import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 
 @RequiredArgsConstructor
 public class BillLogQuerydslRepositoryImpl implements BillLogQuerydslRepository {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<ReadBillLogProjectionResponse> findAll(ReadBillLogRequest request, Pageable pageable) {
+	public Page<ReadBillLogProjectionResponse> findAll(ReadBillLogsRequest request, Pageable pageable) {
 		List<ReadBillLogProjectionResponse> results = queryFactory
 			.select(
 				Projections.constructor(
