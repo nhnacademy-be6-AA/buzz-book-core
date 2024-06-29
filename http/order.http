@@ -8,3 +8,24 @@ Content-Type: application/json
   "size": 5
 }
 
+###
+POST http://127.0.0.1:8090/api/payments/bill-log
+Content-Type: application/json
+
+{
+  "loginId": "parkseol",
+  "orderId": 194
+}
+
+
+
+###
+POST http://127.0.0.1:8090/api/payments/admin/bill-logs
+Content-Type: application/json
+
+{
+  "loginId": "parkseol",
+  "page": 1,
+  "size": 5
+}
+
