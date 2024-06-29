@@ -43,7 +43,7 @@ public class PaymentController {
 	}
 
 	@Operation(summary = "관리자의 결제 내역 모두 조회", description = "결제 내역 모두 조회 - 관리자")
-	@GetMapping("/admin/bill-logs")
+	@PostMapping("/admin/bill-logs")
 	public ResponseEntity<?> getAllBillLogs(@RequestBody ReadBillLogsRequest request) {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());

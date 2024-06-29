@@ -9,7 +9,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://127.0.0.1:8090/api/payments/bill-log
+POST http://127.0.0.1:8090/api/payments/bill-logs
 Content-Type: application/json
 
 {

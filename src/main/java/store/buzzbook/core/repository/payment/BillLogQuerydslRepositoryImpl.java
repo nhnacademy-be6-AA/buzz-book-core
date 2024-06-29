@@ -38,7 +38,7 @@ public class BillLogQuerydslRepositoryImpl implements BillLogQuerydslRepository 
 						order.id.as("orderId"),
 						order.orderStr.as("orderStr"),
 						order.user.loginId.as("loginId"),
-						order.price.as("price"),
+						order.price.as("orderPrice"),
 						order.request.as("request"),
 						order.address.as("address"),
 						order.addressDetail.as("addressDetail"),
@@ -52,7 +52,7 @@ public class BillLogQuerydslRepositoryImpl implements BillLogQuerydslRepository 
 					billLog.cancelReason.as("cancelReason")
 				)
 			).from(billLog)
-			.rightJoin(billLog.order, order)
+			.leftJoin(billLog.order, order)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.distinct()
