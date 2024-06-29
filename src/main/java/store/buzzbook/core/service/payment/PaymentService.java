@@ -2,11 +2,14 @@ package store.buzzbook.core.service.payment;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -14,20 +17,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
-import store.buzzbook.core.dto.payment.CreatePaymentLogRequest;
+import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
-import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
-import store.buzzbook.core.entity.payment.PaymentLog;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
-import store.buzzbook.core.mapper.payment.PaymentLogMapper;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
@@ -60,40 +61,35 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
-	public Page<ReadBillLogResponse> readMyBillLogs(String loginId, Pageable pageable) {
-		Page<BillLog> billLogs = billLogRepository.findAllByLoginId(loginId, pageable);
-		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
+	// public Page<ReadBillLogResponse> readMyBillLogs(String loginId, Pageable pageable) {
+	// 	Page<BillLog> billLogs = billLogRepository.findAllByLoginId(loginId, pageable);
+	// 	List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
+	//
+	// 	for (BillLog billLog : billLogs) {
+	// 		Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+	// 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
+	// 			OrderDetailMapper::toDto).toList();
+	// 		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+	// 			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+	// 			.birthday(order.getUser().getBirthday()).build();
+	//
+	// 		readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
+	// 	}
+	//
+	// 	return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
+	// }
 
-		for (BillLog billLog : billLogs) {
-			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
-			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
-				OrderDetailMapper::toDto).toList();
-			UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
-				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday()).build();
+	public Map<String, Object> readBillLogs(ReadBillLogRequest request) {
+		Map<String, Object> data = new HashMap<>();
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
-		}
+		Page<ReadBillLogProjectionResponse> pageBillLogs = billLogRepository.findAll(request, pageable);
+		List<ReadBillLogProjectionResponse> billLogs = new ArrayList<>();
 
-		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
-	}
+		data.put("responseData", billLogs);
+		data.put("total", pageBillLogs.getTotalElements());
 
-	public Page<ReadBillLogResponse> readBillLogs(Pageable pageable) {
-		Page<BillLog> billLogs = billLogRepository.findAll(pageable);
-		List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
-
-		for (BillLog billLog : billLogs) {
-			Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
-			List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
-				OrderDetailMapper::toDto).toList();
-			UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
-				.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday()).build();
-
-			readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
-		}
-
-		return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
+		return data;
 	}
 
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderId) {

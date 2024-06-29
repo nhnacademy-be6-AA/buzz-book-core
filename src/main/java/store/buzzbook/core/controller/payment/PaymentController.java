@@ -1,6 +1,7 @@
 package store.buzzbook.core.controller.payment;
 
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.springframework.data.domain.Pageable;
@@ -18,13 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.dto.payment.ReadBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
-import store.buzzbook.core.dto.payment.CreatePaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentRequest;
-import store.buzzbook.core.dto.payment.ReadPaymentResponse;
-import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
@@ -35,7 +35,6 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class PaymentController {
 	private final PaymentService paymentService;
-	private final UserRepository userRepository;
 	private final UserService userService;
 
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
@@ -48,15 +47,14 @@ public class PaymentController {
 
 	@Operation(summary = "관리자의 결제 내역 모두 조회", description = "결제 내역 모두 조회 - 관리자")
 	@GetMapping("/bill-logs")
-	public ResponseEntity<Page<ReadBillLogResponse>> getAllBillLogs(@RequestParam("login-id") String loginId, @RequestParam("is-admin") boolean isAdmin, Pageable pageable) {
-		Page<ReadBillLogResponse> billLogResponses = null;
-		if (isAdmin) {
-			billLogResponses = paymentService.readBillLogs(pageable);
-		} else {
-			billLogResponses = paymentService.readMyBillLogs(loginId, pageable);
+	public ResponseEntity<?> getAllBillLogs(@RequestBody ReadBillLogRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data = paymentService.readBillLogs(request);
 		}
 
-		return ResponseEntity.ok(billLogResponses);
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "결제 내역 추가", description = "결제 내역 추가")
