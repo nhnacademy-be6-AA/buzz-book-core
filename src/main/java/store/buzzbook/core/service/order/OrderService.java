@@ -1,8 +1,6 @@
 package store.buzzbook.core.service.order;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,16 +11,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
+import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -73,22 +70,10 @@ public class OrderService {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		Page<ReadOrderResponse> pageOrders = orderRepository.findAll(request, pageable);
-		List<ReadOrderResponse> orders = pageOrders.getContent();
-		List<ReadOrderResponse> responses = new ArrayList<>();
+		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAll(request, pageable);
+		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
 
-		for (ReadOrderResponse order : orders) {
-			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-			List<ReadOrderDetailResponse> details = new ArrayList<>();
-
-			for (OrderDetail orderDetail : orderDetails) {
-				details.add(OrderDetailMapper.toDto(orderDetail));
-			}
-
-			responses.add(order);
-		}
-
-		data.put("responseData", responses);
+		data.put("responseData", orders);
 		data.put("total", pageOrders.getTotalElements());
 
 		return data;
@@ -98,40 +83,13 @@ public class OrderService {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		userRepository.findByLoginId(request.getLoginId())
-			.orElseThrow(() -> new IllegalArgumentException("User not found"));
+		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, pageable);
+		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
 
-		Page<ReadOrderResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, pageable);
-		List<ReadOrderResponse> orders = pageOrders.getContent();
-
-		List<ReadOrderResponse> responses = new ArrayList<>();
-
-		for (ReadOrderResponse order : orders) {
-			List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-			List<ReadOrderDetailResponse> details = new ArrayList<>();
-
-			for (OrderDetail orderDetail : orderDetails) {
-				details.add(OrderDetailMapper.toDto(orderDetail));
-			}
-
-			responses.add(order);
-		}
-
-		data.put("responseData", responses);
+		data.put("responseData", orders);
 		data.put("total", pageOrders.getTotalElements());
 
 		return data;
-	}
-
-	public ReadOrderResponse readOrder(long orderId, String loginId) {
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(orderId, loginId);
-		List<ReadOrderDetailResponse> details = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			// details.add(OrderDetailMapper.toDto(orderDetail, readOrderResponse));
-		}
-
-		return OrderMapper.toDto(order, details, loginId);
 	}
 
 	@Transactional
@@ -182,13 +140,13 @@ public class OrderService {
 				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
-		return OrderMapper.toDto(order, readOrderDetailRespons, updateOrderRequest.getUser().loginId());
+		return OrderMapper.toDto(order, readOrderDetailRespons, updateOrderRequest.getLoginId());
 	}
 
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().loginId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getLoginId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
@@ -199,7 +157,7 @@ public class OrderService {
 			}
 		}
 
-		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getUser().loginId());
+		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getLoginId());
 	}
 
 	public List<ReadOrderDetailResponse> readOrderDetails(long orderId) {

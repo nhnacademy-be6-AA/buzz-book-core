@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.order;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -11,16 +12,5 @@ import store.buzzbook.core.entity.order.DeliveryPolicy;
 @Getter
 @NoArgsConstructor
 public class ReadOrderRequest extends PageRequestInfo {
-	private String id;
-	private int price;
-	private String request;
-	private String address;
-	private String addressDetail;
-	private int zipcode;
-	private LocalDateTime desiredDeliveryDate;
-	private String receiver;
-	private DeliveryPolicy deliveryPolicy;
-	private String userId;
 	private String loginId;
-	private boolean isAdmin;
 }

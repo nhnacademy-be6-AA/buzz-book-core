@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class CreateWrappingRequest {
 	private String paper;
 	private int price;
+	private String loginId;
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.UserInfo;
 
 @Builder
 @NoArgsConstructor
@@ -11,4 +12,5 @@ import lombok.NoArgsConstructor;
 @Getter
 public class CreateOrderStatusRequest {
 	private String name;
+	private UserInfo userInfo;
 }

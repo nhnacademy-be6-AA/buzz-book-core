@@ -13,6 +13,6 @@ import store.buzzbook.core.dto.user.UserInfo;
 @Getter
 public class UpdateOrderRequest {
 	private long id;
-	private UserInfo user;
+	private String loginId;
 	private List<UpdateOrderDetailRequest> details;
 }
