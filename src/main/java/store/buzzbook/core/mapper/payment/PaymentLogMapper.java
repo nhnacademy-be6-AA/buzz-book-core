@@ -1,25 +1,24 @@
 package store.buzzbook.core.mapper.payment;
 
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.payment.CreatePaymentLogRequest;
-import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
-import store.buzzbook.core.entity.payment.BillLog;
+import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.PaymentLog;
 
 public class PaymentLogMapper {
-
-	public static ReadPaymentLogResponse toDto(PaymentLog paymentLog, ReadBillLogResponse readBillLogResponse) {
+	public static ReadPaymentLogResponse toDto(PaymentLog paymentLog, ReadOrderResponse readOrderResponse) {
 		return ReadPaymentLogResponse.builder()
 			.id(paymentLog.getId())
 			.name(paymentLog.getName())
 			.price(paymentLog.getPrice())
-			.readBillLogResponse(readBillLogResponse)
+			.readOrderResponse(readOrderResponse)
 			.build();
 	}
 
-	public static PaymentLog toEntity(CreatePaymentLogRequest createPaymentLogRequest, BillLog billLog) {
+	public static PaymentLog toEntity(CreatePaymentLogRequest createPaymentLogRequest, Order order) {
 		return PaymentLog.builder()
-			.billLog(billLog)
+			.order(order)
 			.price(createPaymentLogRequest.getAmount())
 			.name(createPaymentLogRequest.getName())
 			.build();
