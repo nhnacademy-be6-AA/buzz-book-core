@@ -175,6 +175,6 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findById(request.userId())
 			.orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-		user.getCoupons().add(request.couponId());
+		user.getCoupons().add(request.couponCode());
 	}
 }
