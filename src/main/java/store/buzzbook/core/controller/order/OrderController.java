@@ -23,8 +23,12 @@ import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
+import store.buzzbook.core.dto.order.DeleteOrderStatusRequest;
+import store.buzzbook.core.dto.order.ReadAllOrderStatusRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrderStatusByIdRequest;
+import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
@@ -45,6 +49,7 @@ import store.buzzbook.core.service.user.UserService;
 @Slf4j
 public class OrderController {
 	private static final String SUCCESS = "Deleted";
+	private static final String FAILURE = "Failed";
 
 	private final OrderService orderService;
 	private final UserService userService;
@@ -71,13 +76,15 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
-	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest) {
-		if (updateOrderRequest.getUser().isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
+	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(orderService.updateOrderWithAdmin(request));
 		}
-		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
+		return ResponseEntity.ok(orderService.updateOrder(request));
 	}
 
+	// 안 씀
 	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
 	@GetMapping("/{id}/details")
 	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable long id) {
@@ -85,40 +92,55 @@ public class OrderController {
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
-	@GetMapping("/status/{name}")
-	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(@PathVariable String name) {
-		return ResponseEntity.ok(orderService.readOrderStatusByName(name));
+	@PostMapping("/status/name")
+	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(@RequestBody ReadOrderStatusByNameRequest request) {
+		return ResponseEntity.ok(orderService.readOrderStatusByName(request.getName()));
 	}
 
 	@Operation(summary = "주문 상태 아이디로 조회", description = "주문 상태 조회")
-	@GetMapping("/status/{id}")
-	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(@PathVariable int id) {
-		return ResponseEntity.ok(orderService.readOrderStatusById(id));
+	@GetMapping("/status/id")
+	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(@RequestBody ReadOrderStatusByIdRequest request) {
+		return ResponseEntity.ok(orderService.readOrderStatusById(request.getStatusId()));
 	}
 
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
 	@GetMapping("/status")
-	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus() {
+	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus(@RequestBody ReadAllOrderStatusRequest request) {
 		return ResponseEntity.ok(orderService.readAllOrderStatus());
 	}
 
 	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
 	@PostMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
-		return ResponseEntity.ok(orderService.createOrderStatus(request));
+	public ResponseEntity<?> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
+		Map<String, Object> data = null;
+		if (request.getUserInfo().isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.createOrderStatus(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
-		return ResponseEntity.ok(orderService.updateOrderStatus(request));
+	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.updateOrderStatus(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
-	@DeleteMapping("/status/{id}")
-	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id) {
-		orderService.deleteOrderStatus(id);
-		return ResponseEntity.ok(SUCCESS);
+	@DeleteMapping("/status")
+	public ResponseEntity<String> deleteOrderStatus(@RequestBody DeleteOrderStatusRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			orderService.deleteOrderStatus(request.getId());
+			return ResponseEntity.ok(SUCCESS);
+		}
+
+		return ResponseEntity.ok(FAILURE);
 	}
 
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")

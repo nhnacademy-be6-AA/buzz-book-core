@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class UpdateOrderStatusRequest {
+	private String loginId;
 	private int id;
 	private String name;
 }
