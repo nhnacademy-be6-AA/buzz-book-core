@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.order.ReadOrderResponse;
 
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -12,8 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ReadPaymentLogResponse {
 	private long id;
-	private ReadBillLogResponse readBillLogResponse;
-
+	private ReadOrderResponse readOrderResponse;
 	private String name;
 	private int price;
 }
