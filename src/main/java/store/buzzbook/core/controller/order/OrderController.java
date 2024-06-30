@@ -186,7 +186,6 @@ public class OrderController {
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
 	@DeleteMapping("/delivery-policy")
 	public ResponseEntity<String> deleteDeliveryPolicy(@RequestBody DeleteDeliveryPolicyRequest request) {
-		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
 		if (userInfo.isAdmin()) {
 			orderService.deleteDeliveryPolicy(request.getId());
