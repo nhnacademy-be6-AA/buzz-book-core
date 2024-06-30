@@ -98,13 +98,13 @@ public class OrderController {
 	}
 
 	@Operation(summary = "주문 상태 아이디로 조회", description = "주문 상태 조회")
-	@GetMapping("/status/id")
+	@PostMapping("/status/id")
 	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(@RequestBody ReadOrderStatusByIdRequest request) {
 		return ResponseEntity.ok(orderService.readOrderStatusById(request.getStatusId()));
 	}
 
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
-	@GetMapping("/status")
+	@PostMapping("/status/all")
 	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus(@RequestBody ReadAllOrderStatusRequest request) {
 		return ResponseEntity.ok(orderService.readAllOrderStatus());
 	}
