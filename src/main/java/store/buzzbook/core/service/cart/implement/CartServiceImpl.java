@@ -11,9 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.cart.CartNotExistsException;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
-import store.buzzbook.core.dto.cart.GetCartResponse;
-import store.buzzbook.core.dto.cart.UpdateCartRequest;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.product.Product;
@@ -35,9 +34,8 @@ public class CartServiceImpl implements CartService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public GetCartResponse getCartByCartId(Long cartId) {
-
-		Optional<GetCartResponse> cartResponseOptional = cartRepository.findCartByCartId(cartId);
+	public List<CartDetailResponse> getCartByCartId(Long cartId) {
+		Optional<List<CartDetailResponse>> cartResponseOptional = cartRepository.findCartByCartId(cartId);
 
 		if (cartResponseOptional.isEmpty()) {
 			log.debug("존재하지 않는 장바구니 id로 조회를 요청했습니다. id : {}", cartId);
@@ -49,45 +47,27 @@ public class CartServiceImpl implements CartService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public GetCartResponse getCartByUserId(Long userId) {
+	public List<CartDetailResponse> getCartByUserId(Long userId) {
+		Optional<Cart> cart = cartRepository.findCartByUserId(userId);
 
-		Optional<GetCartResponse> cartResponseOptional = cartRepository.findCartByUserId(userId);
-
-		if (cartResponseOptional.isEmpty()) {
+		if (cart.isEmpty()) {
 			log.debug("존재하지 않는 회원 id로 조회를 요청했습니다. id : {}", userId);
 			throw new CartNotExistsException(userId);
 		}
 
-		return cartResponseOptional.get();
-	}
+		Optional<List<CartDetailResponse>> cartResponse = cartRepository.findCartByCartId(cart.get().getId());
 
-	@Override
-	public GetCartResponse updateCart(UpdateCartRequest updateCartRequest) {
-		Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(updateCartRequest.id());
-
-		if (cartDetailOptional.isEmpty()) {
-			log.debug("잘못된 id로 장바구니 상세 변경 요청입니다. : {}", updateCartRequest.id());
-			throw new IllegalArgumentException();
+		if (cartResponse.isEmpty()) {
+			return List.of();
 		}
 
-		cartDetailOptional.get().changeQuantity(updateCartRequest.quantity());
-
-		cartDetailRepository.save(cartDetailOptional.get());
-		Optional<GetCartResponse> cart = cartRepository.findCartByCartId(updateCartRequest.cartId());
-
-		if (cart.isEmpty()) {
-			log.debug("잘못된 id로 장바구니 find 실패했습니다. : {}", updateCartRequest.cartId());
-			throw new CartNotExistsException(updateCartRequest.cartId());
-		}
-
-		return cart.get();
+		return cartResponse.get();
 	}
 
 	@Transactional
 	@Override
-	public void createCartDetail(CreateCartDetailRequest createCartDetailRequest) {
-
-		Cart cart = cartRepository.getReferenceById(createCartDetailRequest.cartId());
+	public void createCartDetail(Long cartId, CreateCartDetailRequest createCartDetailRequest) {
+		Cart cart = cartRepository.getReferenceById(cartId);
 		Product product = productRepository.getReferenceById(createCartDetailRequest.productId());
 		cartDetailRepository.save(createCartDetailRequest.toCartDetail(cart, product));
 
@@ -95,11 +75,12 @@ public class CartServiceImpl implements CartService {
 
 	@Transactional
 	@Override
-	public GetCartResponse deleteCartDetail(Long cartId, Long cartDetailId) {
+	public List<CartDetailResponse> deleteCartDetail(Long cartId, Long cartDetailId) {
 		cartDetailRepository.deleteById(cartDetailId);
-		Optional<GetCartResponse> getCartResponseOptional = cartRepository.findCartByCartId(cartId);
 
-		return getCartResponseOptional.orElse(null);
+		Optional<List<CartDetailResponse>> cartResponse = cartRepository.findCartByCartId(cartId);
+
+		return cartResponse.orElse(null);
 	}
 
 	@Transactional
@@ -112,22 +93,22 @@ public class CartServiceImpl implements CartService {
 
 	@Transactional
 	@Override
-	public void updateCartDetail(UpdateCartRequest updateCartRequest) {
-		Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(updateCartRequest.id());
+	public void updateCartDetail(Long cartId, Long detailId, Integer quantity) {
+		Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(detailId);
 
 		if (cartDetailOptional.isEmpty()) {
-			log.debug("존재하지 않는 장바구니 상세 id의 업데이트 요청 : {}", updateCartRequest.id());
-			throw new CartNotExistsException(updateCartRequest.id());
+			log.debug("존재하지 않는 장바구니 상세 id의 업데이트 요청 : {}", detailId);
+			throw new CartNotExistsException(detailId);
 		}
 
-		cartDetailOptional.get().changeQuantity(updateCartRequest.quantity());
+		cartDetailOptional.get().changeQuantity(quantity);
 
 		cartDetailRepository.save(cartDetailOptional.get());
 	}
 
 	@Transactional
 	@Override
-	public GetCartResponse createCart(Long userId) {
+	public Long createCart(Long userId) {
 
 		User fkUser = null;
 		if (Objects.nonNull(userId)) {
@@ -138,10 +119,30 @@ public class CartServiceImpl implements CartService {
 		Cart savedCart = cartRepository.save(
 			Cart.builder().user(fkUser).build());
 
-		return GetCartResponse.builder()
-			.id(savedCart.getId())
-			.cartDetailList(List.of())
-			.userId(userId).build();
+		return savedCart.getId();
+	}
+
+	@Transactional
+	@Override
+	public Long createCart() {
+		Cart savedCart = cartRepository.save(
+			Cart.builder().user(null).build());
+
+		return savedCart.getId();
+	}
+
+	@Transactional
+	@Override
+	public Long getCartIdByUserId(Long userId) {
+
+		Optional<Cart> cart = cartRepository.findCartByUserId(userId);
+
+		if (cart.isEmpty()) {
+			log.debug("해당 유저의 장바구니는 존재하지 않습니다. 자동으로 생성합니다. : {}", userId);
+			return createCart(userId);
+		} else {
+			return cart.get().getId();
+		}
 	}
 
 }

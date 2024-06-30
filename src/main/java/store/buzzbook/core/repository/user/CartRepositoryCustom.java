@@ -1,12 +1,11 @@
 package store.buzzbook.core.repository.user;
 
+import java.util.List;
 import java.util.Optional;
 
-import store.buzzbook.core.dto.cart.GetCartResponse;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 
 public interface CartRepositoryCustom {
-	Optional<GetCartResponse> findCartByCartId(Long cartId);
+	Optional<List<CartDetailResponse>> findCartByCartId(Long cartId);
 
-	Optional<GetCartResponse> findCartByUserId(Long userId);
-	
 }

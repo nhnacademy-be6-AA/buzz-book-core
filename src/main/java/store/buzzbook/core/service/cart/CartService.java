@@ -1,23 +1,26 @@
 package store.buzzbook.core.service.cart;
 
+import java.util.List;
+
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
-import store.buzzbook.core.dto.cart.GetCartResponse;
-import store.buzzbook.core.dto.cart.UpdateCartRequest;
 
 public interface CartService {
-	GetCartResponse getCartByCartId(Long cartId);
+	List<CartDetailResponse> getCartByCartId(Long cartId);
 
-	GetCartResponse createCart(Long userId);
+	Long createCart(Long userId);
 
-	GetCartResponse getCartByUserId(Long userId);
+	Long createCart();
 
-	GetCartResponse updateCart(UpdateCartRequest updateCartRequest);
+	Long getCartIdByUserId(Long userId);
 
-	void createCartDetail(CreateCartDetailRequest createCartDetailRequest);
+	List<CartDetailResponse> getCartByUserId(Long userId);
 
-	GetCartResponse deleteCartDetail(Long cartId, Long cartDetailId);
+	void createCartDetail(Long cartId, CreateCartDetailRequest createCartDetailRequest);
+
+	List<CartDetailResponse> deleteCartDetail(Long cartId, Long detailId);
 
 	void deleteAll(Long cartId);
 
-	void updateCartDetail(UpdateCartRequest updateCartRequest);
+	void updateCartDetail(Long cartId, Long detailId, Integer quantity);
 }
