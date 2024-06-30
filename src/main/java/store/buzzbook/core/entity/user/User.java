@@ -42,8 +42,8 @@ public class User {
 
 	@ElementCollection
 	@CollectionTable(name = "user_coupon", joinColumns = {@JoinColumn(name = "user_id")})
-	@Column(name = "coupon_id")
-	private Set<Long> coupons = new HashSet<>();
+	@Column(name = "coupon_code")
+	private Set<String> coupons = new HashSet<>();
 
 	@NotNull
 	@Size(min = 6, max = 20)
