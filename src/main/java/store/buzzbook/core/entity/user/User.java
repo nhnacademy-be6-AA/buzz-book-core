@@ -26,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 
 @Builder
@@ -113,8 +114,19 @@ public class User {
 			.loginId(this.getLoginId())
 			.birthday(this.getBirthday())
 			.isAdmin(this.isAdmin())
+			.grade(grade)
 			.contactNumber(this.getContactNumber())
 			.email(this.getEmail())
 			.build();
+	}
+
+	public void updateUserBy(UpdateUserRequest request) {
+		this.contactNumber = request.contactNumber();
+		this.name = request.name();
+		this.email = request.email();
+	}
+
+	public void changePassword(String password) {
+		this.password = password;
 	}
 }

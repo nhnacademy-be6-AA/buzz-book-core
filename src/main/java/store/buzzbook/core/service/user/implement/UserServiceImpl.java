@@ -3,21 +3,27 @@ package store.buzzbook.core.service.user.implement;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.common.exception.user.DeactivateUserException;
+import store.buzzbook.core.common.exception.user.DeactivatedUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
+import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
+import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
+import store.buzzbook.core.dto.user.ChangePasswordRequest;
+import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
+import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
@@ -44,12 +50,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
-
 		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
 		if (isDeactivate) {
 			log.debug("로그인 실패 : 탈퇴한 유저의 아이디 {} 입니다.", user.getId());
-			throw new DeactivateUserException(loginId);
+			throw new DeactivatedUserException(loginId);
 		}
 
 		return LoginUserResponse.convertFrom(user);
@@ -59,7 +64,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserInfo successLogin(String loginId) {
 		log.debug("최근 로그인 일자 업데이트 : {} ", loginId);
-
 		Optional<User> userOptional = userRepository.findByLoginId(loginId);
 
 		if (userOptional.isEmpty()) {
@@ -73,9 +77,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		userOptional.get().updateLastLoginAt();
-
 		User updatedUser = userRepository.save(userOptional.get());
-
 		return updatedUser.toUserInfo(gradeOptional.get());
 	}
 
@@ -117,7 +119,7 @@ public class UserServiceImpl implements UserService {
 
 	@Transactional
 	@Override
-	public boolean deactivate(Long userId, String reason) {
+	public void deactivate(Long userId, DeactivateUserRequest deactivateUserRequest) {
 		Optional<User> userOptional = userRepository.findById(userId);
 
 		if (userOptional.isEmpty()) {
@@ -125,18 +127,21 @@ public class UserServiceImpl implements UserService {
 			throw new UserNotFoundException(userId);
 		}
 
+		if (!BCrypt.checkpw(deactivateUserRequest.password(), userOptional.get().getPassword())) {
+			log.debug("탈퇴 요청 중 비밀번호가 틀렸습니다. : {}", userId);
+			throw new PasswordIncorrectException();
+		}
+
 		Deactivation deactivation = Deactivation.builder()
 			.deactivationAt(LocalDateTime.now())
-			.reason(reason)
+			.reason(deactivateUserRequest.reason())
 			.user(userOptional.get()).build();
 
-		Deactivation savedData = deactivationRepository.save(deactivation);
+		deactivationRepository.save(deactivation);
 
 		userOptional.get().deactivate();
 
 		userRepository.save(userOptional.get());
-
-		return savedData.getUser().getId().equals(userId);
 	}
 
 	@Transactional
@@ -152,6 +157,45 @@ public class UserServiceImpl implements UserService {
 		userOptional.get().activate();
 
 		userRepository.save(userOptional.get());
+	}
+
+	@Transactional
+	@Override
+	public UserInfo updateUserInfo(Long userId, UpdateUserRequest updateUserRequest) {
+		Optional<User> user = userRepository.findById(userId);
+
+		if (user.isEmpty()) {
+			log.debug("존재하지 않는 userId 입니다. : {}", userId);
+			throw new UserNotFoundException(userId);
+		}
+
+		user.get().updateUserBy(updateUserRequest);
+		User updatedUser = userRepository.save(user.get());
+		Optional<Grade> grade = userRepository.findGradeByLoginId(updatedUser.getLoginId());
+
+		if (grade.isEmpty()) {
+			throw new GradeNotFoundException(userId);
+		}
+
+		return updatedUser.toUserInfo(grade.get());
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public UserInfo getUserInfoByUserId(Long userId) {
+		Optional<User> user = userRepository.findById(userId);
+
+		if (user.isEmpty()) {
+			throw new UserNotFoundException(userId);
+		}
+
+		Optional<Grade> grade = userRepository.findGradeByLoginId(user.get().getLoginId());
+
+		if (grade.isEmpty()) {
+			throw new GradeNotFoundException(userId);
+		}
+
+		return user.get().toUserInfo(grade.get());
 	}
 
 	@Transactional(readOnly = true)
@@ -175,5 +219,28 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new UserNotFoundException(request.userId()));
 
 		user.getCoupons().add(request.couponId());
+	}
+
+	@Override
+	public void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
+
+		if (!isPasswordEncrypted(changePasswordRequest.newPassword())) {
+			log.debug("암호화되지 않은 비밀번호입니다. 프론트 서버를 확인해주세요.");
+			throw new UnEncryptedPasswordException(userId);
+		}
+
+		Optional<User> user = userRepository.findById(userId);
+
+		if (user.isEmpty()) {
+			log.debug("잘못된 유저id의 요청으로 비밀번호 변경에 실패했습니다. : {}", userId);
+			throw new UserNotFoundException(userId);
+		}
+
+		user.get().changePassword(changePasswordRequest.newPassword());
+		userRepository.save(user.get());
+	}
+
+	private boolean isPasswordEncrypted(String password) {
+		return password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$");
 	}
 }
