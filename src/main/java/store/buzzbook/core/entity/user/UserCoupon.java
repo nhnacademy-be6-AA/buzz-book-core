@@ -29,8 +29,8 @@ public class UserCoupon {
 	private long id;
 
 	@NotNull
-	@Column(name = "coupon_id")
-	private long couponId;
+	@Column(name = "coupon_code")
+	private String couponCode;
 
 	@NotNull
 	@OneToOne(fetch = FetchType.LAZY)
