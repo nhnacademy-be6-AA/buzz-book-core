@@ -25,8 +25,10 @@ import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.DeleteDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.DeleteOrderStatusRequest;
+import store.buzzbook.core.dto.order.DeleteWrappingRequest;
 import store.buzzbook.core.dto.order.ReadAllDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadAllOrderStatusRequest;
+import store.buzzbook.core.dto.order.ReadAllWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
@@ -35,6 +37,7 @@ import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.ReadWrappingRequest;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
@@ -194,33 +197,47 @@ public class OrderController {
 	}
 
 	@Operation(summary = "포장 조회", description = "포장 조회")
-	@GetMapping("/wrapping/{id}")
-	public ResponseEntity<ReadWrappingResponse> getWrapping(@PathVariable int id) {
-		return ResponseEntity.ok(orderService.readWrappingById(id));
+	@PostMapping("/wrapping/id")
+	public ResponseEntity<ReadWrappingResponse> getWrapping(@RequestBody ReadWrappingRequest request) {
+		return ResponseEntity.ok(orderService.readWrappingById(request.getId()));
 	}
 
 	@Operation(summary = "포장 모두 조회", description = "포장 모두 조회")
-	@GetMapping("/wrapping")
-	public ResponseEntity<List<ReadWrappingResponse>> getAllWrappings() {
+	@PostMapping("/wrapping/all")
+	public ResponseEntity<List<ReadWrappingResponse>> getAllWrappings(@RequestBody ReadAllWrappingRequest request) {
 		return ResponseEntity.ok(orderService.readAllWrapping());
 	}
 
 	@Operation(summary = "포장 등록", description = "포장 등록")
 	@PostMapping("/wrapping")
-	public ResponseEntity<ReadWrappingResponse> createWrapping(@RequestBody CreateWrappingRequest request) {
-		return ResponseEntity.ok(orderService.createWrapping(request));
+	public ResponseEntity<?> createWrapping(@RequestBody CreateWrappingRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.createWrapping(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "포장 수정", description = "포장 수정")
 	@PutMapping("/wrapping")
-	public ResponseEntity<ReadWrappingResponse> updateWrapping(@RequestBody UpdateWrappingRequest request) {
-		return ResponseEntity.ok(orderService.updateWrapping(request));
+	public ResponseEntity<?> updateWrapping(@RequestBody UpdateWrappingRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.updateWrapping(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "포장 삭제", description = "포장 삭제")
-	@DeleteMapping("/wrapping/{id}")
-	public ResponseEntity<String> deleteWrapping(@PathVariable int id) {
-		orderService.deleteWrapping(id);
-		return ResponseEntity.ok(SUCCESS);
+	@DeleteMapping("/wrapping")
+	public ResponseEntity<String> deleteWrapping(@RequestBody DeleteWrappingRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			orderService.deleteWrapping(request.getId());
+			return ResponseEntity.ok(SUCCESS);
+		}
+		return ResponseEntity.ok(FAILURE);
 	}
 }
