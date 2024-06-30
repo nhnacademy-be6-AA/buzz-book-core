@@ -140,13 +140,13 @@ public class OrderService {
 				readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetailRepository.save(orderDetail)));
 			}
 		}
-		return OrderMapper.toDto(order, readOrderDetailRespons, updateOrderRequest.getUser().loginId());
+		return OrderMapper.toDto(order, readOrderDetailRespons, updateOrderRequest.getLoginId());
 	}
 
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findById(updateOrderRequest.getId())
 			.orElseThrow(()-> new IllegalArgumentException("Order not found"));
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getUser().loginId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(updateOrderRequest.getId(), updateOrderRequest.getLoginId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
@@ -157,7 +157,7 @@ public class OrderService {
 			}
 		}
 
-		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getUser().loginId());
+		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getLoginId());
 	}
 
 	public List<ReadOrderDetailResponse> readOrderDetails(long orderId) {
