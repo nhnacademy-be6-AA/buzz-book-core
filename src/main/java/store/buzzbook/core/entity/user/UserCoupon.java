@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -29,11 +30,15 @@ public class UserCoupon {
 	private long id;
 
 	@NotNull
-	@Column(name = "coupon_code")
+	@Column(name = "coupon_code", length = 14)
 	private String couponCode;
 
 	@NotNull
-	@OneToOne(fetch = FetchType.LAZY)
+	@Column(name= "coupon_policy_id")
+	private int couponPolicyId;
+
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
 

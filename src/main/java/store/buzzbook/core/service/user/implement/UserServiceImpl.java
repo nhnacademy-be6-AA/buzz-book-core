@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
@@ -15,6 +16,7 @@ import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
+import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -24,9 +26,11 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
+import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.UserService;
 
@@ -40,6 +44,7 @@ public class UserServiceImpl implements UserService {
 	private final DeactivationRepository deactivationRepository;
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
+	private final UserCouponRepository userCouponRepository;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -175,6 +180,25 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findById(request.userId())
 			.orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-		user.getCoupons().add(request.couponCode());
+		if(userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
+			throw new UserCouponAlreadyExistsException();
+		}
+
+		UserCoupon userCoupon = UserCoupon.builder()
+			.user(user)
+			.couponPolicyId(request.couponPolicyId())
+			.couponCode(request.couponCode())
+			.build();
+
+		userCouponRepository.save(userCoupon);
+	}
+
+	@Override
+	public void downloadCoupon(DownloadCouponRequest request) {
+		if(userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
+			throw new UserCouponAlreadyExistsException();
+		}
+
+		userProducerService.sendDownloadCouponRequest(request);
 	}
 }
