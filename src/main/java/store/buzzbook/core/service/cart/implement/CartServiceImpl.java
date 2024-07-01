@@ -110,19 +110,9 @@ public class CartServiceImpl implements CartService {
 		cartDetailRepository.deleteByCart(cart);
 	}
 
-	@Transactional
 	@Override
 	public void updateCartDetail(UpdateCartRequest updateCartRequest) {
-		Optional<CartDetail> cartDetailOptional = cartDetailRepository.findById(updateCartRequest.id());
 
-		if (cartDetailOptional.isEmpty()) {
-			log.debug("존재하지 않는 장바구니 상세 id의 업데이트 요청 : {}", updateCartRequest.id());
-			throw new CartNotExistsException(updateCartRequest.id());
-		}
-
-		cartDetailOptional.get().changeQuantity(updateCartRequest.quantity());
-
-		cartDetailRepository.save(cartDetailOptional.get());
 	}
 
 	@Transactional

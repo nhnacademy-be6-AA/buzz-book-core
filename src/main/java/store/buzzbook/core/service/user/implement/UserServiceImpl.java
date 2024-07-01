@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.DeactivateUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
@@ -26,11 +25,9 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
-import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.UserService;
 
@@ -44,7 +41,6 @@ public class UserServiceImpl implements UserService {
 	private final DeactivationRepository deactivationRepository;
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
-	private final UserCouponRepository userCouponRepository;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -54,7 +50,7 @@ public class UserServiceImpl implements UserService {
 		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
 		if (isDeactivate) {
-			log.debug("로그인 실패 : 탈퇴한 유저의 아이디 {} 입니다.", user.getId());
+			log.warn("로그인 실패 : 탈퇴한 유저의 아이디({})입니다.", user.getId());
 			throw new DeactivateUserException(loginId);
 		}
 
@@ -64,7 +60,7 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public UserInfo successLogin(String loginId) {
-		log.debug("최근 로그인 일자 업데이트 : {} ", loginId);
+		log.info("최근 로그인 일자 업데이트 : {} ", loginId);
 
 		Optional<User> userOptional = userRepository.findByLoginId(loginId);
 
@@ -95,7 +91,7 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
 
 		if (userRepository.existsByLoginId(loginId)) {
-			log.debug("유저 아이디 {} 중복 회원가입 실패 ", loginId);
+			log.warn("유저 아이디 {} 중복 회원가입 실패 ", loginId);
 			throw new UserAlreadyExistsException(loginId);
 		}
 
@@ -151,7 +147,7 @@ public class UserServiceImpl implements UserService {
 		Optional<User> userOptional = userRepository.findByLoginId(loginId);
 
 		if (userOptional.isEmpty()) {
-			log.debug("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
+			log.warn("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
 			throw new UserNotFoundException(loginId);
 		}
 
@@ -174,31 +170,14 @@ public class UserServiceImpl implements UserService {
 		return user.toUserInfo(gradeOptional.get());
 	}
 
-	@Transactional
 	@Override
 	public void addUserCoupon(CreateUserCouponRequest request) {
-		User user = userRepository.findById(request.userId())
-			.orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-		if(userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
-			throw new UserCouponAlreadyExistsException();
-		}
-
-		UserCoupon userCoupon = UserCoupon.builder()
-			.user(user)
-			.couponPolicyId(request.couponPolicyId())
-			.couponCode(request.couponCode())
-			.build();
-
-		userCouponRepository.save(userCoupon);
 	}
 
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
-		if(userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
-			throw new UserCouponAlreadyExistsException();
-		}
 
-		userProducerService.sendDownloadCouponRequest(request);
 	}
+
 }
