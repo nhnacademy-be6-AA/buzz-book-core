@@ -116,10 +116,14 @@ public class ProductService {
 		return productRepository.save(updatedProduct);
 	}
 
-	public void deleteProduct(int productId) {
-		if (!productRepository.existsById(productId)) {
-			throw new DataNotFoundException("product", productId);
-		}
-		productRepository.deleteById(productId);
+	public Product deleteProduct(int productId) {
+		Product product = productRepository.findById(productId).orElseThrow(() -> new DataNotFoundException("product", productId));
+
+		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(), product.getPrice(),
+			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
+			product.getCategory(), product.getProductTag());
+		productRepository.save(newProduct);
+
+		return productRepository.save(newProduct);
 	}
 }
