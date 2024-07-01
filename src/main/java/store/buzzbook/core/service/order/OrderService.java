@@ -303,4 +303,56 @@ public class OrderService {
 	public List<ReadWrappingResponse> readAllWrapping() {
 		return wrappingRepository.findAll().stream().map(WrappingMapper::toDto).toList();
 	}
+
+	public ReadOrderDetailResponse updateOrderDetail(UpdateOrderDetailRequest request) {
+		OrderDetail orderDetail = orderDetailRepository.findByIdAndOrder_User_LoginId(request.getId(), request.getLoginId());
+		orderDetailRepository.save(OrderDetail.builder()
+			.orderStatus(orderStatusRepository.findByName(request.getOrderStatusName()))
+			.id(orderDetail.getId())
+			.wrap(orderDetail.isWrap())
+			.createAt(orderDetail.getCreateAt())
+			.price(orderDetail.getPrice())
+			.quantity(orderDetail.getQuantity())
+			.order(orderDetail.getOrder())
+			.wrapping(orderDetail.getWrapping())
+			.product(orderDetail.getProduct())
+			.couponCode(orderDetail.getCouponCode())
+			.build());
+
+		Product product = productRepository.findById(orderDetail.getProduct().getId())
+			.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+
+		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
+
+		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
+	}
+
+	public ReadOrderDetailResponse updateOrderDetailWithAdmin(UpdateOrderDetailRequest request) {
+		OrderDetail orderDetail = orderDetailRepository.findById(request.getId()).orElseThrow(()-> new IllegalArgumentException("Order Detail not found"));
+		orderDetailRepository.save(OrderDetail.builder()
+			.orderStatus(orderStatusRepository.findByName(request.getOrderStatusName()))
+			.id(orderDetail.getId())
+			.wrap(orderDetail.isWrap())
+			.createAt(orderDetail.getCreateAt())
+			.price(orderDetail.getPrice())
+			.quantity(orderDetail.getQuantity())
+			.order(orderDetail.getOrder())
+			.wrapping(orderDetail.getWrapping())
+			.product(orderDetail.getProduct())
+			.couponCode(orderDetail.getCouponCode())
+			.build());
+
+		Product product = productRepository.findById(orderDetail.getProduct().getId())
+			.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+
+		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
+
+		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
+	}
 }

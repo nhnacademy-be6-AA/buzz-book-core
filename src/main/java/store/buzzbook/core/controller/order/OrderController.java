@@ -92,15 +92,15 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(request));
 	}
 
-	// @Operation(summary = "주문 상세 수정", description = "주문 상세 변경")
-	// @PutMapping
-	// public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest request) {
-	// 	UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
-	// 	if (userInfo.isAdmin()) {
-	// 		return ResponseEntity.ok(orderService.updateOrderWithAdmin(request));
-	// 	}
-	// 	return ResponseEntity.ok(orderService.updateOrder(request));
-	// }
+	@Operation(summary = "주문 상세 수정", description = "주문 상세 변경")
+	@PutMapping
+	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(orderService.updateOrderDetailWithAdmin(request));
+		}
+		return ResponseEntity.ok(orderService.updateOrderDetail(request));
+	}
 
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@PostMapping("/id")
