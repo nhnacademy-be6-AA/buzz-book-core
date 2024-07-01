@@ -59,7 +59,7 @@ public class Product {
 	private Category category;
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
-	private List<ProductTag> productTag = new ArrayList<>();
+	private List<ProductTag> productTags = new ArrayList<>();
 
 	@Builder
 	public Product(int stock, String productName, String description, int price, LocalDate forwardDate,
