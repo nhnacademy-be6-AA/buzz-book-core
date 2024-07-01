@@ -66,26 +66,26 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
 	}
 
-	@Operation(summary = "결제 수단 이력 조회", description = "결제 수단 이력 조회")
-	@GetMapping("/payment-log/id")
-	public ResponseEntity<List<ReadPaymentLogResponse>> getPaymentLogs(@RequestBody ReadPaymentLogRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(paymentService.readPaymentLogs(request.getOrderStr()));
-		}
-		return ResponseEntity.ok(paymentService.readPaymentLogs(request));
-	}
-
-	@Operation(summary = "결제 수단 이력 모두 조회", description = "결제 수단 이력 모두 조회")
-	@GetMapping("/payment-log/all")
-	public ResponseEntity<List<ReadPaymentLogResponse>> getAllPaymentLogs(@RequestBody ReadAllPaymentLogRequest request) {
-		return null;
-	}
-
-	@Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
-	@PostMapping("/payment-log")
-	public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
-		// return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
-		return null;
-	}
+	// @Operation(summary = "결제 수단 이력 조회", description = "결제 수단 이력 조회")
+	// @GetMapping("/payment-log/id")
+	// public ResponseEntity<List<ReadPaymentLogResponse>> getPaymentLogs(@RequestBody ReadPaymentLogRequest request) {
+	// 	UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+	// 	if (userInfo.isAdmin()) {
+	// 		return ResponseEntity.ok(paymentService.readPaymentLogs(request.getOrderStr()));
+	// 	}
+	// 	return ResponseEntity.ok(paymentService.readPaymentLogs(request));
+	// }
+	//
+	// @Operation(summary = "결제 수단 이력 모두 조회", description = "결제 수단 이력 모두 조회")
+	// @GetMapping("/payment-log/all")
+	// public ResponseEntity<List<ReadPaymentLogResponse>> getAllPaymentLogs(@RequestBody ReadAllPaymentLogRequest request) {
+	// 	return null;
+	// }
+	//
+	// @Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
+	// @PostMapping("/payment-log")
+	// public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
+	// 	// return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
+	// 	return null;
+	// }
 }

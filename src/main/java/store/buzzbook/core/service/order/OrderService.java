@@ -111,7 +111,7 @@ public class OrderService {
 				.orElseThrow(() -> new IllegalArgumentException("Order Status not found"));
 			Wrapping wrapping = null;
 
-			wrapping = wrappingRepository.findById(1)
+			wrapping = wrappingRepository.findById(detail.getWrappingId())
 				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 
 			Product product = productRepository.findById(detail.getProductId())
