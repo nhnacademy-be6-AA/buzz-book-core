@@ -93,7 +93,7 @@ public class OrderController {
 	}
 
 	@Operation(summary = "주문 상세 수정", description = "주문 상세 변경")
-	@PutMapping
+	@PutMapping("/detail")
 	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
 		if (userInfo.isAdmin()) {
