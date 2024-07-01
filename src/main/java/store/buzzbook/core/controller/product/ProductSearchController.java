@@ -1,13 +1,18 @@
 package store.buzzbook.core.controller.product;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.service.product.ElasticsearchService;
 
 @RestController
@@ -21,9 +26,10 @@ public class ProductSearchController {
 	@GetMapping("/search")
 	@Operation(summary = "상품 검색", description = "상품명을 기준으로 검색")
 	@ApiResponse(responseCode = "200", description = "검색 성공시 Elasticsearch 검색 결과 반환")
-	public ResponseEntity<String> searchProducts(
-		@RequestParam @Parameter(description = "검색할 상품명", required = true) String query) {
-		String response = elasticsearchService.searchProducts(query);
+	public ResponseEntity<List<ProductDocument>> searchProducts(
+		@RequestParam @Parameter(description = "검색할 상품명", required = true) String query) throws
+		JsonProcessingException {
+		List<ProductDocument> response = elasticsearchService.searchProducts(query);
 		return ResponseEntity.ok(response);
 	}
 }
