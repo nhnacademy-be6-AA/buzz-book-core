@@ -44,7 +44,6 @@ import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.payment.PaymentLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
-import store.buzzbook.core.service.user.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -137,6 +136,17 @@ public class PaymentService {
 		return responses;
 	}
 
+	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithAdmin(String orderId) {
+		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
+		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
+
+		for (BillLog newBillLog : billLogs) {
+			responses.add(BillLogMapper.toDtoWithoutOrder(newBillLog));
+		}
+
+		return responses;
+	}
+
 	public List<ReadPaymentLogResponse> readPaymentLogs(ReadPaymentLogRequest request) {
 
 		List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStrAndOrder_User_LoginId(request.getOrderStr(), request.getLoginId());
@@ -169,7 +179,6 @@ public class PaymentService {
 
 		return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
 	}
-
 
 	// public ReadPaymentLogResponse createPaymentLog(JSONObject paymentRequestObject) {
 	// 	CreatePaymentLogRequest createPaymentLogRequest = objectMapper.convertValue(paymentRequestObject, CreatePaymentLogRequest.class);

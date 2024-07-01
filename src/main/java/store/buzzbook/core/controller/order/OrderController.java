@@ -92,7 +92,7 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(request));
 	}
 
-	@Operation(summary = "주문 상세 수정", description = "주문 상세 변경")
+	@Operation(summary = "주문 상세 상태 수정", description = "주문 상세 상태 변경")
 	@PutMapping("/detail")
 	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());

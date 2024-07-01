@@ -37,3 +37,14 @@ Content-Type: application/json
   "loginId": "parkseol",
   "orderId": "MC4wODg2NzQ1MjQzODgz"
 }
+
+
+###
+PUT http://127.0.0.1:8090/api/orders
+Content-Type: application/json
+
+{
+  "loginId": "parkseol",
+  "id": 216,
+  "orderStatusName": "SHIPPED"
+}

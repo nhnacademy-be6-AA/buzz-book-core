@@ -24,4 +24,5 @@ public class ReadOrderDetailResponse {
 	private ReadOrderStatusResponse readOrderStatusResponse;
 	private ReadWrappingResponse readWrappingResponse;
 	private ProductResponse productResponse;
+	private String couponCode;
 }

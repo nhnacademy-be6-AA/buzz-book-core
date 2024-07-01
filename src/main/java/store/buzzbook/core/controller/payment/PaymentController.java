@@ -39,10 +39,14 @@ public class PaymentController {
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
 	@PostMapping("/bill-logs")
 	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest request) {
-		long userId = userService.getUserInfoByLoginId(request.getLoginId()).id();
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithAdmin(request.getOrderId()));
+		}
 
-		return ResponseEntity.ok(paymentService.readBillLogWithoutOrder(userId, request.getOrderId()));
+		return ResponseEntity.ok(paymentService.readBillLogWithoutOrder(userInfo.id(), request.getOrderId()));
 	}
+
 
 	@Operation(summary = "관리자의 결제 내역 모두 조회", description = "결제 내역 모두 조회 - 관리자")
 	@PostMapping("/admin/bill-logs")
