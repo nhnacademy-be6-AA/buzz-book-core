@@ -1,0 +1,47 @@
+### 상품 추가
+POST http://localhost:8090/api/products
+Content-Type: application/json
+
+{
+  "stock": 100,
+  "productName": "상품 입력테스트",
+  "description": "This is a sample product2",
+  "price": 1000,
+  "forwardDate": "2024-07-08",
+  "score": 8,
+  "thumbnailPath": "/path/to/thumbnail",
+  "stockStatus": "SALE",
+  "categoryId": 1
+}
+
+### 모든 상품 조회
+GET http://localhost:8090/api/products
+Content-Type: application/json
+
+### 특정 상품 조회
+GET http://localhost:8090/api/products/1
+Content-Type: application/json
+
+### 상품 수정
+PUT http://localhost:8090/api/products/1
+Content-Type: application/json
+
+{
+  "stock": 200,
+  "productName": "Updated Product",
+  "description": "This is an updated product",
+  "price": 1500,
+  "forwardDate": "2024-07-01",
+  "score": 20,
+  "thumbnailPath": "/path/to/updated-thumbnail",
+  "stockStatus": "SALE",
+  "categoryId": 1
+}
+
+### 상품 삭제
+DELETE http://localhost:8090/api/products/1
+Content-Type: application/json
+
+### 상품 검색
+GET http://localhost:8090/api/product-search/search?query=Sample
+Content-Type: application/json
