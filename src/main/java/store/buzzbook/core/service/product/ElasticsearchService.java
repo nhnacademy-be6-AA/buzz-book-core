@@ -18,7 +18,7 @@ import store.buzzbook.core.document.product.ProductDocument;
 public class ElasticsearchService {
 
 	private final ElasticSearchClient elasticSearchClient;
-	//private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
 	@Value("${spring.elasticsearch.username}")
 	private String username;
@@ -26,8 +26,9 @@ public class ElasticsearchService {
 	@Value("${spring.elasticsearch.password}")
 	private String password;
 
-	public ElasticsearchService(ElasticSearchClient elasticSearchClient) {
+	public ElasticsearchService(ElasticSearchClient elasticSearchClient,ObjectMapper objectMapper) {
 		this.elasticSearchClient = elasticSearchClient;
+		this.objectMapper = objectMapper;
 	}
 
 	public List<ProductDocument> searchProducts(String query) throws JsonProcessingException {
@@ -35,8 +36,7 @@ public class ElasticsearchService {
 		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
 
 		// JSON 응답 -> ProductDocument 리스트로 변환
-		//
-		ObjectMapper objectMapper = new ObjectMapper();
+
 		objectMapper.registerModule(new JavaTimeModule());
 		JsonNode rootNode = objectMapper.readTree(response);
 		JsonNode hitsNode = rootNode.path("hits").path("hits");
