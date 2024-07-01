@@ -1,13 +1,15 @@
 package store.buzzbook.core.service.product;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import store.buzzbook.core.common.client.ElasticSearchClient;
 import store.buzzbook.core.document.product.ProductDocument;
@@ -29,11 +31,21 @@ public class ElasticsearchService {
 
 	public List<ProductDocument> searchProducts(String query) throws JsonProcessingException {
 		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-		String response = elasticSearchClient.searchProducts(query,"Basic "+token);
+		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
 
-		//Json응답 -> ProductDocument 리스트로 변환
+		// JSON 응답 -> ProductDocument 리스트로 변환
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<ProductDocument> products = objectMapper.readValue(response, new TypeReference<List<ProductDocument>>() {});
+		objectMapper.registerModule(new JavaTimeModule());
+		JsonNode rootNode = objectMapper.readTree(response);
+		JsonNode hitsNode = rootNode.path("hits").path("hits");
+
+		List<ProductDocument> products = new ArrayList<>();
+		for (JsonNode hitNode : hitsNode) {
+			JsonNode sourceNode = hitNode.path("_source");
+			ProductDocument product = objectMapper.treeToValue(sourceNode, ProductDocument.class);
+			products.add(product);
+		}
+
 		return products;
 	}
 }

@@ -6,10 +6,13 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 import store.buzzbook.core.entity.product.Product;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Document(indexName = "product_index")
 public class ProductDocument {
 	@Id
