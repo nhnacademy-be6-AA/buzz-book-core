@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
@@ -23,20 +24,26 @@ import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
+import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
+import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.payment.PaymentLog;
+import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
+import store.buzzbook.core.mapper.order.WrappingMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
 import store.buzzbook.core.mapper.payment.PaymentLogMapper;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
+import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.payment.PaymentLogRepository;
+import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.service.user.UserService;
 
 @Service
@@ -47,7 +54,8 @@ public class PaymentService {
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final ObjectMapper objectMapper;
-	private final UserService userService;
+	private final WrappingRepository wrappingRepository;
+	private final ProductRepository productRepository;
 
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
@@ -55,11 +63,16 @@ public class PaymentService {
 			ReadPaymentResponse.class);
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId())
-			.stream()
-			.map(
-				OrderDetailMapper::toDto)
-			.toList();
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+		}
+
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
 				.price(readPaymentResponse.getTotalAmount())
@@ -128,7 +141,14 @@ public class PaymentService {
 
 		List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStrAndOrder_User_LoginId(request.getOrderStr(), request.getLoginId());
 		List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(request.getOrderStr());
-		List<ReadOrderDetailResponse> readOrderDetailResponses = details.stream().map(OrderDetailMapper::toDto).toList();
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		for (OrderDetail orderDetail : details) {
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+
+			Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+			readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+		}
 		ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(request.getOrderStr()), readOrderDetailResponses, request.getLoginId());
 		return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
 	}
@@ -138,7 +158,13 @@ public class PaymentService {
 		Order order = orderRepository.findByOrderStr(orderStr);
 		List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStr(orderStr);
 		List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(orderStr);
-		List<ReadOrderDetailResponse> readOrderDetailResponses = details.stream().map(OrderDetailMapper::toDto).toList();
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		for (OrderDetail orderDetail : details) {
+			Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+		}
 		ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(orderStr), readOrderDetailResponses, order.getUser().getLoginId());
 
 		return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
