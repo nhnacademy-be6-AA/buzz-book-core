@@ -21,7 +21,6 @@ public class OrderDetailMapper {
 			.orderStatus(OrderStatusMapper.toDto(orderDetail.getOrderStatus()))
 			.quantity(orderDetail.getQuantity()).productId(orderDetail.getProduct().getId())
 			.wrapping(WrappingMapper.toDto(orderDetail.getWrapping()))
-			// .readOrderResponse(readOrderResponse)
 			.build();
 	}
 
