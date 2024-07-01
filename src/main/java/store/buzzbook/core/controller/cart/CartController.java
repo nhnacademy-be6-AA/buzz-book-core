@@ -29,63 +29,64 @@ import store.buzzbook.core.service.cart.CartService;
 public class CartController {
 	private final CartService cartService;
 
-	@GetMapping("/{cartId}")
+	@GetMapping("/{uuid}")
 	@Operation(summary = "장바구니 조회(비회원)", description = "카트 id로 장바구니 내용을 가져온다.")
-	public ResponseEntity<List<CartDetailResponse>> getCartByCartId(@PathVariable Long cartId) {
-		log.debug("장바구니 아이디로 장바구니 조회 요청 : {}", cartId);
+	public ResponseEntity<List<CartDetailResponse>> getCartByUuid(@PathVariable String uuid) {
+		log.debug("장바구니 아이디로 장바구니 조회 요청 : {}", uuid);
 
-		List<CartDetailResponse> response = cartService.getCartByCartId(cartId);
+		List<CartDetailResponse> response = cartService.getCartByUuId(uuid);
 
 		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping("/{cartId}/detail")
+	@PostMapping("/{uuid}/detail")
 	@Operation(summary = "장바구니 내용물 생성", description = "장바구니 내용을 추가한다. 상품, 상품 갯수 필요")
-	public ResponseEntity<Void> createCartDetail(@PathVariable Long cartId,
+	public ResponseEntity<Void> createCartDetail(@PathVariable String uuid,
 		@RequestBody CreateCartDetailRequest createCartDetailRequest) {
-		cartService.createCartDetail(cartId, createCartDetailRequest);
+		cartService.createCartDetail(uuid, createCartDetailRequest);
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/{cartId}/detail/{detailId}")
+	@DeleteMapping("/{uuid}/detail/{detailId}")
 	@Operation(summary = "장바구니 물건 제거", description = "장바구니 내용을 제거한다.")
-	public ResponseEntity<List<CartDetailResponse>> deleteCartDetail(@PathVariable("cartId") Long cartId,
+	public ResponseEntity<List<CartDetailResponse>> deleteCartDetail(@PathVariable("uuid") String uuid,
 		@PathVariable("detailId") Long detailId) {
 
-		List<CartDetailResponse> cartResponse = cartService.deleteCartDetail(cartId, detailId);
+		List<CartDetailResponse> cartResponse = cartService.deleteCartDetail(uuid, detailId);
 
 		return ResponseEntity.ok().body(cartResponse);
 	}
 
-	@DeleteMapping("/{cartId}")
+	@DeleteMapping("/{uuid}")
 	@Operation(summary = "장바구니 물건 모두 제거", description = "장바구니 내용을 모두 제거한다.")
-	public ResponseEntity<Void> deleteAllCartDetail(@PathVariable Long cartId) {
-		cartService.deleteAll(cartId);
+	public ResponseEntity<Void> deleteAllCartDetail(@PathVariable("uuid") String uuid) {
+		cartService.deleteAll(uuid);
 
 		return ResponseEntity.ok().build();
 	}
 
-	@PutMapping("/{cartId}/detail/{detailId}")
+	@PutMapping("/{uuid}/detail/{detailId}")
 	@Operation(summary = "장바구니 내용 변경", description = "장바구니 내용을 변경한다. Create와 유사하다.")
-	public ResponseEntity<Void> updateCartDetail(@PathVariable Long cartId, @PathVariable Long detailId,
+	public ResponseEntity<Void> updateCartDetail(@PathVariable String uuid, @PathVariable Long detailId,
 		@RequestParam Integer quantity) {
 
-		cartService.updateCartDetail(cartId, detailId, quantity);
+		cartService.updateCartDetail(detailId, quantity);
 
 		return ResponseEntity.ok().build();
 	}
 
+	//회원만 가능
 	@GetMapping
-	public ResponseEntity<Long> getCartIdByUserId(@RequestParam("userId") Long userId) {
-		Long cartId = cartService.getCartIdByUserId(userId);
+	public ResponseEntity<String> getUuidByUserId(@RequestParam("userId") Long userId) {
+		String uuid = cartService.getUuidByUserId(userId);
 
-		return ResponseEntity.ok(cartId);
+		return ResponseEntity.ok(uuid);
 	}
 
 	@GetMapping("/guest")
-	public ResponseEntity<Long> createCart() {
-		Long createdCartId = cartService.createCart();
+	public ResponseEntity<String> createCart() {
+		String createdUuid = cartService.createCart();
 
-		return ResponseEntity.ok(createdCartId);
+		return ResponseEntity.ok(createdUuid);
 	}
 }

@@ -29,7 +29,7 @@ public class MyPageController {
 
 	@PutMapping("/password")
 	@Operation(summary = "비밀번호 변경", description = "encoded password만 받는다. 비밀번호 변경용.")
-	public ResponseEntity<Void> changePassword(Long userId, @RequestBody ChangePasswordRequest changePasswordRequest) {
+	public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
 		userService.updatePassword(userId, changePasswordRequest);
 
 		return ResponseEntity.ok().build();
@@ -37,8 +37,7 @@ public class MyPageController {
 
 	@PutMapping
 	@Operation(summary = "유저 정보 변경", description = "비밀번호를 제외한 일반 개인 정보들을 변경한다.")
-	public ResponseEntity<UserInfo> updateUser(Long userId,
-		@RequestBody UpdateUserRequest updateUserRequest) {
+	public ResponseEntity<UserInfo> updateUser(@RequestBody UpdateUserRequest updateUserRequest) {
 
 		UserInfo userInfo = userService.updateUserInfo(userId, updateUserRequest);
 
@@ -47,7 +46,7 @@ public class MyPageController {
 
 	@PutMapping("/deactivate")
 	@Operation(summary = "탈퇴 요청", description = "탈퇴용 컨트롤러. userId를 넘겨야한다.")
-	public ResponseEntity<Void> deactivateUser(Long userId, @RequestBody DeactivateUserRequest deactivateUserRequest) {
+	public ResponseEntity<Void> deactivateUser(@RequestBody DeactivateUserRequest deactivateUserRequest) {
 		userService.deactivate(userId, deactivateUserRequest);
 
 		log.debug("탈퇴 처리 완료 id : {}", userId);
@@ -55,7 +54,7 @@ public class MyPageController {
 	}
 
 	@GetMapping
-	ResponseEntity<UserInfo> getUserInfo(Long userId) {
+	ResponseEntity<UserInfo> getUserInfo() {
 		UserInfo userInfo = userService.getUserInfoByUserId(userId);
 
 		return ResponseEntity.ok().body(userInfo);

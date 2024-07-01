@@ -6,5 +6,5 @@ import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 
 public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
-	void deleteByCart(Cart cart);
+	void deleteAllByCart(Cart cart);
 }

@@ -8,4 +8,10 @@ import store.buzzbook.core.entity.cart.Cart;
 
 public interface CartRepository extends JpaRepository<Cart, Long>, CartRepositoryCustom {
 	Optional<Cart> findCartByUserId(Long userId);
+
+	Optional<Cart> findCartByUuid(byte[] uuid);
+
+	void deleteByUuid(byte[] uuid);
+
+	boolean existsByUuid(byte[] uuid);
 }

@@ -6,21 +6,23 @@ import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
 
 public interface CartService {
-	List<CartDetailResponse> getCartByCartId(Long cartId);
+	List<CartDetailResponse> getCartByUuId(String uuid);
 
-	Long createCart(Long userId);
+	String createCart(Long userId);
 
-	Long createCart();
+	String createCart();
 
-	Long getCartIdByUserId(Long userId);
+	String getUuidByUserId(Long userId);
 
 	List<CartDetailResponse> getCartByUserId(Long userId);
 
-	void createCartDetail(Long cartId, CreateCartDetailRequest createCartDetailRequest);
+	void createCartDetail(String uuid, CreateCartDetailRequest createCartDetailRequest);
 
-	List<CartDetailResponse> deleteCartDetail(Long cartId, Long detailId);
+	List<CartDetailResponse> deleteCartDetail(String uuid, Long detailId);
 
-	void deleteAll(Long cartId);
+	void deleteAll(String uuid);
 
-	void updateCartDetail(Long cartId, Long detailId, Integer quantity);
+	void updateCartDetail(Long detailId, Integer quantity);
+
+	boolean isValidUUID(String uuid);
 }
