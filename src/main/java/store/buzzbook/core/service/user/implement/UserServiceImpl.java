@@ -13,7 +13,9 @@ import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
+import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
+import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -166,6 +168,16 @@ public class UserServiceImpl implements UserService {
 		}
 
 		return user.toUserInfo(gradeOptional.get());
+	}
+
+	@Override
+	public void addUserCoupon(CreateUserCouponRequest request) {
+
+	}
+
+	@Override
+	public void downloadCoupon(DownloadCouponRequest request) {
+
 	}
 
 }

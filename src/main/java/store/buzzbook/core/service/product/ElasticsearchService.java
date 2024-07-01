@@ -18,6 +18,7 @@ import store.buzzbook.core.document.product.ProductDocument;
 public class ElasticsearchService {
 
 	private final ElasticSearchClient elasticSearchClient;
+	//private final ObjectMapper objectMapper;
 
 	@Value("${spring.elasticsearch.username}")
 	private String username;
@@ -34,6 +35,7 @@ public class ElasticsearchService {
 		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
 
 		// JSON 응답 -> ProductDocument 리스트로 변환
+		//
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		JsonNode rootNode = objectMapper.readTree(response);
