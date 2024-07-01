@@ -64,4 +64,6 @@ public class OrderDetail {
 
 	@NotNull
 	private LocalDateTime createAt;
+
+	private String couponCode;
 }

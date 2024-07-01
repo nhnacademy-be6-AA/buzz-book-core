@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +30,9 @@ import store.buzzbook.core.dto.order.ReadAllOrderStatusRequest;
 import store.buzzbook.core.dto.order.ReadAllWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
+import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByIdRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
@@ -62,7 +63,7 @@ public class OrderController {
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
-	public ResponseEntity<?> getOrders(@RequestBody ReadOrderRequest request) {
+	public ResponseEntity<?> getOrders(@RequestBody ReadOrdersRequest request) {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
 		if (userInfo.isAdmin()) {
@@ -90,11 +91,10 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(request));
 	}
 
-	// 안 씀
-	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
-	@GetMapping("/{id}/details")
-	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable long id) {
-		return ResponseEntity.ok(orderService.readOrderDetails(id));
+	@Operation(summary = "주문 조회", description = "주문 조회")
+	@PostMapping("/id")
+	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest request) {
+		return ResponseEntity.ok(orderService.readOrder(request));
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")

@@ -29,3 +29,11 @@ Content-Type: application/json
   "size": 5
 }
 
+###
+POST http://127.0.0.1:8090/api/orders/id
+Content-Type: application/json
+
+{
+  "loginId": "parkseol",
+  "orderId": "MC4wODg2NzQ1MjQzODgz"
+}

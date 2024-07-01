@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.dto.payment.ReadAllPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
+import store.buzzbook.core.dto.payment.ReadPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -61,20 +63,25 @@ public class PaymentController {
 	}
 
 	@Operation(summary = "결제 수단 이력 조회", description = "결제 수단 이력 조회")
-	@GetMapping("/payment-log/{id}")
-	public ResponseEntity<ReadPaymentLogResponse> getPaymentLog(@PathVariable("id") long id) {
-		return null;
+	@GetMapping("/payment-log/id")
+	public ResponseEntity<List<ReadPaymentLogResponse>> getPaymentLogs(@RequestBody ReadPaymentLogRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(paymentService.readPaymentLogs(request.getOrderStr()));
+		}
+		return ResponseEntity.ok(paymentService.readPaymentLogs(request));
 	}
 
 	@Operation(summary = "결제 수단 이력 모두 조회", description = "결제 수단 이력 모두 조회")
-	@GetMapping("/payment-log")
-	public ResponseEntity<List<ReadPaymentLogResponse>> getAllPaymentLogs() {
+	@GetMapping("/payment-log/all")
+	public ResponseEntity<List<ReadPaymentLogResponse>> getAllPaymentLogs(@RequestBody ReadAllPaymentLogRequest request) {
 		return null;
 	}
 
-	// @Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
-	// @PostMapping("/payment-log")
-	// public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
-	// 	return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
-	// }
+	@Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
+	@PostMapping("/payment-log")
+	public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
+		// return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
+		return null;
+	}
 }
