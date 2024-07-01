@@ -21,6 +21,7 @@ import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
@@ -66,7 +67,7 @@ public class OrderService {
 	private final UserService userService;
 
 
-	public Map<String, Object> readOrders(ReadOrderRequest request) {
+	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
@@ -79,7 +80,7 @@ public class OrderService {
 		return data;
 	}
 
-	public Map<String, Object> readMyOrders(ReadOrderRequest request) {
+	public Map<String, Object> readMyOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
@@ -160,13 +161,15 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getLoginId());
 	}
 
-	public List<ReadOrderDetailResponse> readOrderDetails(long orderId) {
-		List<ReadOrderDetailResponse> readOrderDetailRespons = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetailRepository.findAllByOrder_Id(orderId)) {
-			readOrderDetailRespons.add(OrderDetailMapper.toDto(orderDetail));
+	public ReadOrderResponse readOrder(ReadOrderRequest request) {
+		Order order = orderRepository.findByOrderStr(request.getOrderId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(order.getId(), request.getLoginId());
+		List<ReadOrderDetailResponse> details = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			details.add(OrderDetailMapper.toDto(orderDetail));
 		}
 
-		return readOrderDetailRespons;
+		return OrderMapper.toDto(order, details, request.getLoginId());
 	}
 
 	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
