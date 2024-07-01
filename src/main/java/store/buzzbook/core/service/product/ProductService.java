@@ -2,6 +2,7 @@ package store.buzzbook.core.service.product;
 
 import static store.buzzbook.core.dto.product.CategoryResponse.*;
 import static store.buzzbook.core.dto.product.ProductResponse.*;
+
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.document.product.ProductDocument;
@@ -72,7 +73,8 @@ public class ProductService {
 
 	public Page<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByStockStatus(stockStatus, pageable).map(ProductResponse::convertToProductResponse);
+		return productRepository.findAllByStockStatus(stockStatus, pageable)
+			.map(ProductResponse::convertToProductResponse);
 	}
 
 	public ProductResponse getProductById(int id) {
@@ -121,13 +123,19 @@ public class ProductService {
 		return productRepository.save(updatedProduct);
 	}
 
-	public void deleteProduct(int productId) {
-		if (!productRepository.existsById(productId)) {
-			throw new DataNotFoundException("product", productId);
-		}
-		productRepository.deleteById(productId);
-		// Elasticsearch에서 삭제
-		productDocumentRepository.deleteById(productId);
+	public Product deleteProduct(int productId) {
+
+		Product product = productRepository.findById(productId)
+			.orElseThrow(() -> new DataNotFoundException("product", productId));
+
+		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(),
+			product.getPrice(),
+			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
+			product.getCategory(), product.getProductTag());
+
+		indexProduct(newProduct);
+
+		return productRepository.save(newProduct);
 	}
 
 	// Elasticsearch를 통한 검색 메소드
