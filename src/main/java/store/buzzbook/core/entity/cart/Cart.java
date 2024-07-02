@@ -1,5 +1,6 @@
 package store.buzzbook.core.entity.cart;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +30,7 @@ public class Cart {
 	private User user;
 
 	@NotNull
+	@Column(nullable = false, unique = true, columnDefinition = "binary(16)")
 	private byte[] uuid;
 
 }
