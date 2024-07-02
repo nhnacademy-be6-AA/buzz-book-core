@@ -53,7 +53,8 @@ public class CartServiceImpl implements CartService {
 
 		if (cart.isEmpty()) {
 			log.debug("존재하지 않는 회원 id로 조회를 요청했습니다. id : {}", userId);
-			throw new CartNotExistsException(userId);
+			createCart(userId);
+			return List.of();
 		}
 
 		Optional<List<CartDetailResponse>> cartResponse = cartRepository.findCartDetailByCartId(cart.get().getId());
@@ -119,6 +120,17 @@ public class CartServiceImpl implements CartService {
 	}
 
 	@Override
+	public boolean isValidUUID(String uuid, Long userId) {
+		Optional<Cart> userCart = cartRepository.findCartByUserId(userId);
+
+		if (userCart.isEmpty()) {
+			throw new CartNotExistsException(userId);
+		}
+
+		return false;
+	}
+
+	@Override
 	public String createCart(Long userId) {
 		User fkUser = null;
 		if (Objects.nonNull(userId)) {
@@ -144,7 +156,6 @@ public class CartServiceImpl implements CartService {
 	@Transactional
 	@Override
 	public String getUuidByUserId(Long userId) {
-
 		Optional<Cart> cart = cartRepository.findCartByUserId(userId);
 
 		if (cart.isEmpty()) {

@@ -20,7 +20,7 @@ public class AuthServiceImpl implements AuthService {
 	private final AuthClient authClient;
 
 	@Override
-	public Long getUserId(HttpServletRequest request) {
+	public Map<String, Object> getInfoMapFromJwt(HttpServletRequest request) {
 		String accessToken = request.getHeader(TOKEN_HEADER);
 		String refreshToken = request.getHeader(REFRESH_HEADER);
 
@@ -36,6 +36,13 @@ public class AuthServiceImpl implements AuthService {
 				(String)responseEntity.getBody().get(MESSAGE));
 		}
 
-		return (Long)responseEntity.getBody().get(USER_ID);
+		return responseEntity.getBody();
 	}
+
+	@Override
+	public Long getUserIdFromJwt(HttpServletRequest request) {
+		Map<String, Object> claims = getInfoMapFromJwt(request);
+		return (Long)claims.get(USER_ID);
+	}
+
 }

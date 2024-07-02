@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.auth;
 
+import java.util.Map;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface AuthService {
@@ -7,7 +9,11 @@ public interface AuthService {
 	String REFRESH_HEADER = "Refresh-Token";
 	String MESSAGE = "message";
 	String ERROR = "error";
-	String USER_ID = "user_id";
+	String USER_ID = "userId";
+	String ROLE = "role";
+	String LOGIN_ID = "loginId";
 
-	Long getUserId(HttpServletRequest request);
+	Map<String, Object> getInfoMapFromJwt(HttpServletRequest request);
+
+	Long getUserIdFromJwt(HttpServletRequest request);
 }

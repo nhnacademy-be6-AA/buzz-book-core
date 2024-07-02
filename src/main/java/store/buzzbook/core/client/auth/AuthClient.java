@@ -15,5 +15,4 @@ public interface AuthClient {
 	ResponseEntity<Map<String, Object>> getUserInfo(
 		@RequestHeader(value = AuthService.TOKEN_HEADER, required = false) String accessToken,
 		@RequestHeader(value = AuthService.REFRESH_HEADER, required = false) String refreshToken);
-
 }

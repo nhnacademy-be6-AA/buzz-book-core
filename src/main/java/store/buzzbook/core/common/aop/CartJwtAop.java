@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.auth.AuthorizeFailException;
-import store.buzzbook.core.common.exception.cart.CartNotExistsException;
+import store.buzzbook.core.common.exception.cart.InvalidCartUuidException;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.cart.CartService;
 
@@ -30,11 +30,11 @@ public class CartJwtAop {
 
 		//비회원 -- uuid 체크 (존재유무로 위변조체크)
 		if (Objects.isNull(authorizationHeader) && !cartService.isValidUUID(uuid)) {
-			throw new CartNotExistsException(uuid);
+			throw new InvalidCartUuidException();
 		} else if (Objects.nonNull(authorizationHeader)) {
 			//회원
-			Long userId = authService.getUserId(request);
-			request.setAttribute("userId", userId);
+			Long userId = authService.getUserIdFromJwt(request);
+			request.setAttribute(AuthService.USER_ID, userId);
 		}
 	}
 
@@ -47,7 +47,7 @@ public class CartJwtAop {
 		}
 
 		//회원
-		Long userId = authService.getUserId(request);
+		Long userId = authService.getUserIdFromJwt(request);
 		request.setAttribute("userId", userId);
 	}
 

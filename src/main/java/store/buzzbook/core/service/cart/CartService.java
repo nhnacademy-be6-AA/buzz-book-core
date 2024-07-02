@@ -25,4 +25,6 @@ public interface CartService {
 	void updateCartDetail(Long detailId, Integer quantity);
 
 	boolean isValidUUID(String uuid);
+
+	boolean isValidUUID(String uuid, Long userId);
 }
