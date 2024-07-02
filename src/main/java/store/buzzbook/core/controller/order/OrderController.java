@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,17 +22,33 @@ import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
+import store.buzzbook.core.dto.order.DeleteDeliveryPolicyRequest;
+import store.buzzbook.core.dto.order.DeleteOrderStatusRequest;
+import store.buzzbook.core.dto.order.DeleteWrappingRequest;
+import store.buzzbook.core.dto.order.ReadAllDeliveryPolicyRequest;
+import store.buzzbook.core.dto.order.ReadAllOrderStatusRequest;
+import store.buzzbook.core.dto.order.ReadAllWrappingRequest;
+import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
+import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
+import store.buzzbook.core.dto.order.ReadOrdersRequest;
+import store.buzzbook.core.dto.order.ReadOrderStatusByIdRequest;
+import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.ReadWrappingRequest;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
+import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.order.OrderService;
+import store.buzzbook.core.service.user.UserService;
 
 @CrossOrigin(origins = "*")
 @Tag(name = "Orders API", description = "주문 관련 API")
@@ -43,14 +58,17 @@ import store.buzzbook.core.service.order.OrderService;
 @Slf4j
 public class OrderController {
 	private static final String SUCCESS = "Deleted";
+	private static final String FAILURE = "Failed";
 
 	private final OrderService orderService;
+	private final UserService userService;
 
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
-	public ResponseEntity<?> getOrders(@RequestBody ReadOrderRequest request) {
+	public ResponseEntity<?> getOrders(@RequestBody ReadOrdersRequest request) {
 		Map<String, Object> data = null;
-		if (request.isAdmin()) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
 			data = orderService.readOrders(request);
 		} else {
 			data = orderService.readMyOrders(request);
@@ -62,127 +80,181 @@ public class OrderController {
 	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
 		ReadOrderResponse response = orderService.createOrder(createOrderRequest);
-		log.warn(response.toString());
 		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
-	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest) {
-		if (updateOrderRequest.getUser().isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
+	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(orderService.updateOrderWithAdmin(request));
 		}
-		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
+		return ResponseEntity.ok(orderService.updateOrder(request));
 	}
 
-	@Operation(summary = "주문 단건 조회", description = "주문 단건 조회")
-	@GetMapping("/{id}")
-	public ResponseEntity<ReadOrderResponse> getOrder(@PathVariable long id, @RequestParam("login-id") String loginId) {
-		return ResponseEntity.ok(orderService.readOrder(id, loginId));
+	@Operation(summary = "주문 상세 상태 수정", description = "주문 상세 상태 변경")
+	@PutMapping("/detail")
+	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(orderService.updateOrderDetailWithAdmin(request));
+		}
+		return ResponseEntity.ok(orderService.updateOrderDetail(request));
 	}
 
-	@Operation(summary = "주문 상세 조회", description = "주문 상세 조회")
-	@GetMapping("/{id}/details")
-	public ResponseEntity<List<ReadOrderDetailResponse>> getOrderDetails(@PathVariable long id) {
-		return ResponseEntity.ok(orderService.readOrderDetails(id));
+	@Operation(summary = "주문 조회", description = "주문 조회")
+	@PostMapping("/id")
+	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest request) {
+		return ResponseEntity.ok(orderService.readOrder(request));
+	}
+
+	@Operation(summary = "비회원 주문 조회", description = "비회원 주문 조회")
+	@PostMapping("non-member")
+	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(@RequestBody ReadOrderWithoutLoginRequest request) {
+		return ResponseEntity.ok(orderService.readOrderWithoutLogin(request));
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
-	@GetMapping("status/{name}")
-	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(@PathVariable String name) {
-		return ResponseEntity.ok(orderService.readOrderStatusByName(name));
+	@PostMapping("/status/name")
+	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(@RequestBody ReadOrderStatusByNameRequest request) {
+		return ResponseEntity.ok(orderService.readOrderStatusByName(request.getName()));
 	}
 
 	@Operation(summary = "주문 상태 아이디로 조회", description = "주문 상태 조회")
-	@GetMapping("status/{id}")
-	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(@PathVariable int id) {
-		return ResponseEntity.ok(orderService.readOrderStatusById(id));
+	@PostMapping("/status/id")
+	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(@RequestBody ReadOrderStatusByIdRequest request) {
+		return ResponseEntity.ok(orderService.readOrderStatusById(request.getStatusId()));
 	}
 
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
-	@GetMapping("status")
-	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus() {
+	@PostMapping("/status/all")
+	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus(@RequestBody ReadAllOrderStatusRequest request) {
 		return ResponseEntity.ok(orderService.readAllOrderStatus());
 	}
 
 	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
-	@PostMapping("status")
-	public ResponseEntity<ReadOrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
-		return ResponseEntity.ok(orderService.createOrderStatus(request));
+	@PostMapping("/status")
+	public ResponseEntity<?> createOrderStatus(@RequestBody CreateOrderStatusRequest request) {
+		Map<String, Object> data = null;
+		if (request.getUserInfo().isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.createOrderStatus(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
-	@PutMapping("status")
-	public ResponseEntity<ReadOrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
-		return ResponseEntity.ok(orderService.updateOrderStatus(request));
+	@PutMapping("/status")
+	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.updateOrderStatus(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
-	@DeleteMapping("status/{id}")
-	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id) {
-		orderService.deleteOrderStatus(id);
-		return ResponseEntity.ok(SUCCESS);
+	@DeleteMapping("/status")
+	public ResponseEntity<String> deleteOrderStatus(@RequestBody DeleteOrderStatusRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			orderService.deleteOrderStatus(request.getId());
+			return ResponseEntity.ok(SUCCESS);
+		}
+
+		return ResponseEntity.ok(FAILURE);
 	}
 
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")
-	@GetMapping("delivery-policy/{id}")
-	public ResponseEntity<ReadDeliveryPolicyResponse> getDeliveryPolicy(@PathVariable int id) {
-		return ResponseEntity.ok(orderService.readDeliveryPolicyById(id));
+	@PostMapping("/delivery-policy/id")
+	public ResponseEntity<ReadDeliveryPolicyResponse> getDeliveryPolicy(@RequestBody ReadDeliveryPolicyRequest request) {
+		return ResponseEntity.ok(orderService.readDeliveryPolicyById(request.getId()));
 	}
 
 	@Operation(summary = "운임비 정책 모두 조회", description = "운임비 정책 모두 조회")
-	@GetMapping("delivery-policy")
-	public ResponseEntity<List<ReadDeliveryPolicyResponse>> getAllDeliveryPolicy() {
+	@PostMapping("/delivery-policy/all")
+	public ResponseEntity<List<ReadDeliveryPolicyResponse>> getAllDeliveryPolicy(@RequestBody ReadAllDeliveryPolicyRequest request) {
 		return ResponseEntity.ok(orderService.readAllDeliveryPolicy());
 	}
 
 	@Operation(summary = "운임비 정책 등록", description = "운임비 정책 등록")
-	@PostMapping("delivery-policy")
-	public ResponseEntity<ReadDeliveryPolicyResponse> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest request) {
-		return ResponseEntity.ok(orderService.createDeliveryPolicy(request));
+	@PostMapping("/delivery-policy")
+	public ResponseEntity<?> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.createDeliveryPolicy(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "운임비 정책 수정", description = "운임비 정책 수정")
-	@PutMapping("delivery-policy")
-	public ResponseEntity<ReadDeliveryPolicyResponse> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest request) {
-		return ResponseEntity.ok(orderService.updateDeliveryPolicy(request));
+	@PutMapping("/delivery-policy")
+	public ResponseEntity<?> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.updateDeliveryPolicy(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
-	@DeleteMapping("delivery-policy/{id}")
-	public ResponseEntity<String> deleteDeliveryPolicy(@PathVariable int id) {
-		orderService.deleteDeliveryPolicy(id);
-		return ResponseEntity.ok(SUCCESS);
+	@DeleteMapping("/delivery-policy")
+	public ResponseEntity<String> deleteDeliveryPolicy(@RequestBody DeleteDeliveryPolicyRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			orderService.deleteDeliveryPolicy(request.getId());
+			return ResponseEntity.ok(SUCCESS);
+		}
+
+		return ResponseEntity.ok(FAILURE);
 	}
 
 	@Operation(summary = "포장 조회", description = "포장 조회")
-	@GetMapping("wrapping/{id}")
-	public ResponseEntity<ReadWrappingResponse> getWrapping(@PathVariable int id) {
-		return ResponseEntity.ok(orderService.readWrappingById(id));
+	@PostMapping("/wrapping/id")
+	public ResponseEntity<ReadWrappingResponse> getWrapping(@RequestBody ReadWrappingRequest request) {
+		return ResponseEntity.ok(orderService.readWrappingById(request.getId()));
 	}
 
 	@Operation(summary = "포장 모두 조회", description = "포장 모두 조회")
-	@GetMapping("wrapping")
-	public ResponseEntity<List<ReadWrappingResponse>> getAllWrappings() {
+	@PostMapping("/wrapping/all")
+	public ResponseEntity<List<ReadWrappingResponse>> getAllWrappings(@RequestBody ReadAllWrappingRequest request) {
 		return ResponseEntity.ok(orderService.readAllWrapping());
 	}
 
 	@Operation(summary = "포장 등록", description = "포장 등록")
-	@PostMapping("wrapping")
-	public ResponseEntity<ReadWrappingResponse> createWrapping(@RequestBody CreateWrappingRequest request) {
-		return ResponseEntity.ok(orderService.createWrapping(request));
+	@PostMapping("/wrapping")
+	public ResponseEntity<?> createWrapping(@RequestBody CreateWrappingRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.createWrapping(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "포장 수정", description = "포장 수정")
-	@PutMapping("wrapping")
-	public ResponseEntity<ReadWrappingResponse> updateWrapping(@RequestBody UpdateWrappingRequest request) {
-		return ResponseEntity.ok(orderService.updateWrapping(request));
+	@PutMapping("/wrapping")
+	public ResponseEntity<?> updateWrapping(@RequestBody UpdateWrappingRequest request) {
+		Map<String, Object> data = null;
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			data.put("responseData", ResponseEntity.ok(orderService.updateWrapping(request)));
+		}
+		return ResponseEntity.ok(data);
 	}
 
 	@Operation(summary = "포장 삭제", description = "포장 삭제")
-	@DeleteMapping("wrapping/{id}")
-	public ResponseEntity<String> deleteWrapping(@PathVariable int id) {
-		orderService.deleteWrapping(id);
-		return ResponseEntity.ok(SUCCESS);
+	@DeleteMapping("/wrapping")
+	public ResponseEntity<String> deleteWrapping(@RequestBody DeleteWrappingRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			orderService.deleteWrapping(request.getId());
+			return ResponseEntity.ok(SUCCESS);
+		}
+		return ResponseEntity.ok(FAILURE);
 	}
 }

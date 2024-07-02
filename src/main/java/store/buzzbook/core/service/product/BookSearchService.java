@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.dto.product.BookApiRequest;
 import store.buzzbook.core.entity.product.Author;
 import store.buzzbook.core.entity.product.Book;
@@ -27,6 +28,7 @@ import store.buzzbook.core.repository.product.AuthorRepository;
 import store.buzzbook.core.repository.product.BookAuthorRepository;
 import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.CategoryRepository;
+// import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.PublisherRepository;
 
@@ -46,6 +48,7 @@ public class BookSearchService {
 	private final ProductRepository productRepository;
 	private final BookAuthorRepository bookAuthorRepository;
 	private final CategoryRepository categoryRepository;
+	// private final ProductDocumentRepository productDocumentRepository;
 
 	public List<BookApiRequest.Item> searchBooks(String query) {
 		String url = UriComponentsBuilder.fromHttpUrl("https://www.aladin.co.kr/ttb/api/ItemSearch.aspx")
@@ -154,6 +157,7 @@ public class BookSearchService {
 				}
 				int score = item.getCustomerReviewRank();
 				String thumbnailPath = item.getCover();
+				String description = item.getDescription();
 				Category category = subCategory2 != null ? subCategory2 : subCategory1;
 				List<Tag> tags = new ArrayList<>();
 
@@ -167,8 +171,7 @@ public class BookSearchService {
 				Product product = Product.builder()
 					.stock(stock)
 					.productName(productName)
-					// TODO 알라딘 api에서 가져온 도서를 상품에 등록할때 상품의 설명 처리해야함.
-					.description(null)
+					.description(description)
 					.price(price)
 					.forwardDate(forwardDate)
 					.score(score)
@@ -177,7 +180,9 @@ public class BookSearchService {
 					.category(category)
 					.build();
 
-				productRepository.save(product);
+				product = productRepository.save(product);
+
+				// productDocumentRepository.save(new ProductDocument(product));
 
 				book.setProduct(product);
 				book = bookRepository.save(book);

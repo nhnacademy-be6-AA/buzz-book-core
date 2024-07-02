@@ -27,7 +27,7 @@ public class OrderMapper {
 			.price(order.getPrice())
 			.address(order.getAddress())
 			.addressDetail(order.getAddressDetail())
-			.desiredDeliveryDate(order.getDesiredDeliveryDate().format(formatter))
+			.desiredDeliveryDate(order.getDesiredDeliveryDate())
 			.receiver(order.getReceiver())
 			.request(order.getRequest())
 			.zipcode(order.getZipcode())
@@ -35,6 +35,7 @@ public class OrderMapper {
 			.senderContactNumber(order.getSenderContactNumber())
 			.receiverContactNumber(order.getReceiverContactNumber())
 			.sender(order.getSender())
+			.orderPassword(order.getOrderPassword())
 			.build();
 	}
 
@@ -53,6 +54,7 @@ public class OrderMapper {
 			.sender(createOrderRequest.getSender())
 			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
 			.senderContactNumber(createOrderRequest.getContactNumber())
+			.orderPassword(createOrderRequest.getOrderPassword())
 			.build();
 	}
 }

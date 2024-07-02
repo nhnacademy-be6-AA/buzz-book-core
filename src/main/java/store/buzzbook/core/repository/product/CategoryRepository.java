@@ -5,4 +5,5 @@ import store.buzzbook.core.entity.product.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
     Category findByName(String name);
+
 }

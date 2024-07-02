@@ -3,6 +3,7 @@ package store.buzzbook.core.entity.order;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -37,6 +38,7 @@ public class OrderDetail {
 	@NotNull
 	private int quantity;
 	@NotNull
+	@Column(columnDefinition = "TINYINT(1)")
 	private boolean wrap;
 
 	@NotNull
@@ -62,4 +64,6 @@ public class OrderDetail {
 
 	@NotNull
 	private LocalDateTime createAt;
+
+	private String couponCode;
 }

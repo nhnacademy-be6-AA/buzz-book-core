@@ -1,8 +1,12 @@
 package store.buzzbook.core.dto.coupon;
 
+import lombok.Builder;
+
+@Builder
 public record CreateUserCouponRequest(
 
 	long userId,
-	long couponId
+	int couponPolicyId,
+	String couponCode
 ) {
 }

@@ -20,6 +20,7 @@ import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.CategoryRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
+// import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 
 @RequiredArgsConstructor
 @Service
@@ -27,6 +28,9 @@ public class ProductService {
 
 	private final ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
+
+	// // Elasticsearch 용 리포지토리
+	// private final ProductDocumentRepository productDocumentRepository;
 
 	public ProductResponse saveProduct(ProductRequest productReq) {
 		Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
@@ -42,11 +46,13 @@ public class ProductService {
 			.category(category)
 			.build();
 		product = productRepository.save(product);
+
+		// productDocumentRepository.save(new ProductDocument(product));
+
 		return convertToProductResponse(product);
 	}
 
 	public List<ProductResponse> getAllProducts() {
-
 		return productRepository.findAll().stream()
 			.map(ProductResponse::convertToProductResponse)
 			.toList();
@@ -65,9 +71,9 @@ public class ProductService {
 
 	public Page<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByStockStatus(stockStatus, pageable).map(ProductResponse::convertToProductResponse);
+		return productRepository.findAllByStockStatus(stockStatus, pageable)
+			.map(ProductResponse::convertToProductResponse);
 	}
-
 
 	public ProductResponse getProductById(int id) {
 		Product product = productRepository.findById(id).orElse(null);
@@ -90,7 +96,6 @@ public class ProductService {
 	}
 
 	public Product updateProduct(int id, ProductUpdateRequest productRequest) {
-
 		Product product = productRepository.findById(id).orElse(null);
 		if (product == null) {
 			throw new DataNotFoundException("product", id);
@@ -116,10 +121,34 @@ public class ProductService {
 		return productRepository.save(updatedProduct);
 	}
 
-	public void deleteProduct(int productId) {
-		if (!productRepository.existsById(productId)) {
-			throw new DataNotFoundException("product", productId);
-		}
-		productRepository.deleteById(productId);
+	public Product deleteProduct(int productId) {
+
+		Product product = productRepository.findById(productId)
+			.orElseThrow(() -> new DataNotFoundException("product", productId));
+
+		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(),
+			product.getPrice(),
+			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
+			product.getCategory(), product.getProductTags());
+
+		// productDocumentRepository.save(new ProductDocument(newProduct));
+
+		return productRepository.save(newProduct);
 	}
+
+	public List<ProductResponse> searchProductsByName(String productName) {
+		return productRepository.findByProductNameContaining(productName).stream()
+			.map(ProductResponse::convertToProductResponse)
+			.toList();
+	}
+
+	// // Elasticsearch를 통한 검색 메소드
+	// public List<ProductDocument> searchByProductName(String productName) {
+	// 	return productDocumentRepository.findByProductNameContaining(productName);
+	// }
+
+	// public List<ProductDocument> searchByCategoryName(String categoryName) {
+	// 	return productDocumentRepository.findByCategory_name(categoryName);
+	// }
+
 }

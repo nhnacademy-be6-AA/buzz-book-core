@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.entity.order.Order;
 
 @Builder
 @Getter
@@ -27,8 +28,8 @@ public class PaymentLog {
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(referencedColumnName = "id", name = "bill_id", nullable = false)
-	private BillLog billLog;
+	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
+	private Order order;
 
 	@NotNull
 	private String name;

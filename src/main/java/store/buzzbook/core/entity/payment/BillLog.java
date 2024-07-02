@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,6 +38,7 @@ public class BillLog {
 
 	@NotNull
 	private String payment;
+
 	@NotNull
 	private int price;
 
@@ -45,7 +47,7 @@ public class BillLog {
 	private LocalDateTime payAt;
 
 	@NotNull
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
 
@@ -53,8 +55,7 @@ public class BillLog {
 	@Enumerated(value = EnumType.STRING)
 	private BillStatus status;
 
-	@NotNull
-	private UUID paymentKey;
+	private String paymentKey;
 
 	private String cancelReason;
 }

@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.product;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,6 +61,13 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
 	}
 
+	@GetMapping("/search")
+	@Operation(summary = "상품 이름으로 검색", description = "상품 이름을 포함하는 모든 상품을 검색합니다.")
+	public ResponseEntity<List<ProductResponse>> searchProductByName(@RequestParam(required = false) @Parameter(description = "검색할 상품 이름") String productName)
+	{
+		return ResponseEntity.ok(productService.searchProductsByName(productName));
+	}
+
 
 	@GetMapping("/{id}")
 	@Operation(summary = "상품 조회", description = "주어진 id(int)에 해당하는 상품 정보 조회")
@@ -70,7 +79,7 @@ public class ProductController {
 	}
 
 	@PutMapping("/{id}")
-	@Operation(summary = "상품 수정", description = "상품 업데이트.<br>요청 본문에 ProductUpdateRequest DTO 사용.")
+	@Operation(summary = "상품 수정", description = "@상품 업데이트.<br>요청 본문에 ProductUpdateRequest DTO 사용.")
 	public ResponseEntity<Product> updateProduct(@PathVariable int id, @RequestBody ProductUpdateRequest productReq) {
 		Product updateProduct = productService.updateProduct(id, productReq);
 		return ResponseEntity.ok(updateProduct);
@@ -78,7 +87,7 @@ public class ProductController {
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "상품 삭제", description = "주어진 id(int)에 해당하는 상품 삭제.<br>데이터가 물리적으로 삭제되지는 않음.<br>(product.product_status=SOLD_OUT, product.stock=0)")
-	public ResponseEntity<Void> delProduct(@PathVariable int id) {
+	public ResponseEntity<Product> delProduct(@PathVariable int id) {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
 	}

@@ -1,85 +1,176 @@
 package store.buzzbook.core.repository.order;
 
-import static store.buzzbook.core.entity.order.QDeliveryPolicy.*;
 import static store.buzzbook.core.entity.order.QOrder.*;
 import static store.buzzbook.core.entity.order.QOrderDetail.*;
 import static store.buzzbook.core.entity.user.QUser.*;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
-import com.querydsl.core.QueryResults;
-import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import store.buzzbook.core.common.util.FunctionUtil;
-import store.buzzbook.core.dto.order.ReadOrderRequest;
-import store.buzzbook.core.dto.order.ReadOrderResponse;
-import store.buzzbook.core.entity.order.Order;
+import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
+import store.buzzbook.core.dto.order.ReadOrdersRequest;
 
-public class OrderQuerydslRepositoryImpl extends QuerydslRepositorySupport implements OrderQuerydslRepository {
-	public OrderQuerydslRepositoryImpl() {
-		super(Order.class);
-	}
+@RequiredArgsConstructor
+public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
+	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
-	public Page<ReadOrderResponse> findAllByUser_LoginId(ReadOrderRequest request, Pageable pageable) {
-		String[] sortBy = request.getSortBy();
-		Boolean[] sortDesc = request.getSortDesc();
-		List<OrderSpecifier> orderBy = new LinkedList<>();
-		searchOrderMultiSortFilter(sortBy, sortDesc, orderBy);
+	public Page<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, Pageable pageable) {
 
-		QueryResults<ReadOrderResponse> results = from(order)
-			.join(user).on(order.user.loginId.eq(user.loginId))
-			.join(orderDetail).on(orderDetail.order.id.eq(order.id))
+		List<ReadOrderProjectionResponse> results = jpaQueryFactory
+			.select(
+				Projections.constructor(
+					ReadOrderProjectionResponse.class,
+					order.id.as("id"),
+					order.orderStr.as("orderStr"),
+					order.user.loginId.as("loginId"),
+					order.price.as("price"),
+					order.request.as("request"),
+					order.address.as("address"),
+					order.addressDetail.as("addressDetail"),
+					order.zipcode.as("zipcode"),
+					order.desiredDeliveryDate.as("desiredDeliveryDate"),
+					order.receiver.as("receiver"),
+					Projections.fields(
+						ReadOrderDetailProjectionResponse.class,
+						orderDetail.id.as("orderDetailId"),
+						orderDetail.price.as("orderDetailPrice"),
+						orderDetail.quantity.as("orderDetailQuantity"),
+						ExpressionUtils.as(
+							Expressions.stringTemplate(
+								"CASE WHEN {0} = true THEN 'true' ELSE 'false' END",
+								orderDetail.wrap
+							),
+							"orderDetailWrap"
+						),
+						orderDetail.createAt.as("orderDetailCreatedAt"),
+						orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+						orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
+						orderDetail.product.productName.as("orderDetailProductName")
+					),
+					order.sender.as("sender"),
+					order.receiverContactNumber.as("receiverContactNumber"),
+					order.senderContactNumber.as("senderContactNumber")
+				)
+			)
+			.from(order)
+			.join(order.user).on(order.user.id.eq(user.id))
+			.leftJoin(order.details, orderDetail)
 			.where(order.user.loginId.eq(request.getLoginId()))
-			.select(Projections.fields(ReadOrderResponse.class, orderDetail.as("details"), user.loginId))
-			.fetchResults();
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
 
-		List<ReadOrderResponse> content = results.getResults();
-		long total = results.getTotal();
+		List<ReadOrderProjectionResponse> content = results;
+		long total = results.size();
 
 		return new PageImpl<>(content, pageable, total);
 	}
 
 	@Override
-	public Page<ReadOrderResponse> findAll(ReadOrderRequest request, Pageable pageable) {
-		String[] sortBy = request.getSortBy();
-		Boolean[] sortDesc = request.getSortDesc();
-		List<OrderSpecifier> orderBy = new LinkedList<>();
-		searchOrderMultiSortFilter(sortBy, sortDesc, orderBy);
+	public Page<ReadOrderProjectionResponse> findAll(ReadOrdersRequest request, Pageable pageable) {
 
-		QueryResults<ReadOrderResponse> results = from(order)
-			.join(user).on(order.user.loginId.eq(user.loginId))
-			.join(orderDetail).on(orderDetail.order.id.eq(order.id))
-			.select(Projections.fields(ReadOrderResponse.class, orderDetail.as("details"), user.loginId))
-			.fetchResults();
+		List<ReadOrderProjectionResponse> results = jpaQueryFactory
+			.select(
+				Projections.constructor(
+					ReadOrderProjectionResponse.class,
+					order.id.as("id"),
+					order.orderStr.as("orderStr"),
+					order.user.loginId.as("loginId"),
+					order.price.as("price"),
+					order.request.as("request"),
+					order.address.as("address"),
+					order.addressDetail.as("addressDetail"),
+					order.zipcode.as("zipcode"),
+					order.desiredDeliveryDate.as("desiredDeliveryDate"),
+					order.receiver.as("receiver"),
+					Projections.fields(
+						ReadOrderDetailProjectionResponse.class,
+						orderDetail.id.as("orderDetailId"),
+						orderDetail.price.as("orderDetailPrice"),
+						orderDetail.quantity.as("orderDetailQuantity"),
+						ExpressionUtils.as(
+							Expressions.stringTemplate(
+								"CASE WHEN {0} = true THEN 'true' ELSE 'false' END",
+								orderDetail.wrap
+							),
+							"orderDetailWrap"
+						),
+						orderDetail.createAt.as("orderDetailCreatedAt"),
+						orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+						orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
+						orderDetail.product.productName.as("orderDetailProductName")
+					),
+					order.sender.as("sender"),
+					order.receiverContactNumber.as("receiverContactNumber"),
+					order.senderContactNumber.as("senderContactNumber")
+				)
+			)
+			.from(order)
+			.join(order.user).on(order.user.id.eq(user.id))
+			.leftJoin(order.details, orderDetail)
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize())
+			.fetch();
 
-		List<ReadOrderResponse> content = results.getResults();
-		long total = results.getTotal();
+		List<ReadOrderProjectionResponse> content = results;
+		long total = results.size();
 
 		return new PageImpl<>(content, pageable, total);
 	}
 
-	private static void searchOrderMultiSortFilter(String[] sortBy, Boolean[] sortDesc, List<OrderSpecifier> orderBy) {
-		for (int i = 0; i < sortBy.length; i++) {
-			String key = sortBy[i];
-			Boolean value = sortDesc[i];
-
-			switch (key) {
-				case "price" -> FunctionUtil.orderDescFilter(orderBy, value, order.price, "price");
-				case "deliveryPolicyId" ->
-					FunctionUtil.orderDescFilter(orderBy, value, deliveryPolicy.id, "deliveryPolicyId");
-				case "loginId" -> FunctionUtil.orderDescFilter(orderBy, value, order.user.loginId, "loginId");
-
-				default -> {
-				}
-			}
-		}
+	@Override
+	public List<ReadOrderProjectionResponse> findByUser_LoginIdAndOrderStr(String loginId, String orderStr) {
+		return jpaQueryFactory
+			.select(
+				Projections.constructor(
+					ReadOrderProjectionResponse.class,
+					order.id.as("id"),
+					order.orderStr.as("orderStr"),
+					order.user.loginId.as("loginId"),
+					order.price.as("price"),
+					order.request.as("request"),
+					order.address.as("address"),
+					order.addressDetail.as("addressDetail"),
+					order.zipcode.as("zipcode"),
+					order.desiredDeliveryDate.as("desiredDeliveryDate"),
+					order.receiver.as("receiver"),
+					Projections.fields(
+						ReadOrderDetailProjectionResponse.class,
+						orderDetail.id.as("orderDetailId"),
+						orderDetail.price.as("orderDetailPrice"),
+						orderDetail.quantity.as("orderDetailQuantity"),
+						ExpressionUtils.as(
+							Expressions.stringTemplate(
+								"CASE WHEN {0} = true THEN 'true' ELSE 'false' END",
+								orderDetail.wrap
+							),
+							"orderDetailWrap"
+						),
+						orderDetail.createAt.as("orderDetailCreatedAt"),
+						orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+						orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
+						orderDetail.product.productName.as("orderDetailProductName")
+					),
+					order.sender.as("sender"),
+					order.receiverContactNumber.as("receiverContactNumber"),
+					order.senderContactNumber.as("senderContactNumber")
+				)
+			)
+			.from(order)
+			.join(order.user).on(order.user.id.eq(user.id))
+			.leftJoin(order.details, orderDetail)
+			.where(order.orderStr.eq(orderStr), order.user.loginId.eq(loginId))
+			.fetch();
 	}
 }

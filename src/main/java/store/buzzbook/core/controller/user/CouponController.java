@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
+import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.service.user.UserService;
 
 @Tag(name = "회원의 쿠폰 관련 컨트롤러", description = "유저의 쿠폰 조회, 추가 관리")
@@ -25,6 +26,12 @@ public class CouponController {
 	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon id 를 넘겨야한다.")
 	public ResponseEntity<Void> createUserCoupon(@Valid @RequestBody CreateUserCouponRequest request) {
 		userService.addUserCoupon(request);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/download")
+	public ResponseEntity<Void> downloadCoupon(@Valid @RequestBody DownloadCouponRequest request) {
+		userService.downloadCoupon(request);
 		return ResponseEntity.ok().build();
 	}
 }

@@ -3,6 +3,7 @@ package store.buzzbook.core.service.user;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
+import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -29,4 +30,6 @@ public interface UserService {
 	void addUserCoupon(CreateUserCouponRequest request);
 
 	void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest);
+
+	void downloadCoupon(DownloadCouponRequest request);
 }

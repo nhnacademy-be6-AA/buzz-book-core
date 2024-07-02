@@ -23,4 +23,5 @@ public class CreateOrderDetailRequest {
 	private int productId;
 	private String productName;
 	private String thumbnailPath;
+	private String couponCode;
 }

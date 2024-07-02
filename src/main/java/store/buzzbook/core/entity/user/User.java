@@ -2,22 +2,19 @@ package store.buzzbook.core.entity.user;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.annotations.ColumnDefault;
-
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
@@ -40,10 +37,8 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@ElementCollection
-	@CollectionTable(name = "user_coupon", joinColumns = {@JoinColumn(name = "user_id")})
-	@Column(name = "coupon_id")
-	private Set<Long> coupons = new HashSet<>();
+	@OneToMany(mappedBy = "user")
+	private List<UserCoupon> userCoupons = new ArrayList<>();
 
 	@NotNull
 	@Size(min = 6, max = 20)
@@ -61,6 +56,7 @@ public class User {
 
 	@NotNull
 	@Size(max = 255)
+	@Email
 	private String email;
 
 	@NotNull

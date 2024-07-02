@@ -1,7 +1,6 @@
 package store.buzzbook.core.dto.payment;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,11 +18,11 @@ public class ReadBillLogResponse {
 
 	private String payment;
 	private int price;
-	private LocalDateTime paymentDate;
+	private LocalDateTime payAt;
 
 	private BillStatus status;
 
-	private UUID paymentKey;
+	private String paymentKey;
 	private ReadOrderResponse readOrderResponse;
 	private String cancelReason;
 }
