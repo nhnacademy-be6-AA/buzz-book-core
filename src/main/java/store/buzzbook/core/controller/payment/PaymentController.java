@@ -40,7 +40,9 @@ public class PaymentController {
 	@PostMapping("/bill-logs")
 	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
-		if (userInfo.isAdmin()) {
+		if (userInfo == null) {
+			ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithoutLogin(request.getOrderId()));
+		} else if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithAdmin(request.getOrderId()));
 		}
 
