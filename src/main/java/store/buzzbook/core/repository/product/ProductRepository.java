@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import lombok.NonNull;
-import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Integer> {
@@ -20,4 +19,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Page<Product> findAll(@NonNull Pageable pageable);
 
     Page<Product> findAllByStockStatus(Product.StockStatus stockStatus, Pageable pageable);
+
+    List<Product> findByProductNameContaining(String productName);
 }

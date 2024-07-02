@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.product;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,6 +61,13 @@ public class ProductController {
 		return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
 	}
 
+	@GetMapping("/search")
+	@Operation(summary = "상품 이름으로 검색", description = "상품 이름을 포함하는 모든 상품을 검색합니다.")
+	public ResponseEntity<List<ProductResponse>> searchProductByName(@RequestParam(required = false) @Parameter(description = "검색할 상품 이름") String productName)
+	{
+		return ResponseEntity.ok(productService.searchProductsByName(productName));
+	}
+
 
 	@GetMapping("/{id}")
 	@Operation(summary = "상품 조회", description = "주어진 id(int)에 해당하는 상품 정보 조회")
@@ -82,7 +91,5 @@ public class ProductController {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
 	}
-
-
 
 }

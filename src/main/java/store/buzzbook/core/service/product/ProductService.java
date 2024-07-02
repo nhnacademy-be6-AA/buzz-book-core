@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
-import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.dto.product.ProductRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.product.ProductUpdateRequest;
@@ -135,6 +134,12 @@ public class ProductService {
 		// productDocumentRepository.save(new ProductDocument(newProduct));
 
 		return productRepository.save(newProduct);
+	}
+
+	public List<ProductResponse> searchProductsByName(String productName) {
+		return productRepository.findByProductNameContaining(productName).stream()
+			.map(ProductResponse::convertToProductResponse)
+			.toList();
 	}
 
 	// // Elasticsearch를 통한 검색 메소드
