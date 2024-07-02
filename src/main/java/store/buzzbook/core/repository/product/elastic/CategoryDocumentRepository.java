@@ -8,6 +8,5 @@ import store.buzzbook.core.document.product.CategoryDocument;
 
 public interface CategoryDocumentRepository extends ElasticsearchRepository<CategoryDocument, Integer> {
 
-	List<CategoryDocument> findByCategoryName(String categoryName);
 
 }
