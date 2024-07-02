@@ -182,7 +182,7 @@ public class BookSearchService {
 
 				product = productRepository.save(product);
 
-				productDocumentRepository.save(ProductDocument.convertToProductDocument(product));
+				productDocumentRepository.save(new ProductDocument(product));
 
 				book.setProduct(product);
 				book = bookRepository.save(book);

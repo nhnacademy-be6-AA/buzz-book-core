@@ -48,7 +48,7 @@ public class ProductService {
 			.build();
 		product = productRepository.save(product);
 
-		productDocumentRepository.save(ProductDocument.convertToProductDocument(product));
+		productDocumentRepository.save(new ProductDocument(product));
 
 		return convertToProductResponse(product);
 	}
@@ -132,7 +132,7 @@ public class ProductService {
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
 			product.getCategory(), product.getProductTags());
 
-		productDocumentRepository.save(ProductDocument.convertToProductDocument(newProduct));
+		productDocumentRepository.save(new ProductDocument(newProduct));
 
 		return productRepository.save(newProduct);
 	}
@@ -142,8 +142,8 @@ public class ProductService {
 		return productDocumentRepository.findByProductNameContaining(productName);
 	}
 
-	public List<ProductDocument> searchByCategoryName(String categoryName) {
-		return productDocumentRepository.findByCategoryName(categoryName);
-	}
+	// public List<ProductDocument> searchByCategoryName(String categoryName) {
+	// 	return productDocumentRepository.findByCategory_name(categoryName);
+	// }
 
 }

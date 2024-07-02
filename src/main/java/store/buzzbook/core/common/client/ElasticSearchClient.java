@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "elasticsearchClient", url = "${spring.elasticsearch.uris}")
 public interface ElasticSearchClient {
 
-	@GetMapping("/product_index/_search")
+	@GetMapping("/aa-bb_product_index/_search")
 	String searchProducts(@RequestParam("q") String query,
 		@RequestHeader("Authorization") String authorization);
+
 }

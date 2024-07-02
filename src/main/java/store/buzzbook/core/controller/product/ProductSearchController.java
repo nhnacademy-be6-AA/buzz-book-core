@@ -3,7 +3,10 @@ package store.buzzbook.core.controller.product;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -12,6 +15,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.service.ElasticDataTransferService;
 import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.service.product.ElasticsearchService;
 
@@ -22,6 +26,7 @@ import store.buzzbook.core.service.product.ElasticsearchService;
 public class ProductSearchController {
 
 	private final ElasticsearchService elasticsearchService;
+	private final ElasticDataTransferService dataTransferService;
 
 	@GetMapping("/search")
 	@Operation(summary = "상품 검색", description = "상품명을 기준으로 검색")
@@ -31,5 +36,12 @@ public class ProductSearchController {
 		JsonProcessingException {
 		List<ProductDocument> response = elasticsearchService.searchProducts(query);
 		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/datainit")
+	@Operation(summary = "데이터 싱크", description = "MySQL의 데이터를 Elasticsearch로")
+	@ApiResponse(responseCode = "200", description = "성공시 데이터 총 갯수 반환")
+	public ResponseEntity<Long> searchProducts(){
+		return ResponseEntity.ok(dataTransferService.mySqlDataTransferToElastic());
 	}
 }
