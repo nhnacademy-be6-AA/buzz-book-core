@@ -7,5 +7,4 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ReadDeliveryPolicyRequest {
 	private int id;
-	private String loginId;
 }
