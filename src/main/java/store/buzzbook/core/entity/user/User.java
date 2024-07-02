@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 
 @Builder
@@ -98,22 +99,30 @@ public class User {
 		this.status = UserStatus.ACTIVE;
 	}
 
-	public void updateLastLogin() {
+	public void updateLastLoginAt() {
 		this.lastLoginAt = LocalDateTime.now();
 	}
 
 	public UserInfo toUserInfo(Grade grade) {
 		return UserInfo.builder()
-			.email(this.email)
-			.id(this.id)
-			.contactNumber(this.contactNumber)
-			.isAdmin(this.isAdmin)
-			.birthday(this.birthday)
+			.id(this.getId())
+			.name(this.getName())
+			.loginId(this.getLoginId())
+			.birthday(this.getBirthday())
+			.isAdmin(this.isAdmin())
 			.grade(grade)
-			.loginId(this.loginId)
-			.name(this.name).build();
+			.contactNumber(this.getContactNumber())
+			.email(this.getEmail())
+			.build();
 	}
 
-	public void updateLastLoginAt() {
+	public void updateUserBy(UpdateUserRequest request) {
+		this.contactNumber = request.contactNumber();
+		this.name = request.name();
+		this.email = request.email();
+	}
+
+	public void changePassword(String password) {
+		this.password = password;
 	}
 }

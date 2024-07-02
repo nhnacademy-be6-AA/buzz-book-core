@@ -17,7 +17,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
-import store.buzzbook.core.common.exception.user.DeactivateUserException;
+import store.buzzbook.core.common.exception.user.DeactivatedUserException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
@@ -205,12 +205,12 @@ class UserServiceTest {
 		Mockito.when(deactivationRepository.existsById(Mockito.any()))
 			.thenReturn(true);
 
-		Assertions.assertThrowsExactly(DeactivateUserException.class,
+		Assertions.assertThrowsExactly(DeactivatedUserException.class,
 			() -> userService.requestLogin(registerUserRequest.loginId()));
 
 	}
 
-	@Disabled
+	@Disabled("mock 주입 중")
 	@Test
 	void testSuccessLogin() {
 		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(

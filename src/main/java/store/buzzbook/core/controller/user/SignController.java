@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.RegisterUserResponse;
@@ -51,6 +52,7 @@ public class SignController {
 		return ResponseEntity.ok(response);
 	}
 
+	@JwtValidate
 	@PutMapping("/login")
 	@Operation(summary = "로그인 성공 처리", description = "로그인 성공시 해당 회원 정보 리턴")
 	public ResponseEntity<UserInfo> successLogin(@RequestBody String loginId) {
