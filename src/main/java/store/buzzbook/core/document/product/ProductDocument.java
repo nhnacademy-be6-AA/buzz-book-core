@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.entity.product.ProductTag;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -55,10 +54,19 @@ public class ProductDocument {
 	private List<TagDocument> tags;
 
 
-	public static ProductDocument convertToProductDocument(Product product) {
-		return new ProductDocument(product.getId(), product.getStock(),
-			product.getProductName(), product.getDescription(), product.getPrice(), product.getForwardDate(),
-			product.getScore(), product.getThumbnailPath(), product.getStockStatus().toString(), product.getCategory().getId(),
-			product.getProductTags().stream().map(ProductTag::getTag).map(TagDocument::new).toList());
+	public ProductDocument(Product product) {
+		this.id = product.getId();
+		this.stock = product.getStock();
+		this.productName = product.getProductName();
+		this.description = product.getDescription();
+		this.price = product.getPrice();
+		this.forwardDate = product.getForwardDate();
+		this.score = product.getScore();
+		this.thumbnailPath = product.getThumbnailPath();
+		this.stockStatus = product.getStockStatus().toString();
+		this.category_id = product.getCategory().getId();
+		this.tags = product.getProductTags().stream()
+			.map(productTag -> new TagDocument(productTag.getTag()))
+			.toList();
 	}
 }
