@@ -22,12 +22,12 @@ import store.buzzbook.core.service.user.UserService;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/account/mypage/")
+@RequestMapping("/api/account/mypage")
 @Tag(name = "마이페이지 컨트롤러", description = "유저의 마이페이지, 개인정보 관리 api")
 @Slf4j
 public class MyPageController {
 	private final UserService userService;
-	
+
 	@JwtValidate
 	@PutMapping("/password")
 	@Operation(summary = "비밀번호 변경", description = "encoded password만 받는다. 비밀번호 변경용.")
