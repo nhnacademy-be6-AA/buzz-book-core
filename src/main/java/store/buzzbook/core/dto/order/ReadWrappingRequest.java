@@ -7,5 +7,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReadWrappingRequest {
 	private int id;
-	private String loginId;
 }

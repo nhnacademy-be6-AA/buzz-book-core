@@ -27,7 +27,6 @@ import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
-@CrossOrigin(origins = "*")
 @Tag(name = "Payments API", description = "결제 관련 API")
 @RestController
 @RequestMapping("/api/payments")
@@ -39,10 +38,14 @@ public class PaymentController {
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
 	@PostMapping("/bill-logs")
 	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest request) {
+		if (request.getLoginId().isEmpty()) {
+			List<ReadBillLogWithoutOrderResponse> responses = paymentService.readBillLogWithoutOrderWithoutLogin(request.getOrderId());
+			return ResponseEntity.ok(responses);
+		}
+
 		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
-		if (userInfo == null) {
-			ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithoutLogin(request.getOrderId()));
-		} else if (userInfo.isAdmin()) {
+
+		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithAdmin(request.getOrderId()));
 		}
 

@@ -6,6 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ReadOrderStatusByNameRequest {
-	private String loginId;
 	private String name;
 }

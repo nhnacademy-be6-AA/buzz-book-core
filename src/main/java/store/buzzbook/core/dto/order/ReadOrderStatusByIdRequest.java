@@ -6,6 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ReadOrderStatusByIdRequest {
-	private String loginId;
 	private int statusId;
 }
