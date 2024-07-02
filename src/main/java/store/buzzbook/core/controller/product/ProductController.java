@@ -70,7 +70,7 @@ public class ProductController {
 	}
 
 	@PutMapping("/{id}")
-	@Operation(summary = "상품 수정", description = "상품 업데이트.<br>요청 본문에 ProductUpdateRequest DTO 사용.")
+	@Operation(summary = "상품 수정", description = "@상품 업데이트.<br>요청 본문에 ProductUpdateRequest DTO 사용.")
 	public ResponseEntity<Product> updateProduct(@PathVariable int id, @RequestBody ProductUpdateRequest productReq) {
 		Product updateProduct = productService.updateProduct(id, productReq);
 		return ResponseEntity.ok(updateProduct);
@@ -82,5 +82,7 @@ public class ProductController {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
 	}
+
+
 
 }

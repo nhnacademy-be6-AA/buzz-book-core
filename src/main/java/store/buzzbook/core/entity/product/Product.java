@@ -59,7 +59,7 @@ public class Product {
 	private Category category;
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
-	private List<ProductTag> productTag = new ArrayList<>();
+	private List<ProductTag> productTags = new ArrayList<>();
 
 	@Builder
 	public Product(int stock, String productName, String description, int price, LocalDate forwardDate,
@@ -77,6 +77,20 @@ public class Product {
 
 	public enum StockStatus {
 		SALE, SOLD_OUT, OUT_OF_STOCK
+	}
+
+	public void increaseStock(int stock) {
+		this.stock+=stock;
+	}
+
+	public void decreaseStock(int stock) {
+		if(this.stock-stock < 0) {
+			throw new IllegalArgumentException("재고부족");
+		}
+		this.stock-=stock;
+		if(this.stock == 0) {
+			this.stockStatus = StockStatus.OUT_OF_STOCK;
+		}
 	}
 }
 

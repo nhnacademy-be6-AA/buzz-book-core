@@ -3,6 +3,14 @@ package store.buzzbook.core.service.product;
 import static store.buzzbook.core.dto.product.CategoryResponse.*;
 import static store.buzzbook.core.dto.product.ProductResponse.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.document.product.ProductDocument;
@@ -12,16 +20,8 @@ import store.buzzbook.core.dto.product.ProductUpdateRequest;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.CategoryRepository;
-import store.buzzbook.core.repository.product.ProductDocumentRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
-
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import java.time.LocalDate;
-import java.util.List;
+import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 
 @RequiredArgsConstructor
 @Service
@@ -48,8 +48,7 @@ public class ProductService {
 			.build();
 		product = productRepository.save(product);
 
-		// Elasticsearch 인덱싱
-		indexProduct(product);
+		productDocumentRepository.save(new ProductDocument(product));
 
 		return convertToProductResponse(product);
 	}
@@ -131,9 +130,9 @@ public class ProductService {
 		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(),
 			product.getPrice(),
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
-			product.getCategory(), product.getProductTag());
+			product.getCategory(), product.getProductTags());
 
-		indexProduct(newProduct);
+		productDocumentRepository.save(new ProductDocument(newProduct));
 
 		return productRepository.save(newProduct);
 	}
@@ -143,24 +142,8 @@ public class ProductService {
 		return productDocumentRepository.findByProductNameContaining(productName);
 	}
 
-	public List<ProductDocument> searchByCategoryName(String categoryName) {
-		return productDocumentRepository.findByCategoryName(categoryName);
-	}
+	// public List<ProductDocument> searchByCategoryName(String categoryName) {
+	// 	return productDocumentRepository.findByCategory_name(categoryName);
+	// }
 
-	// Product 엔티티를 Elasticsearch 문서로 인덱싱하는 메소드
-	private ProductDocument indexProduct(Product product) {
-		ProductDocument productDocument = new ProductDocument();
-		productDocument.setId(product.getId());
-		productDocument.setStock(product.getStock());
-		productDocument.setProductName(product.getProductName());
-		productDocument.setDescription(product.getDescription());
-		productDocument.setPrice(product.getPrice());
-		productDocument.setForwardDate(product.getForwardDate());
-		productDocument.setScore(product.getScore());
-		productDocument.setThumbnailPath(product.getThumbnailPath());
-		productDocument.setStockStatus(product.getStockStatus());
-		productDocument.setCategoryName(product.getCategory().getName());
-
-		return productDocumentRepository.save(productDocument);
-	}
 }

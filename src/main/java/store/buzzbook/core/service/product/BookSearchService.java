@@ -28,7 +28,7 @@ import store.buzzbook.core.repository.product.AuthorRepository;
 import store.buzzbook.core.repository.product.BookAuthorRepository;
 import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.CategoryRepository;
-import store.buzzbook.core.repository.product.ProductDocumentRepository;
+import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.PublisherRepository;
 
@@ -182,7 +182,7 @@ public class BookSearchService {
 
 				product = productRepository.save(product);
 
-				indexProductToElasticsearch(product);
+				productDocumentRepository.save(new ProductDocument(product));
 
 				book.setProduct(product);
 				book = bookRepository.save(book);
@@ -203,20 +203,5 @@ public class BookSearchService {
 				bookAuthorRepository.save(bookAuthor);
 			}
 		}
-	}
-	private void indexProductToElasticsearch(Product product) {
-		ProductDocument productDocument = new ProductDocument();
-		productDocument.setId(product.getId());
-		productDocument.setStock(product.getStock());
-		productDocument.setProductName(product.getProductName());
-		productDocument.setDescription(product.getDescription());
-		productDocument.setPrice(product.getPrice());
-		productDocument.setForwardDate(product.getForwardDate());
-		productDocument.setScore(product.getScore());
-		productDocument.setThumbnailPath(product.getThumbnailPath());
-		productDocument.setStockStatus(product.getStockStatus());
-		productDocument.setCategoryName(product.getCategory().getName());
-
-		productDocumentRepository.save(productDocument);
 	}
 }
