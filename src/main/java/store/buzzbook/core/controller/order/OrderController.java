@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +24,8 @@ import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.DeleteDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.DeleteOrderStatusRequest;
 import store.buzzbook.core.dto.order.DeleteWrappingRequest;
-import store.buzzbook.core.dto.order.ReadAllDeliveryPolicyRequest;
-import store.buzzbook.core.dto.order.ReadAllOrderStatusRequest;
-import store.buzzbook.core.dto.order.ReadAllWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
-import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
@@ -50,7 +45,6 @@ import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.user.UserService;
 
-@CrossOrigin(origins = "*")
 @Tag(name = "Orders API", description = "주문 관련 API")
 @RestController
 @RequestMapping("/api/orders")

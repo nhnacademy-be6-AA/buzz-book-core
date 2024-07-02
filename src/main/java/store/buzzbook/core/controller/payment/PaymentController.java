@@ -27,7 +27,6 @@ import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
-@CrossOrigin(origins = "*")
 @Tag(name = "Payments API", description = "결제 관련 API")
 @RestController
 @RequestMapping("/api/payments")
