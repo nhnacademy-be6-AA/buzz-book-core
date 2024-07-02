@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
+import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.user.UserService;
 
@@ -40,14 +41,15 @@ public class SignController {
 
 	@PostMapping("/register")
 	@Operation(summary = "회원가입 요청", description = "회원가입 처리용 post 컨트롤러")
-	public ResponseEntity<Void> register(@RequestBody RegisterUserRequest registerUserRequest) {
+	public ResponseEntity<RegisterUserResponse> register(@RequestBody RegisterUserRequest registerUserRequest) {
 		log.debug("RegisterUserRequest: {}", registerUserRequest);
+		RegisterUserResponse response;
 
-		userService.requestRegister(registerUserRequest);
+		response = userService.requestRegister(registerUserRequest);
 
 		log.debug("유저 회원가입 성공");
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(response);
 	}
 
 	@JwtValidate
