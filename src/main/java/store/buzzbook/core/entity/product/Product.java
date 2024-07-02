@@ -88,6 +88,9 @@ public class Product {
 			throw new IllegalArgumentException("재고부족");
 		}
 		this.stock-=stock;
+		if(this.stock == 0) {
+			this.stockStatus = StockStatus.OUT_OF_STOCK;
+		}
 	}
 }
 
