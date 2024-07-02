@@ -117,6 +117,8 @@ public class OrderService {
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
+			product.decreaseStock(detail.getQuantity());
+
 			detail.setPrice(product.getPrice());
 
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
