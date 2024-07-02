@@ -9,6 +9,4 @@ import store.buzzbook.core.document.product.ProductDocument;
 public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, Integer> {
 	List<ProductDocument> findByProductNameContaining(String productName);
 
-
-
 }
