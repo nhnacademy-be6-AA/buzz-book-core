@@ -98,7 +98,7 @@ public class OrderService {
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 		User user = null;
-		if (createOrderRequest.getLoginId() != null) {
+		if (createOrderRequest.getLoginId() != null && !createOrderRequest.getLoginId().isBlank()) {
 			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
 
 			user = userRepository.findById(userInfo.id()).get();
@@ -208,8 +208,7 @@ public class OrderService {
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(order.getId(),
-			request.getLoginId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
@@ -223,7 +222,7 @@ public class OrderService {
 			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
 
-		return OrderMapper.toDto(order, details, request.getLoginId());
+		return OrderMapper.toDto(order, details, null);
 	}
 
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {

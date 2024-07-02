@@ -7,5 +7,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ReadOrderRequest {
 	private String orderId;
-	private String loginId;
 }
