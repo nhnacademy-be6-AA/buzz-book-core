@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
+import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.dto.product.ProductRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.product.ProductUpdateRequest;
@@ -20,7 +21,7 @@ import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.CategoryRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
-// import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
+import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 
 @RequiredArgsConstructor
 @Service
@@ -30,7 +31,7 @@ public class ProductService {
 	private final CategoryRepository categoryRepository;
 
 	// // Elasticsearch 용 리포지토리
-	// private final ProductDocumentRepository productDocumentRepository;
+	private final ProductDocumentRepository productDocumentRepository;
 
 	public ProductResponse saveProduct(ProductRequest productReq) {
 		Category category = categoryRepository.findById(productReq.getCategoryId()).orElse(null);
@@ -47,7 +48,7 @@ public class ProductService {
 			.build();
 		product = productRepository.save(product);
 
-		// productDocumentRepository.save(new ProductDocument(product));
+		productDocumentRepository.save(new ProductDocument(product));
 
 		return convertToProductResponse(product);
 	}
@@ -131,7 +132,7 @@ public class ProductService {
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
 			product.getCategory(), product.getProductTags());
 
-		// productDocumentRepository.save(new ProductDocument(newProduct));
+		productDocumentRepository.save(new ProductDocument(newProduct));
 
 		return productRepository.save(newProduct);
 	}
@@ -142,13 +143,10 @@ public class ProductService {
 			.toList();
 	}
 
-	// // Elasticsearch를 통한 검색 메소드
-	// public List<ProductDocument> searchByProductName(String productName) {
-	// 	return productDocumentRepository.findByProductNameContaining(productName);
-	// }
+	// Elasticsearch를 통한 검색 메소드
+	public List<ProductDocument> searchByProductName(String productName) {
+		return productDocumentRepository.findByProductNameContaining(productName);
+	}
 
-	// public List<ProductDocument> searchByCategoryName(String categoryName) {
-	// 	return productDocumentRepository.findByCategory_name(categoryName);
-	// }
 
 }

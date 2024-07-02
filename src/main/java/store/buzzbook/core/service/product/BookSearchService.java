@@ -31,6 +31,7 @@ import store.buzzbook.core.repository.product.CategoryRepository;
 // import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.PublisherRepository;
+import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +49,7 @@ public class BookSearchService {
 	private final ProductRepository productRepository;
 	private final BookAuthorRepository bookAuthorRepository;
 	private final CategoryRepository categoryRepository;
-	// private final ProductDocumentRepository productDocumentRepository;
+	private final ProductDocumentRepository productDocumentRepository;
 
 	public List<BookApiRequest.Item> searchBooks(String query) {
 		String url = UriComponentsBuilder.fromHttpUrl("https://www.aladin.co.kr/ttb/api/ItemSearch.aspx")
@@ -182,7 +183,7 @@ public class BookSearchService {
 
 				product = productRepository.save(product);
 
-				// productDocumentRepository.save(new ProductDocument(product));
+				productDocumentRepository.save(new ProductDocument(product));
 
 				book.setProduct(product);
 				book = bookRepository.save(book);
