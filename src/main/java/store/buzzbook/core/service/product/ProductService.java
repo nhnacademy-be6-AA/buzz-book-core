@@ -1,6 +1,5 @@
 package store.buzzbook.core.service.product;
 
-import static store.buzzbook.core.dto.product.CategoryResponse.*;
 import static store.buzzbook.core.dto.product.ProductResponse.*;
 
 import java.time.LocalDate;
@@ -83,20 +82,10 @@ public class ProductService {
 			throw new DataNotFoundException("product", id);
 		}
 
-		return ProductResponse.builder()
-			.id(product.getId())
-			.stock(product.getStock())
-			.productName(product.getProductName())
-			.price(product.getPrice())
-			.forwardDate(product.getForwardDate())
-			.score(product.getScore())
-			.thumbnailPath(product.getThumbnailPath())
-			.stockStatus(product.getStockStatus())
-			.category(convertToCategoryResponse(product.getCategory()))
-			.build();
+		return ProductResponse.convertToProductResponse(product);
 	}
 
-	public Product updateProduct(int id, ProductUpdateRequest productRequest) {
+	public ProductResponse updateProduct(int id, ProductUpdateRequest productRequest) {
 		Product product = productRepository.findById(id).orElse(null);
 		if (product == null) {
 			throw new DataNotFoundException("product", id);
@@ -119,7 +108,8 @@ public class ProductService {
 			productRequest.getStockStatus(),
 			category, null);
 
-		return productRepository.save(updatedProduct);
+		productRepository.save(updatedProduct);
+		return ProductResponse.convertToProductResponse(updatedProduct);
 	}
 
 	public Product deleteProduct(int productId) {
