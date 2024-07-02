@@ -111,9 +111,7 @@ public class OrderService {
 			detail.setOrderId(order.getId());
 			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
 				.orElseThrow(() -> new IllegalArgumentException("Order Status not found"));
-			Wrapping wrapping = null;
-
-			wrapping = wrappingRepository.findById(detail.getWrappingId())
+			Wrapping wrapping = wrappingRepository.findById(detail.getWrappingId())
 				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 
 			Product product = productRepository.findById(detail.getProductId())
