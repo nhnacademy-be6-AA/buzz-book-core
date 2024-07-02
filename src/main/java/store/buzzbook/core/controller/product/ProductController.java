@@ -80,14 +80,14 @@ public class ProductController {
 
 	@PutMapping("/{id}")
 	@Operation(summary = "상품 수정", description = "@상품 업데이트.<br>요청 본문에 ProductUpdateRequest DTO 사용.")
-	public ResponseEntity<Product> updateProduct(@PathVariable int id, @RequestBody ProductUpdateRequest productReq) {
-		Product updateProduct = productService.updateProduct(id, productReq);
+	public ResponseEntity<ProductResponse> updateProduct(@PathVariable int id, @RequestBody ProductUpdateRequest productReq) {
+		ProductResponse updateProduct = productService.updateProduct(id, productReq);
 		return ResponseEntity.ok(updateProduct);
 	}
 
 	@DeleteMapping("/{id}")
 	@Operation(summary = "상품 삭제", description = "주어진 id(int)에 해당하는 상품 삭제.<br>데이터가 물리적으로 삭제되지는 않음.<br>(product.product_status=SOLD_OUT, product.stock=0)")
-	public ResponseEntity<Product> delProduct(@PathVariable int id) {
+	public ResponseEntity<ProductResponse> delProduct(@PathVariable int id) {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
 	}

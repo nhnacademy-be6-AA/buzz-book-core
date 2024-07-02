@@ -3,11 +3,14 @@ package store.buzzbook.core.dto.product;
 import static store.buzzbook.core.dto.product.CategoryResponse.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.product.ProductTag;
 
 @AllArgsConstructor
 @Getter
@@ -23,6 +26,7 @@ public class ProductResponse {
 	private String thumbnailPath;
 	private Product.StockStatus stockStatus;
 	private CategoryResponse category;
+	private List<TagResponse> tags = new ArrayList<>();
 
 	public static ProductResponse convertToProductResponse(Product product) {
 		return ProductResponse.builder()
@@ -36,6 +40,7 @@ public class ProductResponse {
 			.thumbnailPath(product.getThumbnailPath())
 			.stockStatus(product.getStockStatus())
 			.category(convertToCategoryResponse(product.getCategory()))
+			.tags(product.getProductTags().stream().map(ProductTag::getTag).map(TagResponse::convertToTagResponse).toList())
 			.build();
 	}
 }
