@@ -110,7 +110,7 @@ public class OrderController {
 	}
 
 	@Operation(summary = "비회원 주문 조회", description = "비회원 주문 조회")
-	@PostMapping("/id")
+	@PostMapping("non-member")
 	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(@RequestBody ReadOrderWithoutLoginRequest request) {
 		return ResponseEntity.ok(orderService.readOrderWithoutLogin(request));
 	}
