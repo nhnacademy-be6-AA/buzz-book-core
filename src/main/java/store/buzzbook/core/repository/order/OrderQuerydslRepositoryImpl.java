@@ -69,7 +69,6 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.where(order.user.loginId.eq(request.getLoginId()))
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.distinct()
 			.fetch();
 
 		List<ReadOrderProjectionResponse> content = results;
@@ -122,7 +121,6 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.leftJoin(order.details, orderDetail)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
-			.distinct()
 			.fetch();
 
 		List<ReadOrderProjectionResponse> content = results;

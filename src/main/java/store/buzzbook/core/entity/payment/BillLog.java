@@ -55,7 +55,6 @@ public class BillLog {
 	@Enumerated(value = EnumType.STRING)
 	private BillStatus status;
 
-	@NotNull
 	private String paymentKey;
 
 	private String cancelReason;
