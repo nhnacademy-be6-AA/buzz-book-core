@@ -58,8 +58,4 @@ public class Order {
 
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
-
-	// public void setDetails(OrderDetail orderDetail) {
-	// 	details.stream().filter(d->d.getId()==orderDetail.getId()).forEach(d->{details.remove(d); details.add(orderDetail);});
-	// }
 }
