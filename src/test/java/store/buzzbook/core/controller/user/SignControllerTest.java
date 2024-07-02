@@ -1,6 +1,7 @@
 package store.buzzbook.core.controller.user;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -14,13 +15,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import store.buzzbook.core.common.config.JacksonConfig;
+import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
+import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.service.user.UserService;
 
 @WebMvcTest(SignController.class)
@@ -30,7 +34,8 @@ class SignControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	private final ObjectMapper mapper = new ObjectMapper();
+	@Autowired
+	private ObjectMapper mapper = new ObjectMapper();
 
 	private RegisterUserRequest registerUserRequest;
 
@@ -54,13 +59,28 @@ class SignControllerTest {
 			.loginId("asd123")
 			.build();
 
-		Mockito.doNothing().when(userService).requestRegister(any(RegisterUserRequest.class));
+		Mockito.when(userService.requestRegister(any(RegisterUserRequest.class)))
+			.thenAnswer(invocation -> {
+				String loginId = ((RegisterUserRequest)invocation.getArgument(0)).loginId();
+
+				if (loginId.equals("duplicated")) {
+					throw new UserAlreadyExistsException(loginId);
+				}
+
+				return RegisterUserResponse.builder()
+					.loginId(registerUserRequest.loginId())
+					.name(registerUserRequest.name())
+					.message("회원가입 성공")
+					.status(HttpStatus.OK.value()).build();
+			});
 
 		String requestBody = mapper.writeValueAsString(registerUserRequest);
 
 		mockMvc.perform(post("/api/account/register")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
-			.andExpect(status().isOk());
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString(registerUserRequest.name())))
+			.andExpect(content().string(containsString(registerUserRequest.loginId())));
 	}
 }
