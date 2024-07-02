@@ -78,5 +78,16 @@ public class Product {
 	public enum StockStatus {
 		SALE, SOLD_OUT, OUT_OF_STOCK
 	}
+
+	public void increaseStock(int stock) {
+		this.stock+=stock;
+	}
+
+	public void decreaseStock(int stock) {
+		if(this.stock-stock < 0) {
+			throw new IllegalArgumentException("재고부족");
+		}
+		this.stock-=stock;
+	}
 }
 
