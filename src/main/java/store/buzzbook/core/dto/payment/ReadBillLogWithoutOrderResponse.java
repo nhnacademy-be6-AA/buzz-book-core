@@ -14,13 +14,10 @@ import store.buzzbook.core.entity.payment.BillStatus;
 @Builder
 public class ReadBillLogWithoutOrderResponse {
 	private long id;
-
 	private String payment;
 	private int price;
 	private LocalDateTime payAt;
-
 	private BillStatus status;
-
 	private String paymentKey;
 	private String cancelReason;
 }
