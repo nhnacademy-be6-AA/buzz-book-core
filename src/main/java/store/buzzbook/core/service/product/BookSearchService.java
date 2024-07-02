@@ -28,9 +28,10 @@ import store.buzzbook.core.repository.product.AuthorRepository;
 import store.buzzbook.core.repository.product.BookAuthorRepository;
 import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.CategoryRepository;
-import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
+// import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.PublisherRepository;
+import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 
 @Service
 @RequiredArgsConstructor

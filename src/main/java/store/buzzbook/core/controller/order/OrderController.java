@@ -32,6 +32,7 @@ import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByIdRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
@@ -41,6 +42,7 @@ import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.ReadWrappingRequest;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
+import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
@@ -91,10 +93,26 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(request));
 	}
 
+	@Operation(summary = "주문 상세 상태 수정", description = "주문 상세 상태 변경")
+	@PutMapping("/detail")
+	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		if (userInfo.isAdmin()) {
+			return ResponseEntity.ok(orderService.updateOrderDetailWithAdmin(request));
+		}
+		return ResponseEntity.ok(orderService.updateOrderDetail(request));
+	}
+
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@PostMapping("/id")
 	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest request) {
 		return ResponseEntity.ok(orderService.readOrder(request));
+	}
+
+	@Operation(summary = "비회원 주문 조회", description = "비회원 주문 조회")
+	@PostMapping("non-member")
+	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(@RequestBody ReadOrderWithoutLoginRequest request) {
+		return ResponseEntity.ok(orderService.readOrderWithoutLogin(request));
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")

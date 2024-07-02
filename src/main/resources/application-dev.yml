@@ -23,6 +23,10 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
+api:
+  gateway:
+    host: localhost
+    port: 8080
 
 eureka:
   instance:

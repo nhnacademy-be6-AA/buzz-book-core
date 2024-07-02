@@ -29,7 +29,7 @@ public class ProductService {
 	private final ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
 
-	// Elasticsearch 용 리포지토리
+	// // Elasticsearch 용 리포지토리
 	private final ProductDocumentRepository productDocumentRepository;
 
 	public ProductResponse saveProduct(ProductRequest productReq) {
@@ -127,13 +127,16 @@ public class ProductService {
 		return productRepository.save(newProduct);
 	}
 
+	public List<ProductResponse> searchProductsByName(String productName) {
+		return productRepository.findByProductNameContaining(productName).stream()
+			.map(ProductResponse::convertToProductResponse)
+			.toList();
+	}
+
 	// Elasticsearch를 통한 검색 메소드
 	public List<ProductDocument> searchByProductName(String productName) {
 		return productDocumentRepository.findByProductNameContaining(productName);
 	}
 
-	// public List<ProductDocument> searchByCategoryName(String categoryName) {
-	// 	return productDocumentRepository.findByCategory_name(categoryName);
-	// }
 
 }

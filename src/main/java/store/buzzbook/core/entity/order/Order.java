@@ -56,6 +56,8 @@ public class Order {
 	@NotNull
 	private String receiverContactNumber;
 
+	private String orderPassword;
+
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
 }

@@ -7,10 +7,6 @@ import store.buzzbook.core.entity.product.Product;
 
 public record CreateCartDetailRequest(
 	@NotNull
-	Long userId,
-	@NotNull
-	Long cartId,
-	@NotNull
 	Integer quantity,
 	@NotNull
 	Integer productId) {

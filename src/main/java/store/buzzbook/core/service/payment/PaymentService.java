@@ -15,29 +15,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
-import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
-import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
-import store.buzzbook.core.dto.payment.ReadPaymentLogRequest;
-import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
+import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
+import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
-import store.buzzbook.core.entity.payment.PaymentLog;
+import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
+import store.buzzbook.core.mapper.order.WrappingMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
-import store.buzzbook.core.mapper.payment.PaymentLogMapper;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
+import store.buzzbook.core.repository.order.OrderStatusRepository;
+import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.payment.PaymentLogRepository;
-import store.buzzbook.core.service.user.UserService;
+import store.buzzbook.core.repository.product.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +49,11 @@ public class PaymentService {
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final ObjectMapper objectMapper;
-	private final UserService userService;
+	private final WrappingRepository wrappingRepository;
+	private final ProductRepository productRepository;
+	private final OrderStatusRepository orderStatusRepository;
+
+	private final static int ORDERSTATUS_PAID = 4;
 
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
@@ -55,11 +61,22 @@ public class PaymentService {
 			ReadPaymentResponse.class);
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId())
-			.stream()
-			.map(
-				OrderDetailMapper::toDto)
-			.toList();
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
+				.orElseThrow(() -> new RuntimeException("Order status not found")));
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(() -> new RuntimeException("Product not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(
+				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+					readWrappingResponse));
+		}
+
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
 				.price(readPaymentResponse.getTotalAmount())
@@ -81,24 +98,6 @@ public class PaymentService {
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
-
-	// public Page<ReadBillLogResponse> readMyBillLogs(String loginId, Pageable pageable) {
-	// 	Page<BillLog> billLogs = billLogRepository.findAllByLoginId(loginId, pageable);
-	// 	List<ReadBillLogResponse> readBillLogRespons = new ArrayList<>();
-	//
-	// 	for (BillLog billLog : billLogs) {
-	// 		Order order = orderRepository.findById(billLog.getOrder().getId()).orElseThrow(() -> new IllegalArgumentException("Order not found"));
-	// 		List<ReadOrderDetailResponse> readOrderDetailResponses = orderDetailRepository.findAllByOrder_Id(order.getId()).stream().map(
-	// 			OrderDetailMapper::toDto).toList();
-	// 		UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
-	// 			.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
-	// 			.birthday(order.getUser().getBirthday()).build();
-	//
-	// 		readBillLogRespons.add(BillLogMapper.toDto(billLog,OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId())));
-	// 	}
-	//
-	// 	return new PageImpl<>(readBillLogRespons, pageable, billLogs.getTotalElements());
-	// }
 
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -124,26 +123,61 @@ public class PaymentService {
 		return responses;
 	}
 
-	public List<ReadPaymentLogResponse> readPaymentLogs(ReadPaymentLogRequest request) {
+	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithAdmin(String orderId) {
+		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
+		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
 
-		List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStrAndOrder_User_LoginId(request.getOrderStr(), request.getLoginId());
-		List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(request.getOrderStr());
-		List<ReadOrderDetailResponse> readOrderDetailResponses = details.stream().map(OrderDetailMapper::toDto).toList();
-		ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(request.getOrderStr()), readOrderDetailResponses, request.getLoginId());
-		return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
+		for (BillLog newBillLog : billLogs) {
+			responses.add(BillLogMapper.toDtoWithoutOrder(newBillLog));
+		}
+
+		return responses;
 	}
 
-	public List<ReadPaymentLogResponse> readPaymentLogs(String orderStr) {
+	// 괜찮은지...
+	public Object readBillLogWithoutOrderWithoutLogin(String orderId) {
+		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
+		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
 
-		Order order = orderRepository.findByOrderStr(orderStr);
-		List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStr(orderStr);
-		List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(orderStr);
-		List<ReadOrderDetailResponse> readOrderDetailResponses = details.stream().map(OrderDetailMapper::toDto).toList();
-		ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(orderStr), readOrderDetailResponses, order.getUser().getLoginId());
+		for (BillLog newBillLog : billLogs) {
+			responses.add(BillLogMapper.toDtoWithoutOrder(newBillLog));
+		}
 
-		return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
+		return responses;
 	}
 
+	// public List<ReadPaymentLogResponse> readPaymentLogs(ReadPaymentLogRequest request) {
+	//
+	// 	List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStrAndOrder_User_LoginId(request.getOrderStr(), request.getLoginId());
+	// 	List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(request.getOrderStr());
+	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+	// 	for (OrderDetail orderDetail : details) {
+	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+	//
+	// 		Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+	// 		readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+	// 	}
+	// 	ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(request.getOrderStr()), readOrderDetailResponses, request.getLoginId());
+	// 	return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
+	// }
+	//
+	// public List<ReadPaymentLogResponse> readPaymentLogs(String orderStr) {
+	//
+	// 	Order order = orderRepository.findByOrderStr(orderStr);
+	// 	List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStr(orderStr);
+	// 	List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(orderStr);
+	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+	// 	for (OrderDetail orderDetail : details) {
+	// 		Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+	// 		readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+	// 	}
+	// 	ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(orderStr), readOrderDetailResponses, order.getUser().getLoginId());
+	//
+	// 	return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
+	// }
 
 	// public ReadPaymentLogResponse createPaymentLog(JSONObject paymentRequestObject) {
 	// 	CreatePaymentLogRequest createPaymentLogRequest = objectMapper.convertValue(paymentRequestObject, CreatePaymentLogRequest.class);
