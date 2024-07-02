@@ -21,6 +21,7 @@ import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -96,11 +97,12 @@ public class OrderService {
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
+		User user = null;
+		if (createOrderRequest.getLoginId() != null) {
+			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
 
-		UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
-
-		User user = userRepository.findById(userInfo.id()).get();
-
+			user = userRepository.findById(userInfo.id()).get();
+		}
 		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
@@ -129,6 +131,9 @@ public class OrderService {
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
+		}
+		if (user == null) {
+			return OrderMapper.toDto(order, readOrderDetailResponse, null);
 		}
 
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
@@ -219,6 +224,26 @@ public class OrderService {
 		}
 
 		return OrderMapper.toDto(order, details, request.getLoginId());
+	}
+
+	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
+		Order order = orderRepository.findByOrderStr(request.getOrderId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderPassword(order.getId(),
+			request.getOrderPassword());
+		List<ReadOrderDetailResponse> details = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
+
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+
+			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
+		}
+
+		return OrderMapper.toDto(order, details, null);
 	}
 
 	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {

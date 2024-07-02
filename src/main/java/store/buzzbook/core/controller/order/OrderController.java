@@ -32,6 +32,7 @@ import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
+import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByIdRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
@@ -106,6 +107,12 @@ public class OrderController {
 	@PostMapping("/id")
 	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest request) {
 		return ResponseEntity.ok(orderService.readOrder(request));
+	}
+
+	@Operation(summary = "비회원 주문 조회", description = "비회원 주문 조회")
+	@PostMapping("/id")
+	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(@RequestBody ReadOrderWithoutLoginRequest request) {
+		return ResponseEntity.ok(orderService.readOrderWithoutLogin(request));
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
