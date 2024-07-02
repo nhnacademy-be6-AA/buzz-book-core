@@ -24,7 +24,6 @@ import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
-import store.buzzbook.core.dto.user.RegisterUserResponse;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Deactivation;
@@ -88,9 +87,9 @@ public class UserServiceImpl implements UserService {
 
 	@Transactional
 	@Override
-	public RegisterUserResponse requestRegister(RegisterUserRequest registerUserRequest) {
+	public void requestRegister(RegisterUserRequest registerUserRequest) {
+		log.debug("회원가입 시도 : {}", registerUserRequest.loginId());
 		String loginId = registerUserRequest.loginId();
-		String successRegister = "회원가입 성공";
 
 		Grade grade = gradeRepository.findByName(GradeName.NORMAL)
 			.orElseThrow(() -> new GradeNotFoundException(GradeName.NORMAL.name()));
@@ -114,12 +113,6 @@ public class UserServiceImpl implements UserService {
 		userProducerService.sendWelcomeCouponRequest(CreateWelcomeCouponRequest.builder()
 			.userId(savedUser.getId())
 			.build());
-
-		return RegisterUserResponse.builder()
-			.name(requestUser.getName())
-			.loginId(requestUser.getLoginId())
-			.status(200)
-			.message(successRegister).build();
 	}
 
 	@Transactional
