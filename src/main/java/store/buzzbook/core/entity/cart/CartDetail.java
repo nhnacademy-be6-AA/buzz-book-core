@@ -1,5 +1,8 @@
 package store.buzzbook.core.entity.cart;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Entity;
@@ -18,7 +21,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.dto.cart.CartDetailResponse;
+import store.buzzbook.core.dto.product.TagResponse;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.product.ProductTag;
 
 @Builder
 @Getter
@@ -46,12 +51,20 @@ public class CartDetail {
 	private Product product;
 
 	public CartDetailResponse toResponse(String thumbnailPath) {
+		List<TagResponse> tagList = new LinkedList<>();
+
+		for (ProductTag tag : product.getProductTags()) {
+			TagResponse tagResponse = TagResponse.convertToTagResponse(tag.getTag());
+			tagList.add(tagResponse);
+		}
+
 		return CartDetailResponse.builder()
 			.id(this.id)
 			.productId(this.product.getId())
 			.productName(this.product.getProductName())
 			.quantity(this.getQuantity())
 			.thumbnailPath(thumbnailPath)
+			.tags(tagList)
 			.build();
 	}
 

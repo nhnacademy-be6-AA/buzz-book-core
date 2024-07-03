@@ -43,7 +43,13 @@ public class CartServiceImpl implements CartService {
 			throw new CartNotExistsException(uuid);
 		}
 
-		return cartResponseOptional.get();
+		List<CartDetailResponse> cartDetailResponses = cartResponseOptional.orElseGet(List::of);
+
+		if (!cartDetailResponses.isEmpty()) {
+			orderByPrice(cartDetailResponses);
+		}
+
+		return cartDetailResponses;
 	}
 
 	@Transactional(readOnly = true)
@@ -58,8 +64,13 @@ public class CartServiceImpl implements CartService {
 		}
 
 		Optional<List<CartDetailResponse>> cartResponse = cartRepository.findCartDetailByCartId(cart.get().getId());
+		List<CartDetailResponse> cartDetailResponses = cartResponse.orElseGet(List::of);
 
-		return cartResponse.orElseGet(List::of);
+		if (!cartDetailResponses.isEmpty()) {
+			orderByPrice(cartDetailResponses);
+		}
+
+		return cartDetailResponses;
 	}
 
 	@Transactional
@@ -83,7 +94,13 @@ public class CartServiceImpl implements CartService {
 		Optional<List<CartDetailResponse>> cartResponse = cartRepository.findCartDetailByUuid(
 			UuidUtil.stringToByte(uuid));
 
-		return cartResponse.orElse(null);
+		List<CartDetailResponse> cartDetailResponses = cartResponse.orElseGet(List::of);
+
+		if (!cartDetailResponses.isEmpty()) {
+			orderByPrice(cartDetailResponses);
+		}
+
+		return cartDetailResponses;
 	}
 
 	@Transactional
@@ -186,6 +203,14 @@ public class CartServiceImpl implements CartService {
 		}
 
 		return true;
+	}
+
+	private void orderByPrice(List<CartDetailResponse> cartList) {
+		cartList.sort((cartA, cartB) -> {
+			int priceA = cartA.getPrice() * cartA.getQuantity();
+			int priceB = cartB.getPrice() * cartB.getQuantity();
+			return Integer.compare(priceB, priceA);  // 내림차순으로 정렬
+		});
 	}
 
 }
