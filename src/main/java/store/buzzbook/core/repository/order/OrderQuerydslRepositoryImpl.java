@@ -25,7 +25,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
-	public Page<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, Pageable pageable) {
+	public Page<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, String loginId, Pageable pageable) {
 
 		List<ReadOrderProjectionResponse> results = jpaQueryFactory
 			.select(
@@ -66,7 +66,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.from(order)
 			.join(order.user).on(order.user.id.eq(user.id))
 			.leftJoin(order.details, orderDetail)
-			.where(order.user.loginId.eq(request.getLoginId()))
+			.where(order.user.loginId.eq(loginId))
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
