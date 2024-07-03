@@ -6,6 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class DeleteWrappingRequest {
-	private String loginId;
 	private int id;
 }

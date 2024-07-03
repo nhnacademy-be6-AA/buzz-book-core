@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class UpdateOrderDetailRequest {
 	private long id;
 	private String orderStatusName;
-	private String loginId;
 }
