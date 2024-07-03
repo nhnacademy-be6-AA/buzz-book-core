@@ -23,6 +23,8 @@ public class AuthServiceImpl implements AuthService {
 	public Map<String, Object> getInfoMapFromJwt(HttpServletRequest request) {
 		String accessToken = request.getHeader(TOKEN_HEADER);
 		String refreshToken = request.getHeader(REFRESH_HEADER);
+		accessToken = wrapToken(accessToken);
+		refreshToken = wrapToken(refreshToken);
 
 		ResponseEntity<Map<String, Object>> responseEntity = authClient.getUserInfo(accessToken, refreshToken);
 
@@ -45,4 +47,7 @@ public class AuthServiceImpl implements AuthService {
 		return (Long)claims.get(USER_ID);
 	}
 
+	private String wrapToken(String token) {
+		return String.format("Bearer %s", token);
+	}
 }
