@@ -11,5 +11,4 @@ public interface ElasticSearchClient {
 	@GetMapping("/aa-bb_product_index/_search")
 	String searchProducts(@RequestParam("q") String query,
 		@RequestHeader("Authorization") String authorization);
-
 }

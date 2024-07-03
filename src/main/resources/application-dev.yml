@@ -31,7 +31,7 @@ api:
 eureka:
   instance:
     instance-id: core-api
-    hostname: eureka-server
+    hostname: localhost
     prefer-ip-address: true
   client:
     fetch-registry: true
