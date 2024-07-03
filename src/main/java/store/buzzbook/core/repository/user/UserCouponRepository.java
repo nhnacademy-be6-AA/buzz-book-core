@@ -6,5 +6,5 @@ import store.buzzbook.core.entity.user.UserCoupon;
 
 public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
 
-	boolean existsByCouponPolicyId(int couponPolicyId);
+	Boolean existsByUserIdAndCouponPolicyId(long userId, int couponPolicyId);
 }

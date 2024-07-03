@@ -216,7 +216,7 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findById(request.userId())
 			.orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-		if (userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
+		if (userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId())) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
@@ -231,7 +231,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
-		if (userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
+		if (userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId())) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
