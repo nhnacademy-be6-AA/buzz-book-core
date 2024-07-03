@@ -63,7 +63,7 @@ public class OrderController {
 	@JwtValidate
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
-	public ResponseEntity<?> getOrders(ReadOrdersRequest readOrdersRequest, HttpServletRequest request) {
+	public ResponseEntity<?> getOrders(@RequestBody ReadOrdersRequest readOrdersRequest, HttpServletRequest request) {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
