@@ -134,8 +134,8 @@ public class PaymentService {
 		return responses;
 	}
 
-	// 괜찮은지...
-	public Object readBillLogWithoutOrderWithoutLogin(String orderId) {
+	// 괜찮은지....
+	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithoutLogin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
 
