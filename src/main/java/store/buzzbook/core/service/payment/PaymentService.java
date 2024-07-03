@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductNotFoundException;
+import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
@@ -66,11 +69,11 @@ public class PaymentService {
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
-				.orElseThrow(() -> new RuntimeException("Order status not found")));
+				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new RuntimeException("Product not found"));
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 			readOrderDetailResponses.add(
 				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
