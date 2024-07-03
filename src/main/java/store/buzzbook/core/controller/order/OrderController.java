@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
@@ -42,6 +44,7 @@ import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.user.UserService;
 
@@ -57,11 +60,12 @@ public class OrderController {
 	private final OrderService orderService;
 	private final UserService userService;
 
+	@JwtValidate
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
-	public ResponseEntity<?> getOrders(@RequestBody ReadOrdersRequest readOrdersRequest) {
+	public ResponseEntity<?> getOrders(ReadOrdersRequest readOrdersRequest, HttpServletRequest request) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(readOrdersRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			data = orderService.readOrders(readOrdersRequest);
 		} else {
@@ -70,6 +74,7 @@ public class OrderController {
 		return ResponseEntity.ok(data);
 	}
 
+	// httpservletrequest
 	@Operation(summary = "주문 등록", description = "주문하기")
 	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
@@ -79,8 +84,8 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
-	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest) {
-		UserInfo userInfo = userService.getUserInfoByLoginId(updateOrderRequest.getLoginId());
+	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
 		}
@@ -89,8 +94,8 @@ public class OrderController {
 
 	@Operation(summary = "주문 상세 상태 수정", description = "주문 상세 상태 변경")
 	@PutMapping("/detail")
-	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest updateOrderDetailRequest) {
-		UserInfo userInfo = userService.getUserInfoByLoginId(updateOrderDetailRequest.getLoginId());
+	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(@RequestBody UpdateOrderDetailRequest updateOrderDetailRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.updateOrderDetailWithAdmin(updateOrderDetailRequest));
 		}
@@ -129,9 +134,10 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
 	@PostMapping("/status")
-	public ResponseEntity<?> createOrderStatus(@RequestBody CreateOrderStatusRequest createOrderStatusRequest) {
+	public ResponseEntity<?> createOrderStatus(@RequestBody CreateOrderStatusRequest createOrderStatusRequest, HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = null;
-		if (createOrderStatusRequest.getUserInfo().isAdmin()) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.createOrderStatus(createOrderStatusRequest)));
 		}
 		return ResponseEntity.ok(data);
@@ -139,9 +145,9 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("/status")
-	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest) {
+	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest, HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(updateOrderStatusRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest)));
 		}
@@ -150,9 +156,9 @@ public class OrderController {
 
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
 	@DeleteMapping("/status")
-	public ResponseEntity<String> deleteOrderStatus(@RequestBody DeleteOrderStatusRequest deleteOrderStatusRequest) {
+	public ResponseEntity<String> deleteOrderStatus(@RequestBody DeleteOrderStatusRequest deleteOrderStatusRequest, HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(deleteOrderStatusRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			orderService.deleteOrderStatus(deleteOrderStatusRequest.getId());
 			return ResponseEntity.ok(SUCCESS);
@@ -175,9 +181,9 @@ public class OrderController {
 
 	@Operation(summary = "운임비 정책 등록", description = "운임비 정책 등록")
 	@PostMapping("/delivery-policy")
-	public ResponseEntity<?> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest createDeliveryPolicyRequest) {
+	public ResponseEntity<?> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest createDeliveryPolicyRequest, HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(createDeliveryPolicyRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest)));
 		}
@@ -186,9 +192,9 @@ public class OrderController {
 
 	@Operation(summary = "운임비 정책 수정", description = "운임비 정책 수정")
 	@PutMapping("/delivery-policy")
-	public ResponseEntity<?> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest) {
+	public ResponseEntity<?> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest, HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(updateDeliveryPolicyRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest)));
 		}
@@ -197,8 +203,8 @@ public class OrderController {
 
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
 	@DeleteMapping("/delivery-policy")
-	public ResponseEntity<String> deleteDeliveryPolicy(@RequestBody DeleteDeliveryPolicyRequest deleteDeliveryPolicyRequest) {
-		UserInfo userInfo = userService.getUserInfoByLoginId(deleteDeliveryPolicyRequest.getLoginId());
+	public ResponseEntity<String> deleteDeliveryPolicy(@RequestBody DeleteDeliveryPolicyRequest deleteDeliveryPolicyRequest, HttpServletRequest request, HttpServletResponse response) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			orderService.deleteDeliveryPolicy(deleteDeliveryPolicyRequest.getId());
 			return ResponseEntity.ok(SUCCESS);
@@ -221,9 +227,9 @@ public class OrderController {
 
 	@Operation(summary = "포장 등록", description = "포장 등록")
 	@PostMapping("/wrapping")
-	public ResponseEntity<?> createWrapping(@RequestBody CreateWrappingRequest createWrappingRequest) {
+	public ResponseEntity<?> createWrapping(@RequestBody CreateWrappingRequest createWrappingRequest, HttpServletRequest request) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(createWrappingRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.createWrapping(createWrappingRequest)));
 		}
@@ -232,9 +238,9 @@ public class OrderController {
 
 	@Operation(summary = "포장 수정", description = "포장 수정")
 	@PutMapping("/wrapping")
-	public ResponseEntity<?> updateWrapping(@RequestBody UpdateWrappingRequest updateWrappingRequest) {
+	public ResponseEntity<?> updateWrapping(@RequestBody UpdateWrappingRequest updateWrappingRequest, HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(updateWrappingRequest.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest)));
 		}
@@ -243,8 +249,8 @@ public class OrderController {
 
 	@Operation(summary = "포장 삭제", description = "포장 삭제")
 	@DeleteMapping("/wrapping")
-	public ResponseEntity<String> deleteWrapping(@RequestBody DeleteWrappingRequest deleteWrappingRequest) {
-		UserInfo userInfo = userService.getUserInfoByLoginId(deleteWrappingRequest.getLoginId());
+	public ResponseEntity<String> deleteWrapping(@RequestBody DeleteWrappingRequest deleteWrappingRequest, HttpServletRequest request, HttpServletResponse response) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			orderService.deleteWrapping(deleteWrappingRequest.getId());
 			return ResponseEntity.ok(SUCCESS);
