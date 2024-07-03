@@ -50,5 +50,4 @@ public class CartJwtAop {
 		Long userId = authService.getUserIdFromJwt(request);
 		request.setAttribute("userId", userId);
 	}
-
 }
