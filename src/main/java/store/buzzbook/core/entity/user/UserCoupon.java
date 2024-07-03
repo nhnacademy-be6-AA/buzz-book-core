@@ -8,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -30,11 +29,11 @@ public class UserCoupon {
 	private long id;
 
 	@NotNull
-	@Column(name = "coupon_code", length = 14)
+	@Column(name = "coupon_code", length = 20)
 	private String couponCode;
 
 	@NotNull
-	@Column(name= "coupon_policy_id")
+	@Column(name = "coupon_policy_id")
 	private int couponPolicyId;
 
 	@NotNull
