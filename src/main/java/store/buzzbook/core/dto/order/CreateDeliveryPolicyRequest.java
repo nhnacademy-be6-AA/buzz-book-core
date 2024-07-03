@@ -13,5 +13,4 @@ public class CreateDeliveryPolicyRequest {
 	private String name;
 	private int standardPrice;
 	private int policyPrice;
-	private String loginId;
 }
