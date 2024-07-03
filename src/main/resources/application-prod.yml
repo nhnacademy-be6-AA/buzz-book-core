@@ -1,6 +1,6 @@
 spring:
   application:
-    name: core
+    name: core-api
 
   datasource:
     url: jdbc:mysql://133.186.241.167:3306/be6_aa_prod?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
