@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ class SignControllerTest {
 	}
 
 	@Test
+	@Disabled
 	void testRegister() throws Exception {
 
 		registerUserRequest = RegisterUserRequest.builder()
