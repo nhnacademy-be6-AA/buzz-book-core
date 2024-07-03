@@ -69,7 +69,7 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			data = orderService.readOrders(readOrdersRequest);
 		} else {
-			data = orderService.readMyOrders(readOrdersRequest);
+			data = orderService.readMyOrders(readOrdersRequest, userInfo.loginId());
 		}
 		return ResponseEntity.ok(data);
 	}
@@ -88,9 +88,9 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
+			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest, userInfo.loginId()));
 		}
-		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest));
+		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
 	}
 
 	@Operation(summary = "주문 상세 상태 수정", description = "주문 상세 상태 변경")
@@ -101,7 +101,7 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.updateOrderDetailWithAdmin(updateOrderDetailRequest));
 		}
-		return ResponseEntity.ok(orderService.updateOrderDetail(updateOrderDetailRequest));
+		return ResponseEntity.ok(orderService.updateOrderDetail(updateOrderDetailRequest, userInfo.loginId()));
 	}
 
 	@Operation(summary = "주문 조회", description = "주문 조회")
