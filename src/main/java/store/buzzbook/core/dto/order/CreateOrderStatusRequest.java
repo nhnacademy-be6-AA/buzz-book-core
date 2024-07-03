@@ -12,5 +12,4 @@ import store.buzzbook.core.dto.user.UserInfo;
 @Getter
 public class CreateOrderStatusRequest {
 	private String name;
-	private UserInfo userInfo;
 }
