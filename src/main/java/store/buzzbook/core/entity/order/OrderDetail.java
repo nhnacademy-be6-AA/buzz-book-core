@@ -44,7 +44,7 @@ public class OrderDetail {
 
 	@NotNull
 	@Setter
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
 
