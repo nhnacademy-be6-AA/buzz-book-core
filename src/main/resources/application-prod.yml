@@ -4,7 +4,6 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-
     type: org.apache.commons.dbcp2.BasicDataSource
     initial-size: 3
     max-total: 5

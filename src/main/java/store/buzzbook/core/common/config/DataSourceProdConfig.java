@@ -10,6 +10,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
@@ -19,7 +20,8 @@ import javax.sql.DataSource;
 @Setter
 @Configuration
 @RequiredArgsConstructor
-public class DataSourceConfig {
+@Profile("prod")
+public class DataSourceProdConfig {
 	private final MySQLProperties mySQLProperties;
 
 	@Value("${nhncloud.keymanager.appkey}")
