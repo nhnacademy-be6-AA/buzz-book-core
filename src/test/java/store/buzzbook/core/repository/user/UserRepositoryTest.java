@@ -7,14 +7,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.config.QuerydslConfig;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
@@ -24,8 +23,8 @@ import store.buzzbook.core.entity.user.UserStatus;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 @Import(QuerydslConfig.class)
+@Slf4j
 class UserRepositoryTest {
-	private static final Logger log = LoggerFactory.getLogger(UserRepositoryTest.class);
 	@Autowired
 	private EntityManager em;
 	@Autowired
@@ -46,6 +45,7 @@ class UserRepositoryTest {
 		gradeRepository.save(grade);
 
 		user = User.builder()
+			.id(1L)
 			.loginId("testid00000000")
 			.name("john doe")
 			.email("email123@nhn.com")
