@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.product;
 
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.ProductTag;
 import store.buzzbook.core.entity.product.Tag;
@@ -32,9 +33,9 @@ public class ProductTagService {
 	@Transactional
 	public void addTagToProduct(int productId, int tagId) {
 		Product product = productRepository.findById(productId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 상품을 찾을 수 없습니다."));
+			.orElseThrow(() -> new DataNotFoundException("product",productId));
 		Tag tag = tagRepository.findById(tagId)
-			.orElseThrow(() -> new IllegalArgumentException("Tag 를 찾을 수 없습니다"));
+			.orElseThrow(() -> new DataNotFoundException("Tag", "를 찾을 수 없습니다"));
 
 		//새로운 ProductTag 엔티티를 생성 & 저장
 		ProductTag productTag = new ProductTag(product, tag);
