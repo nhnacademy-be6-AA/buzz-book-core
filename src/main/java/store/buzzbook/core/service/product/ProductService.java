@@ -135,7 +135,7 @@ public class ProductService {
 
 	public Page<ProductResponse> getAllProductsByNameAndStockStatus(String productName, Product.StockStatus stockStatus, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByStockStatusAndProductNameContaining(productName, stockStatus, pageable)
+		return productRepository.findAllByProductNameContainingAndStockStatus(productName, stockStatus, pageable)
 			.map(ProductResponse::convertToProductResponse);
 	}
 
