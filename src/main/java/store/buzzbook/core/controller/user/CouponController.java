@@ -23,13 +23,14 @@ public class CouponController {
 	private final UserService userService;
 
 	@PostMapping
-	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon id 를 넘겨야한다.")
+	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon id 를 넘겨야 한다.")
 	public ResponseEntity<Void> createUserCoupon(@Valid @RequestBody CreateUserCouponRequest request) {
 		userService.addUserCoupon(request);
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/download")
+	@Operation(summary = "쿠폰 다운로드 요청", description = "유저의 쿠폰 다운로드 요청을 보낸다. user id 와 coupon policy id 를 넘겨야 한다.")
 	public ResponseEntity<Void> downloadCoupon(@Valid @RequestBody DownloadCouponRequest request) {
 		userService.downloadCoupon(request);
 		return ResponseEntity.ok().build();

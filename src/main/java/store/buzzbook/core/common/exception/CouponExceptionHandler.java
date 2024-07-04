@@ -8,6 +8,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
+import store.buzzbook.core.common.exception.coupon.UserCouponNotFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -17,5 +18,11 @@ public class CouponExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<String> handleUserCouponAlreadyExistsException(UserCouponAlreadyExistsException e) {
 		log.debug("handleBadRequest : {}", e.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+	}
+
+	@ExceptionHandler(value = UserCouponNotFoundException.class)
+	public ResponseEntity<String> handleUserCouponNotFoundException(UserCouponNotFoundException e) {
+		log.debug("handleNotFoundRequest : {}", e.getMessage());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 	}
 }
