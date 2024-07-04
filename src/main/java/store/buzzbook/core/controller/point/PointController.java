@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.point.CreatePointPolicyRequest;
-import store.buzzbook.core.dto.point.CreatePointPolicyResponse;
 import store.buzzbook.core.dto.point.DeletePointPolicyRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.point.PointPolicyResponse;
@@ -36,7 +35,7 @@ public class PointController {
 	}
 
 	@PostMapping
-	public ResponseEntity<CreatePointPolicyResponse> createPointPolicy(@RequestBody CreatePointPolicyRequest request) {
+	public ResponseEntity<PointPolicyResponse> createPointPolicy(@RequestBody CreatePointPolicyRequest request) {
 		return ResponseEntity.ok(pointService.createPointPolicy(request));
 	}
 
