@@ -94,6 +94,7 @@ public class MyPageController {
 
 	@JwtValidate
 	@GetMapping("/points")
+	@Operation(summary = "회원의 포인트 로그 조회 요청", description = "회원의 포인트 적립내역, 사용내역을 조회 합니다.")
 	public ResponseEntity<Page<PointLogResponse>> getPointLogs(Pageable pageable, HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 
