@@ -5,16 +5,12 @@ spring:
     name: core-api
 
   datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
     type: org.apache.commons.dbcp2.BasicDataSource
-    dev:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://133.186.241.167:3306/be6_aa_dev?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
-      username: be6_aa
-      password: 6@H(77fpCZDiC6!!
-      initial-size: 3
-      max-total: 5
-      max-idle: 3
-      min-idle: 1
+    initial-size: 3
+    max-total: 5
+    max-idle: 3
+    min-idle: 1
   jpa:
     generate-ddl: false
     hibernate:
@@ -44,3 +40,11 @@ eureka:
     register-with-eureka: true
     service-url:
       defaultZone: http://admin:1234@localhost:8761/eureka
+
+nhncloud:
+  keymanager:
+    appkey: 2SxwmBzUfnqJaA2A
+    mysql:
+      url: cacea6422cee4017b8af5edd24834165
+      username: 6764281f095b4154ab34a04b4fea6b8d
+      password: 3a23273e707b438e94f104f47ce7a7ba
