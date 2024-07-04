@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import store.buzzbook.core.dto.coupon.CouponLogRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
@@ -12,5 +13,5 @@ import store.buzzbook.core.dto.coupon.CouponResponse;
 public interface CouponClient {
 
 	List<CouponResponse> getUserCoupons(@RequestBody List<CouponLogRequest> request,
-		@RequestBody String couponStatusName);
+		@RequestParam String couponStatusName);
 }
