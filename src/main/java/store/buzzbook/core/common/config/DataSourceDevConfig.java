@@ -1,13 +1,14 @@
 package store.buzzbook.core.common.config;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
 
@@ -15,8 +16,9 @@ import javax.sql.DataSource;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "spring.datasource")
-public class DataSourceConfig {
+@Profile("dev")
+@ConfigurationProperties(prefix = "spring.datasource.dev")
+public class DataSourceDevConfig {
 
 	private String driverClassName;
 	private String url;
