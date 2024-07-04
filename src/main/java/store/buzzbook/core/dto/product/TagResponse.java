@@ -10,7 +10,8 @@ public class TagResponse {
 	private int id;
 	private String name;
 
-	public static TagResponse convertToTagResponse(Tag tag) {
+	public static TagResponse convertToTagResponse(Tag tag)
+	{
 		return new TagResponse(tag.getId(), tag.getName());
 	}
 

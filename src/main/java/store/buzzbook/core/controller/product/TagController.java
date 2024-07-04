@@ -41,7 +41,7 @@ public class TagController {
 
 	public ResponseEntity<List<TagResponse>> getAllTags(
 		@RequestParam(required = false) @Parameter(description = "검색할 태그이름(정확히 일치 해야함)") String tagName) {
-		if (tagName == null) {
+		if (tagName.isEmpty()) {
 			return ResponseEntity.ok(tagService.getAllTags());
 		}
 		return ResponseEntity.ok(Collections.singletonList(tagService.getTagByName(tagName)));

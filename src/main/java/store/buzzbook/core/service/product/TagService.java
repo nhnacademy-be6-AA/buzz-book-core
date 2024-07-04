@@ -34,7 +34,7 @@ public class TagService {
 	}
 
 	public TagResponse getTagByName(String tagName) {
-		Tag tag = tagRepository.findByName(tagName);
+		Tag tag = tagRepository.findByName(tagName).orElse(null);
 		if (tag == null) {
 			throw new DataNotFoundException("tag", tagName);
 		}
