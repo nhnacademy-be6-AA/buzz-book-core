@@ -17,11 +17,11 @@ public class ProductTagController {
 
 	private final ProductTagService productTagService;
 
-	@GetMapping("/{productId}")
-	public ResponseEntity<List<String>> getTagsByProductId(@PathVariable int productId) {
-		List<String> tags = productTagService.getTagsByProductId(productId);
-		return ResponseEntity.ok(tags);
-	}
+	// @GetMapping("/{productId}")
+	// public ResponseEntity<List<String>> getTagsByProductId(@PathVariable int productId) {
+	// 	List<String> tags = productTagService.getTagsByProductId(productId);
+	// 	return ResponseEntity.ok(tags);
+	// }
 
 	@PostMapping("/{productId}/tags/{tagId}")
 	public ResponseEntity<Void> addTagToProduct(@PathVariable int productId, @PathVariable int tagId) {
