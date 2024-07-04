@@ -40,8 +40,7 @@ eureka:
 
 nhncloud:
   keymanager:
-    endpoint: https://api-keymanager.nhncloudservice.com
-    uri: /keymanager/v1.2/appkey/2411/secrets/
+    appkey: 2SxwmBzUfnqJaA2A
     mysql:
       url: c7d282283c5c4ddcae6072324adfe3c3
       username: 0f85ac52219545d382eab76db989e848
