@@ -2,6 +2,7 @@ package store.buzzbook.core.service.point;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import store.buzzbook.core.dto.point.CreatePointPolicyRequest;
@@ -21,7 +22,7 @@ public interface PointService {
 
 	void deletePointPolicy(DeletePointPolicyRequest request);
 
-	List<PointLogResponse> getPointLogs(Pageable pageable);
+	Page<PointLogResponse> getPointLogs(Pageable pageable, Long userId);
 
 	PointLog createPointLogWithDelta(long userId, String inquiry, int deltaPoint);
 }
