@@ -2,13 +2,12 @@ package store.buzzbook.core.service.user.implement;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.AddressMaxCountException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
@@ -21,9 +20,8 @@ import store.buzzbook.core.service.user.AddressService;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class AddressServiceImpl implements AddressService {
-
-	private static final Logger log = LoggerFactory.getLogger(AddressServiceImpl.class);
 	private final UserRepository userRepository;
 	private final AddressRepository addressRepository;
 
@@ -37,7 +35,6 @@ public class AddressServiceImpl implements AddressService {
 			log.debug("회원 주소 추가 중 존재하지 않는 user id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
-
 		Integer addressCount = addressRepository.countAllByUserId(userId);
 
 		if (addressCount >= 10) {
@@ -46,7 +43,6 @@ public class AddressServiceImpl implements AddressService {
 		}
 
 		Address address = createAddressRequest.toAddress(user);
-
 		addressRepository.save(address);
 	}
 

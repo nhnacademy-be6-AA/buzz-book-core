@@ -24,14 +24,14 @@ public class UserJwtAop {
 	public void authenticate(JoinPoint joinPoint) throws Throwable {
 		String authorizationHeader = request.getHeader("Authorization");
 
-		//비회원 -- uuid 체크 (존재유무로 위변조체크)
+		//비회원 --  체크 (존재유무로 위변조체크)
 		if (Objects.isNull(authorizationHeader)) {
 			throw new AuthorizeFailException("jwt token이 없습니다.");
 		}
 		//회원
 		Map<String, Object> claims = authService.getInfoMapFromJwt(request);
 
-		Long userId = (Long)claims.get(AuthService.USER_ID);
+		Long userId = ((Integer)claims.get(AuthService.USER_ID)).longValue();
 		String loginId = (String)claims.get(AuthService.LOGIN_ID);
 		String role = (String)claims.get(AuthService.ROLE);
 
