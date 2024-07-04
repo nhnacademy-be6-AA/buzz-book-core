@@ -52,12 +52,12 @@ public class MyPageController {
 	@JwtValidate
 	@PutMapping
 	@Operation(summary = "유저 정보 변경", description = "비밀번호를 제외한 일반 개인 정보들을 변경한다.")
-	public ResponseEntity<UserInfo> updateUser(@RequestBody UpdateUserRequest updateUserRequest,
+	public ResponseEntity<Void> updateUser(@RequestBody UpdateUserRequest updateUserRequest,
 		HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
-		UserInfo userInfo = userService.updateUserInfo(userId, updateUserRequest);
+		userService.updateUserInfo(userId, updateUserRequest);
 
-		return ResponseEntity.ok().body(userInfo);
+		return ResponseEntity.ok().build();
 	}
 
 	@JwtValidate

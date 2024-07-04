@@ -23,7 +23,7 @@ public interface UserService {
 
 	void activate(String loginId);
 
-	UserInfo updateUserInfo(Long userId, UpdateUserRequest updateUserRequest);
+	void updateUserInfo(Long userId, UpdateUserRequest updateUserRequest);
 
 	UserInfo getUserInfoByUserId(Long userId);
 

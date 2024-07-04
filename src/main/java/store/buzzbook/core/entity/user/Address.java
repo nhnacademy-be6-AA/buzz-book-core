@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.AddressInfoResponse;
 
 @Entity
 @Getter
@@ -59,4 +60,15 @@ public class Address {
 	@Column(name = "alias")
 	@Size(min = 1, max = 20)
 	private String alias;
+
+	public AddressInfoResponse toResponse() {
+		return AddressInfoResponse.builder()
+			.id(this.id)
+			.address(this.address)
+			.detail(this.detail)
+			.zipcode(this.zipcode)
+			.alias(this.alias)
+			.nation(this.nation)
+			.build();
+	}
 }
