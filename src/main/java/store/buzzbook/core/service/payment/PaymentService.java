@@ -38,14 +38,12 @@ import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
-import store.buzzbook.core.repository.payment.PaymentLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 	private final BillLogRepository billLogRepository;
-	private final PaymentLogRepository paymentLogRepository;
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final ObjectMapper objectMapper;
@@ -53,7 +51,7 @@ public class PaymentService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 
-	private final static int ORDERSTATUS_PAID = 4;
+	private static final int ORDER_STATUS_PAID = 4;
 
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
@@ -65,7 +63,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
 				.orElseThrow(() -> new RuntimeException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new RuntimeException("Product not found"));
