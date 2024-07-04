@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.user.implement;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -9,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.client.auth.CouponClient;
 import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
+import store.buzzbook.core.common.exception.coupon.UserCouponNotFoundException;
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
@@ -17,6 +20,8 @@ import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
+import store.buzzbook.core.dto.coupon.CouponLogRequest;
+import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
@@ -49,6 +54,7 @@ public class UserServiceImpl implements UserService {
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
 	private final UserCouponRepository userCouponRepository;
+	private final CouponClient couponClient;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -216,7 +222,8 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findById(request.userId())
 			.orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-		if (userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
+		if (Boolean.TRUE.equals(
+			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
@@ -231,11 +238,27 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
-		if (userCouponRepository.existsByCouponPolicyId(request.couponPolicyId())) {
+		if (Boolean.TRUE.equals(
+			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
 		userProducerService.sendDownloadCouponRequest(request);
+	}
+
+	@Override
+	public List<CouponResponse> getUserCoupons(Long userId, String couponStatusName) {
+		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
+
+		if (userCoupons.isEmpty()) {
+			throw new UserCouponNotFoundException();
+		}
+
+		List<CouponLogRequest> request = userCoupons.stream()
+			.map(CouponLogRequest::from)
+			.toList();
+
+		return couponClient.getUserCoupons(request, couponStatusName);
 	}
 
 	@Override

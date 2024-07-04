@@ -1,5 +1,8 @@
 package store.buzzbook.core.service.user;
 
+import java.util.List;
+
+import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
@@ -31,4 +34,6 @@ public interface UserService {
 	void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest);
 
 	void downloadCoupon(DownloadCouponRequest request);
+
+	List<CouponResponse> getUserCoupons(Long userId, String couponStatusName);
 }
