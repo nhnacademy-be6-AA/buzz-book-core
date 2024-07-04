@@ -2,6 +2,8 @@ package store.buzzbook.core.controller.user;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,11 +19,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.coupon.CouponResponse;
+import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
+import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
 @RequiredArgsConstructor
@@ -31,6 +35,7 @@ import store.buzzbook.core.service.user.UserService;
 @Slf4j
 public class MyPageController {
 	private final UserService userService;
+	private final PointService pointService;
 
 	@JwtValidate
 	@PutMapping("/password")
@@ -76,6 +81,7 @@ public class MyPageController {
 		return ResponseEntity.ok().body(userInfo);
 	}
 
+	@JwtValidate
 	@PostMapping("/coupons")
 	@Operation(summary = "회원의 쿠폰 로그 조회 요청", description = "회원의 쿠폰 발급내역, 사용내역을 조회 합니다.")
 	public ResponseEntity<List<CouponResponse>> getUserCoupons(
@@ -84,6 +90,14 @@ public class MyPageController {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 
 		return ResponseEntity.ok(userService.getUserCoupons(userId, couponStatusName));
+	}
+
+	@JwtValidate
+	@GetMapping("/points")
+	public ResponseEntity<Page<PointLogResponse>> getPointLogs(Pageable pageable, HttpServletRequest request) {
+		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
+
+		return ResponseEntity.ok(pointService.getPointLogs(pageable, userId));
 	}
 
 }

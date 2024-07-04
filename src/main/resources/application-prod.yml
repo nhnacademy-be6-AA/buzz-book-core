@@ -3,9 +3,6 @@ spring:
     name: core-api
 
   datasource:
-    url: jdbc:mysql://133.186.241.167:3306/be6_aa_prod?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
-    username: be6_aa
-    password: 6@H(77fpCZDiC6!!
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     type: org.apache.commons.dbcp2.BasicDataSource
@@ -40,3 +37,14 @@ eureka:
     register-with-eureka: true
     service-url:
       defaultZone: http://admin:1234@eureka-server:8761/eureka
+
+nhncloud:
+  keymanager:
+    endpoint: https://api-keymanager.nhncloudservice.com
+    uri: /keymanager/v1.2/appkey/2411/secrets/
+    mysql:
+      url: c7d282283c5c4ddcae6072324adfe3c3
+      username: 0f85ac52219545d382eab76db989e848
+      password: 54e01f8caa504a6ca5e69d30e66bf348
+
+
