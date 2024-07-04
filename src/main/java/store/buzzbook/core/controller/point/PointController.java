@@ -2,7 +2,6 @@ package store.buzzbook.core.controller.point;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.point.CreatePointPolicyRequest;
-import store.buzzbook.core.dto.point.CreatePointPolicyResponse;
 import store.buzzbook.core.dto.point.DeletePointPolicyRequest;
-import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.point.PointPolicyResponse;
 import store.buzzbook.core.dto.point.UpdatePointPolicyRequest;
 import store.buzzbook.core.service.point.PointService;
@@ -30,30 +28,29 @@ public class PointController {
 
 	private final PointService pointService;
 
+	@JwtValidate
 	@GetMapping
 	public ResponseEntity<List<PointPolicyResponse>> getPointPolicies() {
 		return ResponseEntity.ok(pointService.getPointPolicies());
 	}
 
+	@JwtValidate
 	@PostMapping
-	public ResponseEntity<CreatePointPolicyResponse> createPointPolicy(@RequestBody CreatePointPolicyRequest request) {
+	public ResponseEntity<PointPolicyResponse> createPointPolicy(@RequestBody CreatePointPolicyRequest request) {
 		return ResponseEntity.ok(pointService.createPointPolicy(request));
 	}
 
+	@JwtValidate
 	@PutMapping
 	public ResponseEntity<Void> updatePointPolicy(@RequestBody UpdatePointPolicyRequest request) {
 		pointService.updatePointPolicy(request);
 		return ResponseEntity.ok().build();
 	}
 
+	@JwtValidate
 	@DeleteMapping
 	public ResponseEntity<Void> deletePointPolicy(@RequestBody DeletePointPolicyRequest request) {
 		pointService.deletePointPolicy(request);
 		return ResponseEntity.ok().build();
-	}
-
-	@GetMapping("/logs")
-	public ResponseEntity<List<PointLogResponse>> getPointLogs(Pageable pageable) {
-		return ResponseEntity.ok(pointService.getPointLogs(pageable));
 	}
 }
