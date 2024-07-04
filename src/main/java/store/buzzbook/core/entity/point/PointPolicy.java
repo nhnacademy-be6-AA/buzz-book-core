@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.point;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,10 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-
-import java.math.BigDecimal;
 
 @Getter
 @AllArgsConstructor
@@ -29,10 +27,25 @@ public class PointPolicy {
 	private String name;
 
 	@Column(nullable = false)
-	private int point;
+	@Builder.Default
+	private int point = 0;
 
 	@Column(nullable = false)
 	@Builder.Default
 	@ColumnDefault("1.0")
-	private double rate = 1.0d;
+	private double rate = 1.0;
+
+	private boolean deleted;
+
+	public void changePoint(int point) {
+		this.point = point;
+	}
+
+	public void changeRate(double rate) {
+		this.rate = rate;
+	}
+
+	public void delete() {
+		this.deleted = true;
+	}
 }
