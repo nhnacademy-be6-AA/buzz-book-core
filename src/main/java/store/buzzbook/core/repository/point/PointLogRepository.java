@@ -8,5 +8,9 @@ import store.buzzbook.core.entity.point.PointLog;
 
 public interface PointLogRepository extends JpaRepository<PointLog, Long> {
 
-	List<PointLog> findByUserId(Long userId);
+	List<PointLog> findByUserId(long userId);
+
+	//balance값을 알기위해 userId로 user의 가장 최근의 포인트 로그값 조회
+	PointLog findLastByUserId(long userId);
+	PointLog findFirstByUserIdOrderByCreatedAtDesc(long userId);
 }
