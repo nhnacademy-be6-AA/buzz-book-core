@@ -35,6 +35,7 @@ public class PointPolicy {
 	@ColumnDefault("1.0")
 	private double rate = 1.0;
 
+	@Column(nullable = false, columnDefinition = "TINYINT(1)")
 	private boolean deleted;
 
 	public void changePoint(int point) {
