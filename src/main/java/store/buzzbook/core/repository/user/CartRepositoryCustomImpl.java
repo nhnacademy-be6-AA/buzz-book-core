@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -20,8 +19,7 @@ public class CartRepositoryCustomImpl implements CartRepositoryCustom {
 	@Override
 	public Optional<List<CartDetailResponse>> findCartDetailByCartId(Long cartId) {
 		List<CartDetail> cartDetailList = jpaQueryFactory
-			.select(Projections.fields(CartDetail.class))
-			.from(cartDetail)
+			.selectFrom(cartDetail)
 			.where(cartDetail.cart.id.eq(cartId))
 			.fetch();
 
@@ -32,7 +30,7 @@ public class CartRepositoryCustomImpl implements CartRepositoryCustom {
 		List<CartDetailResponse> cartResponseList = new LinkedList<>();
 
 		cartDetailList.forEach(
-			cartDetail -> cartResponseList.add(cartDetail.toResponse(cartDetail.getProduct().getThumbnailPath())));
+			cartDetail -> cartResponseList.add(cartDetail.toResponse()));
 
 		return Optional.of(cartResponseList);
 	}
@@ -40,8 +38,7 @@ public class CartRepositoryCustomImpl implements CartRepositoryCustom {
 	@Override
 	public Optional<List<CartDetailResponse>> findCartDetailByUuid(byte[] uuid) {
 		List<CartDetail> cartDetailList = jpaQueryFactory
-			.select(Projections.fields(CartDetail.class))
-			.from(cartDetail)
+			.selectFrom(cartDetail)
 			.where(cartDetail.cart.uuid.eq(uuid))
 			.fetch();
 
@@ -52,7 +49,7 @@ public class CartRepositoryCustomImpl implements CartRepositoryCustom {
 		List<CartDetailResponse> cartResponseList = new LinkedList<>();
 
 		cartDetailList.forEach(
-			cartDetail -> cartResponseList.add(cartDetail.toResponse(cartDetail.getProduct().getThumbnailPath())));
+			cartDetail -> cartResponseList.add(cartDetail.toResponse()));
 
 		return Optional.of(cartResponseList);
 	}
