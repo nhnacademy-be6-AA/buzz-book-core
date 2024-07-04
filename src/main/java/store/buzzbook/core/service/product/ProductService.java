@@ -1,7 +1,5 @@
 package store.buzzbook.core.service.product;
 
-import static store.buzzbook.core.dto.product.ProductResponse.*;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
