@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.point.PointPolicyNotFoundException;
@@ -30,11 +31,13 @@ public class PointServiceImpl implements PointService {
 	private final PointLogRepository pointLogRepository;
 	private final UserRepository userRepository;
 
+	@Transactional
 	@Override
 	public PointPolicyResponse createPointPolicy(CreatePointPolicyRequest request) {
 		return PointPolicyResponse.from(pointPolicyRepository.save(request.toEntity()));
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<PointPolicyResponse> getPointPolicies() {
 		return pointPolicyRepository.findAll().stream()
@@ -42,6 +45,7 @@ public class PointServiceImpl implements PointService {
 			.toList();
 	}
 
+	@Transactional
 	@Override
 	public void updatePointPolicy(UpdatePointPolicyRequest request) {
 		PointPolicy pointPolicy = pointPolicyRepository.findById(request.id())
@@ -51,6 +55,7 @@ public class PointServiceImpl implements PointService {
 		pointPolicy.changeRate(request.rate());
 	}
 
+	@Transactional
 	@Override
 	public void deletePointPolicy(DeletePointPolicyRequest request) {
 		PointPolicy pointPolicy = pointPolicyRepository.findById(request.id())
@@ -59,6 +64,7 @@ public class PointServiceImpl implements PointService {
 		pointPolicy.delete();
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<PointLogResponse> getPointLogs(Pageable pageable) {
 		return pointLogRepository.findAll(pageable).stream().map(PointLogResponse::from).toList();
