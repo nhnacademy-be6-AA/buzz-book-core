@@ -1,8 +1,5 @@
 package store.buzzbook.core.entity.cart;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Entity;
@@ -50,12 +47,15 @@ public class CartDetail {
 	@JoinColumn(name = "product_id", nullable = false)
 	private Product product;
 
-	public CartDetailResponse toResponse(String thumbnailPath) {
-		List<TagResponse> tagList = new LinkedList<>();
+	public CartDetailResponse toResponse() {
+		String wrapTag = "포장 가능";
+		boolean canWrap = false;
 
 		for (ProductTag tag : product.getProductTags()) {
 			TagResponse tagResponse = TagResponse.convertToTagResponse(tag.getTag());
-			tagList.add(tagResponse);
+			if (tagResponse.getName().equals(wrapTag)) {
+				canWrap = true;
+			}
 		}
 
 		return CartDetailResponse.builder()
@@ -63,8 +63,8 @@ public class CartDetail {
 			.productId(this.product.getId())
 			.productName(this.product.getProductName())
 			.quantity(this.getQuantity())
-			.thumbnailPath(thumbnailPath)
-			.tags(tagList)
+			.canWrap(canWrap)
+			.thumbnailPath(this.product.getThumbnailPath())
 			.build();
 	}
 

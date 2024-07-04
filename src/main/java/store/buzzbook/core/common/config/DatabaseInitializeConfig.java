@@ -1,20 +1,19 @@
 package store.buzzbook.core.common.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.service.user.GradeService;
 
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class DatabaseInitializeConfig {
-	private static final Logger log = LoggerFactory.getLogger(DatabaseInitializeConfig.class);
 	public final GradeService gradeService;
 
 	@Bean
@@ -34,6 +33,7 @@ public class DatabaseInitializeConfig {
 					.build();
 
 				gradeService.save(grade);
+
 			}
 
 		};
