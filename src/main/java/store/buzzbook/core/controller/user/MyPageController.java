@@ -1,7 +1,10 @@
 package store.buzzbook.core.controller.user;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtValidate;
+import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
@@ -70,6 +74,16 @@ public class MyPageController {
 		UserInfo userInfo = userService.getUserInfoByUserId(userId);
 
 		return ResponseEntity.ok().body(userInfo);
+	}
+
+	@PostMapping("/coupons")
+	@Operation(summary = "회원의 쿠폰 로그 조회 요청", description = "회원의 쿠폰 발급내역, 사용내역을 조회 합니다.")
+	public ResponseEntity<List<CouponResponse>> getUserCoupons(
+		@RequestBody String couponStatusName,
+		HttpServletRequest request) {
+		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
+
+		return ResponseEntity.ok(userService.getUserCoupons(userId, couponStatusName));
 	}
 
 }
