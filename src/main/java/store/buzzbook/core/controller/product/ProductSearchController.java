@@ -19,7 +19,7 @@ import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.service.product.ElasticsearchService;
 
 @RestController
-@RequestMapping("/api/product-search")
+@RequestMapping("/api/products/product-search")
 @RequiredArgsConstructor
 @Tag(name = "엘라스틱 서치 상품 검색", description = "상품 검색 기능")
 public class ProductSearchController {

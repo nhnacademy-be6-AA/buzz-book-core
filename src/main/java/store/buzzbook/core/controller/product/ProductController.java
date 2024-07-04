@@ -1,7 +1,5 @@
 package store.buzzbook.core.controller.product;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,27 +47,30 @@ public class ProductController {
 	@Operation(summary = "조건으로 상품 목록 조회", description = "상품을 id 순서로 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 page<productResponse> 반환")
 
-	public ResponseEntity<Page<ProductResponse>> getAllProduct(@RequestParam(required = false) Product.StockStatus status,
-		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호")
-		Integer pageNo,
-		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수")
-		Integer pageSize) {
-		if (status == null) {
-			return ResponseEntity.ok(productService.getAllProducts(pageNo, pageSize));
-		}
-		return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
-	}
+	public ResponseEntity<Page<ProductResponse>> getAllProduct(
+		@RequestParam(required = false) Product.StockStatus status,
+		@RequestParam(required = false) String name,
+		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호") Integer pageNo,
+		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) {
 
-	@GetMapping("/search")
-	@Operation(summary = "상품 이름으로 검색", description = "상품 이름을 포함하는 모든 상품을 검색합니다.")
-	public ResponseEntity<List<ProductResponse>> searchProductByName(@RequestParam(required = false) @Parameter(description = "검색할 상품 이름") String productName)
-	{
-		return ResponseEntity.ok(productService.searchProductsByName(productName));
+		if (name == null || name.isBlank()) {
+			if (status == null) {
+				return ResponseEntity.ok(productService.getAllProducts(pageNo, pageSize));
+			} else {
+				return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
+			}
+		} else {
+			if (status == null) {
+				return ResponseEntity.ok(productService.getAllProductByName(name, pageNo, pageSize));
+			} else {
+				return ResponseEntity.ok(productService.getAllProductsByNameAndStockStatus(name, status, pageNo, pageSize));
+			}
+		}
 	}
 
 
 	@GetMapping("/{id}")
-	@Operation(summary = "상품 조회", description = "주어진 id(int)에 해당하는 상품 정보 조회")
+	@Operation(summary = "상품 1건 조회", description = "주어진 id(int)에 해당하는 상품 정보 조회")
 	@ApiResponse(responseCode = "200", description = "상품 조회 성공시 ProductResponse 반환")
 
 	public ResponseEntity<ProductResponse> getProductById(@PathVariable int id) {

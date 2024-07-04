@@ -127,10 +127,16 @@ public class ProductService {
 		return productRepository.save(newProduct);
 	}
 
-	public List<ProductResponse> searchProductsByName(String productName) {
-		return productRepository.findByProductNameContaining(productName).stream()
-			.map(ProductResponse::convertToProductResponse)
-			.toList();
+	public Page<ProductResponse> getAllProductByName(String productName, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByProductNameContaining(productName, pageable)
+			.map(ProductResponse::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getAllProductsByNameAndStockStatus(String productName, Product.StockStatus stockStatus, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByProductNameContainingAndStockStatus(productName, stockStatus, pageable)
+			.map(ProductResponse::convertToProductResponse);
 	}
 
 	// Elasticsearch를 통한 검색 메소드
