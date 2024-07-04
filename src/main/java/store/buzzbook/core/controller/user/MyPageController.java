@@ -81,6 +81,7 @@ public class MyPageController {
 		return ResponseEntity.ok().body(userInfo);
 	}
 
+	@JwtValidate
 	@PostMapping("/coupons")
 	@Operation(summary = "회원의 쿠폰 로그 조회 요청", description = "회원의 쿠폰 발급내역, 사용내역을 조회 합니다.")
 	public ResponseEntity<List<CouponResponse>> getUserCoupons(
