@@ -31,12 +31,14 @@ import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserCoupon;
+import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
@@ -54,6 +56,7 @@ public class UserServiceImpl implements UserService {
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
 	private final UserCouponRepository userCouponRepository;
+	private final PointLogRepository pointLogRepository;
 	private final CouponClient couponClient;
 
 	@Transactional(readOnly = true)
@@ -115,6 +118,16 @@ public class UserServiceImpl implements UserService {
 			.build();
 
 		gradeLogRepository.save(gradeLog);
+
+		PointLog pointLog = PointLog.builder()
+			.user(savedUser)
+			.createdAt(LocalDateTime.now())
+			.delta(5000)
+			.inquiry("회원가입")
+			.balance(5000)
+			.build();
+
+		pointLogRepository.save(pointLog);
 
 		userProducerService.sendWelcomeCouponRequest(CreateWelcomeCouponRequest.builder()
 			.userId(savedUser.getId())

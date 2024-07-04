@@ -3,6 +3,7 @@ package store.buzzbook.core.service.point.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,8 +67,8 @@ public class PointServiceImpl implements PointService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<PointLogResponse> getPointLogs(Pageable pageable) {
-		return pointLogRepository.findAll(pageable).stream().map(PointLogResponse::from).toList();
+	public Page<PointLogResponse> getPointLogs(Pageable pageable, Long userId) {
+		return pointLogRepository.findByUserId(userId, pageable).map(PointLogResponse::from);
 	}
 
 	public PointLog createPointLogWithDelta(long userId, String inquiry, int deltaPoint) {
