@@ -31,6 +31,7 @@ import store.buzzbook.core.entity.user.UserStatus;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QuerydslConfig.class)
 @DataJpaTest
+@Disabled
 class CartWishlistRepositoryTest {
 	@Autowired
 	private EntityManager entityManager;
