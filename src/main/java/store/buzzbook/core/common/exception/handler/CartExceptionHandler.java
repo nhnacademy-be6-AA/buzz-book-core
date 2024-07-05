@@ -1,4 +1,4 @@
-package store.buzzbook.core.common.exception;
+package store.buzzbook.core.common.exception.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
