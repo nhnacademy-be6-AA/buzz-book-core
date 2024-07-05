@@ -25,6 +25,7 @@ public class OrderDetailMapper {
 			.productResponse(productResponse)
 			.readWrappingResponse(readWrappingResponse)
 			.couponCode(orderDetail.getCouponCode())
+			.updateAt(orderDetail.getUpdateAt())
 			.build();
 	}
 
@@ -42,6 +43,7 @@ public class OrderDetailMapper {
 			.order(order)
 			.createAt(LocalDateTime.now())
 			.couponCode(createOrderDetailRequest.getCouponCode())
+			.updateAt(LocalDateTime.now())
 			.build();
 	}
 }
