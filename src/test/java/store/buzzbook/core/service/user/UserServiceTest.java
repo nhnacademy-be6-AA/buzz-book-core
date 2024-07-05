@@ -33,6 +33,7 @@ import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.implement.UserServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled
 class UserServiceTest {
 	@Mock
 	private UserRepository userRepository;

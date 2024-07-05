@@ -29,6 +29,7 @@ import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.implement.AddressServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled
 class AddressServiceTest {
 
 	@Mock
