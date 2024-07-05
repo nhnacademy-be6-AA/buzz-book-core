@@ -4,6 +4,8 @@ import static store.buzzbook.core.entity.user.QGrade.*;
 import static store.buzzbook.core.entity.user.QGradeLog.*;
 import static store.buzzbook.core.entity.user.QUser.*;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.entity.user.Grade;
+import store.buzzbook.core.entity.user.User;
 
 @RequiredArgsConstructor
 @Transactional
@@ -32,5 +35,15 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 			.fetchFirst();
 
 		return Optional.ofNullable(targetGrade);
+	}
+
+	@Override
+	public List<User> findUsersByBirthdayInCurrentMonth() {
+		int currentMonth = LocalDate.now().getMonthValue();
+
+		return jpaQueryFactory.select(user)
+			.from(user)
+			.where(user.birthday.month().eq(currentMonth))
+			.fetch();
 	}
 }

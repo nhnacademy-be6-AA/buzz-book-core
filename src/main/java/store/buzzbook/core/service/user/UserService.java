@@ -29,6 +29,8 @@ public interface UserService {
 
 	UserInfo getUserInfoByLoginId(String loginId);
 
+	List<UserInfo> getUserInfoByCurrentBirthday();
+
 	void addUserCoupon(CreateUserCouponRequest request);
 
 	void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest);

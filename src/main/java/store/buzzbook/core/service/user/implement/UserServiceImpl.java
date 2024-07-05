@@ -228,6 +228,20 @@ public class UserServiceImpl implements UserService {
 		return user.toUserInfo(gradeOptional.get());
 	}
 
+	@Override
+	public List<UserInfo> getUserInfoByCurrentBirthday() {
+		return userRepository.findUsersByBirthdayInCurrentMonth().stream()
+			.map(user -> UserInfo.builder()
+				.id(user.getId())
+				.loginId(user.getLoginId())
+				.contactNumber(user.getContactNumber())
+				.name(user.getName())
+				.email(user.getEmail())
+				.birthday(user.getBirthday())
+				.build())
+			.toList();
+	}
+
 	@Transactional
 	@Override
 	public void addUserCoupon(CreateUserCouponRequest request) {
@@ -248,6 +262,7 @@ public class UserServiceImpl implements UserService {
 		userCouponRepository.save(userCoupon);
 	}
 
+	@Transactional
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
 		if (Boolean.TRUE.equals(
@@ -258,6 +273,7 @@ public class UserServiceImpl implements UserService {
 		userProducerService.sendDownloadCouponRequest(request);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public List<CouponResponse> getUserCoupons(Long userId, String couponStatusName) {
 		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
