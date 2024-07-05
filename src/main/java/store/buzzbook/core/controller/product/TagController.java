@@ -3,6 +3,9 @@ package store.buzzbook.core.controller.product;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import feign.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,6 +52,26 @@ public class TagController {
 		}
 		return ResponseEntity.ok(Collections.singletonList(tagService.getTagByName(tagName)));
 	}
+
+	//임시적으로 Page 버전으로 만듦
+	@GetMapping("/all")
+	public ResponseEntity<Page<TagResponse>> getAllTags(
+		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호") Integer pageNo,
+		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize,
+		@RequestParam(required = false) String tagName) {
+
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Page<TagResponse> tagResponses;
+
+		if (tagName == null || tagName.isEmpty() || tagName.isBlank()) {
+			tagResponses = tagService.getAllTags(pageable);
+		} else {
+			tagResponses = tagService.getTagsByName(tagName, pageable);
+		}
+
+		return ResponseEntity.ok(tagResponses);
+	}
+
 
 	@GetMapping({"/{id}"})
 	@Operation(summary = "태그 조회", description = "태그 조회<br>태그를 id 순서로 조회<br>주어진 id(int)에 해당하는 태그 조회")
