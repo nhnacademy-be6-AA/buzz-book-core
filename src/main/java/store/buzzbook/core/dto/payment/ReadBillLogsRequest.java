@@ -7,5 +7,4 @@ import store.buzzbook.core.common.util.PageRequestInfo;
 @Getter
 @NoArgsConstructor
 public class ReadBillLogsRequest extends PageRequestInfo {
-	private String loginId;
 }

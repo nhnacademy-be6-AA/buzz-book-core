@@ -13,6 +13,5 @@ import store.buzzbook.core.dto.user.UserInfo;
 @Getter
 public class UpdateOrderRequest {
 	private String orderId;
-	private String loginId;
 	private String orderStatusName;
 }

@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
+import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductNotFoundException;
+import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
@@ -81,11 +85,11 @@ public class OrderService {
 		return data;
 	}
 
-	public Map<String, Object> readMyOrders(ReadOrdersRequest request) {
+	public Map<String, Object> readMyOrders(ReadOrdersRequest request, String loginId) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, pageable);
+		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, loginId, pageable);
 		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
 
 		data.put("responseData", orders);
@@ -110,12 +114,12 @@ public class OrderService {
 		for (CreateOrderDetailRequest detail : details) {
 			detail.setOrderId(order.getId());
 			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
-				.orElseThrow(() -> new IllegalArgumentException("Order Status not found"));
+				.orElseThrow(() -> new OrderStatusNotFoundException("Order Status not found"));
 			Wrapping wrapping = wrappingRepository.findById(detail.getWrappingId())
-				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 
 			Product product = productRepository.findById(detail.getProductId())
-				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			product.decreaseStock(detail.getQuantity());
 
@@ -137,7 +141,7 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
 	}
 
-	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
+	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
@@ -157,7 +161,7 @@ public class OrderService {
 				.build());
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
@@ -166,13 +170,13 @@ public class OrderService {
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
-		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getLoginId());
+		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
 	}
 
-	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest) {
+	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
-			order.getId(), updateOrderRequest.getLoginId());
+			order.getId(), loginId);
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails)
@@ -190,7 +194,7 @@ public class OrderService {
 				.build());
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
@@ -199,7 +203,7 @@ public class OrderService {
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
-		return OrderMapper.toDto(order, readOrderDetailResponse, updateOrderRequest.getLoginId());
+		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
 	}
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request) {
@@ -208,7 +212,7 @@ public class OrderService {
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
@@ -228,7 +232,7 @@ public class OrderService {
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
@@ -258,12 +262,12 @@ public class OrderService {
 
 	public void deleteOrderStatus(int orderStatusId) {
 		orderStatusRepository.delete(orderStatusRepository.findById(orderStatusId)
-			.orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
+			.orElseThrow(() -> new OrderStatusNotFoundException("Order Status not found")));
 	}
 
 	public ReadOrderStatusResponse readOrderStatusById(int id) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("Order Status not found")));
+			.orElseThrow(() -> new OrderStatusNotFoundException("Order Status not found")));
 	}
 
 	public ReadOrderStatusResponse readOrderStatusByName(String orderStatusName) {
@@ -296,7 +300,7 @@ public class OrderService {
 
 	public ReadDeliveryPolicyResponse readDeliveryPolicyById(int deliveryPolicyId) {
 		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.findById(deliveryPolicyId)
-			.orElseThrow(() -> new IllegalArgumentException("Delivery Policy not found")));
+			.orElseThrow(() -> new DeliveryPolicyNotFoundException("Delivery Policy not found")));
 	}
 
 	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
@@ -319,7 +323,7 @@ public class OrderService {
 
 	public ReadWrappingResponse readWrappingById(int wrappingId) {
 		return WrappingMapper.toDto(wrappingRepository.findById(wrappingId)
-			.orElseThrow(() -> new IllegalArgumentException("Wrapping not found")));
+			.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found")));
 	}
 
 	public List<ReadWrappingResponse> readAllWrapping() {
@@ -327,8 +331,8 @@ public class OrderService {
 	}
 
 	@Transactional
-	public ReadOrderDetailResponse updateOrderDetail(UpdateOrderDetailRequest request) {
-		OrderDetail orderDetail = orderDetailRepository.findByIdAndOrder_User_LoginId(request.getId(), request.getLoginId());
+	public ReadOrderDetailResponse updateOrderDetail(UpdateOrderDetailRequest request, String loginId) {
+		OrderDetail orderDetail = orderDetailRepository.findByIdAndOrder_User_LoginId(request.getId(), loginId);
 		orderDetailRepository.save(OrderDetail.builder()
 			.orderStatus(orderStatusRepository.findByName(request.getOrderStatusName()))
 			.id(orderDetail.getId())
@@ -343,7 +347,7 @@ public class OrderService {
 			.build());
 
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
-			.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 		if (request.getOrderStatusName().equals("CANCELED")) {
 			product.increaseStock(orderDetail.getQuantity());
@@ -373,7 +377,7 @@ public class OrderService {
 			.build());
 
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
-			.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);

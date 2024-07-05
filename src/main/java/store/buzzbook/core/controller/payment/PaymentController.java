@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.payment.ReadAllPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
@@ -24,6 +26,7 @@ import store.buzzbook.core.dto.payment.ReadPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
@@ -35,31 +38,32 @@ public class PaymentController {
 	private final PaymentService paymentService;
 	private final UserService userService;
 
+	@JwtOrderValidate
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
 	@PostMapping("/bill-logs")
-	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest request) {
-		if (request.getLoginId().isEmpty()) {
-			List<ReadBillLogWithoutOrderResponse> responses = paymentService.readBillLogWithoutOrderWithoutLogin(request.getOrderId());
+	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest readBillLogRequest, HttpServletRequest request) {
+		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
+			List<ReadBillLogWithoutOrderResponse> responses = paymentService.readBillLogWithoutOrderWithoutLogin(readBillLogRequest.getOrderId());
 			return ResponseEntity.ok(responses);
 		}
 
-		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 
 		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithAdmin(request.getOrderId()));
+			return ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithAdmin(readBillLogRequest.getOrderId()));
 		}
 
-		return ResponseEntity.ok(paymentService.readBillLogWithoutOrder(userInfo.id(), request.getOrderId()));
+		return ResponseEntity.ok(paymentService.readBillLogWithoutOrder(userInfo.id(), readBillLogRequest.getOrderId()));
 	}
 
 
 	@Operation(summary = "관리자의 결제 내역 모두 조회", description = "결제 내역 모두 조회 - 관리자")
 	@PostMapping("/admin/bill-logs")
-	public ResponseEntity<?> getAllBillLogs(@RequestBody ReadBillLogsRequest request) {
+	public ResponseEntity<?> getAllBillLogs(@RequestBody ReadBillLogsRequest readBillLogsRequest, HttpServletRequest request) {
 		Map<String, Object> data = null;
-		UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			data = paymentService.readBillLogs(request);
+			data = paymentService.readBillLogs(readBillLogsRequest);
 		}
 
 		return ResponseEntity.ok(data);
