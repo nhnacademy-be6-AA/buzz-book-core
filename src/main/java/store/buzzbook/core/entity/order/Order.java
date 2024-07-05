@@ -1,7 +1,6 @@
 package store.buzzbook.core.entity.order;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,31 +32,40 @@ public class Order {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+	@Size(min = 1, max = 50)
 	@NotNull
 	private String orderStr;
 	@NotNull
 	private int price;
+	@Size(min = 1, max = 200)
 	private String request;
+	@Size(min = 1, max = 200)
 	@NotNull
 	private String address;
+	@Size(min = 1, max = 200)
 	@NotNull
 	private String addressDetail;
 	@NotNull
 	private int zipcode;
 	@NotNull
 	private LocalDate desiredDeliveryDate;
+	@Size(min = 1, max = 20)
 	@NotNull
 	private String receiver;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "user_id", nullable = true)
 	private User user;
+	@Size(min = 1, max = 20)
 	@NotNull
 	private String sender;
+	@Max(value = 15)
 	@NotNull
 	private String senderContactNumber;
+	@Max(value = 15)
 	@NotNull
 	private String receiverContactNumber;
 
+	@Size(min = 1, max = 255)
 	private String orderPassword;
 
 	@OneToMany(mappedBy = "order")

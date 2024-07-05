@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +37,7 @@ public class BillLog {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
+	@Size(min = 1, max = 20)
 	@NotNull
 	private String payment;
 
@@ -57,5 +59,6 @@ public class BillLog {
 
 	private String paymentKey;
 
+	@Size(min = 1, max = 255)
 	private String cancelReason;
 }
