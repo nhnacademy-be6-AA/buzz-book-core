@@ -84,7 +84,7 @@ public class OrderController {
 		return ResponseEntity.ok(response);
 	}
 
-	@JwtValidate
+	@JwtOrderValidate
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
 	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest,
@@ -96,7 +96,7 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
 	}
 
-	@JwtValidate
+	@JwtOrderValidate
 	@Operation(summary = "주문 상세 상태 수정", description = "주문 상세 상태 변경")
 	@PutMapping("/detail")
 	public ResponseEntity<ReadOrderDetailResponse> updateOrderDetail(
@@ -105,6 +105,7 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.updateOrderDetailWithAdmin(updateOrderDetailRequest));
 		}
+		// 비회원 주문취소
 		return ResponseEntity.ok(orderService.updateOrderDetail(updateOrderDetailRequest, userInfo.loginId()));
 	}
 
@@ -158,7 +159,7 @@ public class OrderController {
 		return ResponseEntity.ok(data);
 	}
 
-	@JwtOrderAdminValidate
+	@JwtOrderValidate
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("/status")
 	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
@@ -168,6 +169,7 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest)));
 		}
+		// 회원 전체 주문 취소
 		return ResponseEntity.ok(data);
 	}
 
