@@ -1,6 +1,9 @@
 package store.buzzbook.core.controller.user;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,8 +13,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
+import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.user.UserService;
 
 @Tag(name = "회원의 쿠폰 관련 컨트롤러", description = "유저의 쿠폰 조회, 추가 관리")
@@ -21,7 +26,7 @@ import store.buzzbook.core.service.user.UserService;
 public class CouponController {
 
 	private final UserService userService;
-
+	
 	@PostMapping
 	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon id 를 넘겨야 한다.")
 	public ResponseEntity<Void> createUserCoupon(@Valid @RequestBody CreateUserCouponRequest request) {
@@ -29,10 +34,17 @@ public class CouponController {
 		return ResponseEntity.ok().build();
 	}
 
+	@JwtValidate
 	@PostMapping("/download")
 	@Operation(summary = "쿠폰 다운로드 요청", description = "유저의 쿠폰 다운로드 요청을 보낸다. user id 와 coupon policy id 를 넘겨야 한다.")
 	public ResponseEntity<Void> downloadCoupon(@Valid @RequestBody DownloadCouponRequest request) {
 		userService.downloadCoupon(request);
 		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("/birthday")
+	@Operation(summary = "유저 요청", description = "현재 월에 생일이 해당하는 유저 정보를 요청합니다.")
+	public ResponseEntity<List<UserInfo>> getUsersByBirthday() {
+		return ResponseEntity.ok(userService.getUserInfoByCurrentBirthday());
 	}
 }
