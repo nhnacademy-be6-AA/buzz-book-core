@@ -1,51 +1,31 @@
 package store.buzzbook.core.service.point;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.dto.point.CreatePointPolicyRequest;
+import store.buzzbook.core.dto.point.DeletePointPolicyRequest;
+import store.buzzbook.core.dto.point.PointLogResponse;
+import store.buzzbook.core.dto.point.PointPolicyResponse;
+import store.buzzbook.core.dto.point.UpdatePointPolicyRequest;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.repository.point.PointLogRepository;
-import store.buzzbook.core.repository.user.UserRepository;
 
-@Service
-@RequiredArgsConstructor
-public class PointService {
+public interface PointService {
 
-	private final PointLogRepository pointLogRepository;
-	private final UserRepository userRepository;
+	PointPolicyResponse createPointPolicy(CreatePointPolicyRequest request);
 
-	public PointLog createPointLogWithDelta(long userId, String inquiry, int deltaPoint) {
-		User user = userRepository.findById(userId).orElse(null);
-		if (user == null) {
-			throw new UserNotFoundException(userId);
-		}
-		PointLog lastPointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
-		PointLog newPointLog;
-		if (lastPointLog == null) {
-			newPointLog = PointLog.builder()
-				.createdAt(LocalDateTime.now())
-				.inquiry(inquiry)
-				.delta(deltaPoint)
-				.user(user)
-				.balance(deltaPoint)
-				.build();
-		} else {
-			newPointLog = PointLog.builder()
-				.createdAt(LocalDateTime.now())
-				.inquiry(inquiry)
-				.delta(deltaPoint)
-				.user(user)
-				.balance(lastPointLog.getBalance() + deltaPoint)
-				.build();
-		}
-		return pointLogRepository.save(newPointLog);
-	}
+	List<PointPolicyResponse> getPointPolicies();
 
-	public PointLog createPointLogWithDelta(User user, String inquiry, int deltaPoint) {
-		return createPointLogWithDelta(user.getId(), inquiry, deltaPoint);
-	}
+	void updatePointPolicy(UpdatePointPolicyRequest request);
+
+	void deletePointPolicy(DeletePointPolicyRequest request);
+
+	Page<PointLogResponse> getPointLogs(Pageable pageable, Long userId);
+
+	PointLog createPointLogWithDelta(long userId, String inquiry, int deltaPoint);
+
+	PointLog createPointLogWithDelta(User user, String inquiry, int deltaPoint);
 }

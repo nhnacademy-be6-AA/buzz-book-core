@@ -76,7 +76,7 @@ public class PointServiceImpl implements PointService {
 		if (user == null) {
 			throw new UserNotFoundException(userId);
 		}
-		PointLog lastPointLog = pointLogRepository.findLastByUserId(userId);
+		PointLog lastPointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
 		PointLog newPointLog;
 		if (lastPointLog == null) {
 			newPointLog = PointLog.builder()

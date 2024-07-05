@@ -48,14 +48,10 @@ public class ReviewService {
 		Review review = new Review(reviewReq.getContent(), reviewReq.getPicturePath(), reviewReq.getReviewScore(),
 			orderDetail);
 
-		log.info("{}", review);
+		reviewRepository.save(review);
 
 		//리뷰 점수로 상품 점수 수정
-		Product product = productRepository.findById(review.getOrderDetail().getProduct().getId()).orElse(null);
-		List<Review> productReviews = reviewRepository.findAllByOrderDetail_ProductId(product.getId());
-		double productScore = productReviews.stream().mapToDouble(Review::getReviewScore).sum() / productReviews.size();
-		product.setScore((int)Math.round(productScore));
-
+		updateProductScore(review.getOrderDetail().getProduct().getId());
 
 		//리뷰단 고객 포인트 부여
 		Order order = review.getOrderDetail().getOrder();
@@ -66,15 +62,7 @@ public class ReviewService {
 			pointService.createPointLogWithDelta(user, REVIEW_WITH_PICTURE_POINT_MESSAGE, REVIEW_WITH_PICTURE_POINT);
 		}
 
-
-		reviewRepository.save(review);
-		productRepository.save(product);
-
-		ReviewResponse rr = new ReviewResponse(review);
-
-		log.info("{}", rr);
-
-		return rr;
+		return new ReviewResponse(review);
 	}
 
 	public ReviewResponse getReview(int reviewId) {
@@ -93,7 +81,8 @@ public class ReviewService {
 
 	public Page<ReviewResponse> findAllReviewByUserId(Long userId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		Page<Review> reviews = reviewRepository.findAllByOrderDetailOrderUser_IdOrderByReviewCreatedAtDesc(userId, pageable);
+		Page<Review> reviews = reviewRepository.findAllByOrderDetail_Order_User_IdOrderByReviewCreatedAtDesc(userId,
+			pageable);
 		return reviews.map(ReviewResponse::new);
 	}
 
@@ -102,6 +91,31 @@ public class ReviewService {
 		if (review == null) {
 			throw new DataNotFoundException("review", reviewReq.getId());
 		}
-		return new ReviewResponse(reviewRepository.save(review));
+		Review newReview = new Review(
+			reviewReq.getId(),
+			reviewReq.getContent(),
+			reviewReq.getPicturePath(),
+			reviewReq.getReviewScore(),
+			review.getReviewCreatedAt(),
+			review.getOrderDetail());
+
+		reviewRepository.save(newReview);
+
+		//리뷰 점수로 상품 점수 수정
+		updateProductScore(review.getOrderDetail().getProduct().getId());
+
+		return new ReviewResponse(newReview);
+
+	}
+
+	private void updateProductScore(int productId) {
+		Product product = productRepository.findById(productId).orElse(null);
+		if (product == null) {
+			throw new DataNotFoundException("product", productId);
+		}
+		List<Review> productReviews = reviewRepository.findAllByOrderDetail_ProductId(product.getId());
+		double productScore = productReviews.stream().mapToDouble(Review::getReviewScore).sum() / productReviews.size();
+		product.setScore((int)Math.round(productScore));
+		productRepository.save(product);
 	}
 }

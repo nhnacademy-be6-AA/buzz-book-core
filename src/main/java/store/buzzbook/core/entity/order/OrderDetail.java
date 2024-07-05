@@ -1,7 +1,6 @@
 package store.buzzbook.core.entity.order;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,7 +43,7 @@ public class OrderDetail {
 
 	@NotNull
 	@Setter
-	@ManyToOne
+	@OneToOne
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
 
