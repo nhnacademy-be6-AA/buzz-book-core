@@ -18,9 +18,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtValidate;
+import store.buzzbook.core.dto.user.AddressInfoResponse;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
 import store.buzzbook.core.dto.user.UpdateAddressRequest;
-import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.user.AddressService;
 
@@ -71,10 +71,10 @@ public class AddressController {
 	@JwtValidate
 	@GetMapping
 	@Operation(summary = "주소 리스트 조회", description = "유저의 개인 주소 수정.")
-	public ResponseEntity<List<Address>> getAddressList(HttpServletRequest request) {
+	public ResponseEntity<List<AddressInfoResponse>> getAddressList(HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 
-		List<Address> addressList = addressService.getAddressList(userId);
+		List<AddressInfoResponse> addressList = addressService.getAddressList(userId);
 
 		return ResponseEntity.ok().body(addressList);
 	}
