@@ -5,6 +5,7 @@ import static store.buzzbook.core.dto.product.CategoryResponse.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +30,18 @@ public class ProductResponse {
 	private List<TagResponse> tags = new ArrayList<>();
 
 	public static ProductResponse convertToProductResponse(Product product) {
+		List<TagResponse> tagResponses;
+
+		if(product.getProductTags() != null) {
+
+			tagResponses = product.getProductTags().stream()
+				.map(ProductTag::getTag)
+				.map(TagResponse::convertToTagResponse)
+				.collect(Collectors.toList());
+		}else{
+			tagResponses = List.of();
+		}
+
 		return ProductResponse.builder()
 			.id(product.getId())
 			.stock(product.getStock())
@@ -40,7 +53,7 @@ public class ProductResponse {
 			.thumbnailPath(product.getThumbnailPath())
 			.stockStatus(product.getStockStatus())
 			.category(convertToCategoryResponse(product.getCategory()))
-			.tags(product.getProductTags().stream().map(ProductTag::getTag).map(TagResponse::convertToTagResponse).toList())
+			.tags(tagResponses)
 			.build();
 	}
 }
