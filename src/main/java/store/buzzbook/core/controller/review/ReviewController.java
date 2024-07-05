@@ -1,22 +1,14 @@
 package store.buzzbook.core.controller.review;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.jdt.core.compiler.InvalidInputException;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.review.IllegalRequestException;
 import store.buzzbook.core.dto.review.ReviewCreateRequest;
 import store.buzzbook.core.dto.review.ReviewResponse;
 import store.buzzbook.core.dto.review.ReviewUpdateRequest;
@@ -84,7 +77,7 @@ public class ReviewController {
 		@PathVariable Long reviewId) {
 
 		if (reviewReq.getId() != reviewId) {
-			return ResponseEntity.status(412).body(reviewService.updateReview(reviewReq));
+			throw new IllegalRequestException("id가 일치하는 리뷰를 수정요청하세요.");
 		}
 		return ResponseEntity.ok(reviewService.updateReview(reviewReq));
 	}
