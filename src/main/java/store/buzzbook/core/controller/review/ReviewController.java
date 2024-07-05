@@ -1,14 +1,22 @@
 package store.buzzbook.core.controller.review;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.jdt.core.compiler.InvalidInputException;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,13 +43,8 @@ public class ReviewController {
 	@Operation(summary = "리뷰 추가", description = "새로운 리뷰 등록")
 	@ApiResponse(responseCode = "200", description = "리뷰 등록 성공시 등록된 리뷰의 ReviewResponse 반환")
 
-	public ReviewResponse saveReview(@Validated @RequestBody ReviewCreateRequest reviewReq) {
-
-		ReviewResponse rr = reviewService.saveReview(reviewReq);
-		log.info("{}", rr);
-
-
-		return rr;
+	public ResponseEntity<ReviewResponse> saveReview(@Validated @RequestBody ReviewCreateRequest reviewReq) {
+		return ResponseEntity.ok(reviewService.saveReview(reviewReq));
 	}
 
 
@@ -77,7 +80,7 @@ public class ReviewController {
 	@Operation(summary = "리뷰 수정", description = "리뷰 수정")
 	@ApiResponse(responseCode = "200", description = "리뷰 수정 성공시 수정된 리뷰의 ReviewResponse 반환")
 
-	public ResponseEntity<ReviewResponse> updateReview(@RequestBody ReviewUpdateRequest reviewReq,
+	public ResponseEntity<ReviewResponse> updateReview(@Validated @RequestBody ReviewUpdateRequest reviewReq,
 		@PathVariable Long reviewId) {
 
 		if (reviewReq.getId() != reviewId) {
@@ -85,4 +88,5 @@ public class ReviewController {
 		}
 		return ResponseEntity.ok(reviewService.updateReview(reviewReq));
 	}
+
 }
