@@ -178,7 +178,7 @@ public class UserServiceImpl implements UserService {
 
 	@Transactional
 	@Override
-	public UserInfo updateUserInfo(Long userId, UpdateUserRequest updateUserRequest) {
+	public void updateUserInfo(Long userId, UpdateUserRequest updateUserRequest) {
 		Optional<User> user = userRepository.findById(userId);
 
 		if (user.isEmpty()) {
@@ -194,7 +194,6 @@ public class UserServiceImpl implements UserService {
 			throw new GradeNotFoundException(userId);
 		}
 
-		return updatedUser.toUserInfo(grade.get());
 	}
 
 	@Transactional(readOnly = true)
@@ -287,6 +286,12 @@ public class UserServiceImpl implements UserService {
 		if (user.isEmpty()) {
 			log.debug("잘못된 유저id의 요청으로 비밀번호 변경에 실패했습니다. : {}", userId);
 			throw new UserNotFoundException(userId);
+		}
+
+		String password = user.get().getPassword();
+		if (!BCrypt.checkpw(changePasswordRequest.oldPassword(), password)) {
+			log.debug("비밀번호가 틀렸습니다.");
+			throw new PasswordIncorrectException();
 		}
 
 		user.get().changePassword(changePasswordRequest.newPassword());

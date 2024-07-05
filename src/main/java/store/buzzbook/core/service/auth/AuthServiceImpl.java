@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public Long getUserIdFromJwt(HttpServletRequest request) {
 		Map<String, Object> claims = getInfoMapFromJwt(request);
-		return (Long)claims.get(USER_ID);
+		return ((Integer)claims.get(AuthService.USER_ID)).longValue();
 	}
 
 	private String wrapToken(String token) {

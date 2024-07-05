@@ -9,12 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.service.user.GradeService;
+import store.buzzbook.core.service.user.UserService;
 
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseInitializeConfig {
 	public final GradeService gradeService;
+	public final UserService userService;
 
 	@Bean
 	public ApplicationRunner initDatabase() {
@@ -39,4 +41,5 @@ public class DatabaseInitializeConfig {
 		};
 
 	}
+
 }

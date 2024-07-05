@@ -2,9 +2,9 @@ package store.buzzbook.core.service.user;
 
 import java.util.List;
 
+import store.buzzbook.core.dto.user.AddressInfoResponse;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
 import store.buzzbook.core.dto.user.UpdateAddressRequest;
-import store.buzzbook.core.entity.user.Address;
 
 public interface AddressService {
 	void createAddress(CreateAddressRequest createAddressRequest, long userId);
@@ -13,6 +13,6 @@ public interface AddressService {
 
 	void updateAddress(UpdateAddressRequest updateAddressRequest, long userId);
 
-	List<Address> getAddressList(Long userId);
+	List<AddressInfoResponse> getAddressList(Long userId);
 
 }

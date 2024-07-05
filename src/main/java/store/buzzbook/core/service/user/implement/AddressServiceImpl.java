@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.user.implement;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.AddressMaxCountException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.dto.user.AddressInfoResponse;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
 import store.buzzbook.core.dto.user.UpdateAddressRequest;
 import store.buzzbook.core.entity.user.Address;
@@ -73,12 +75,18 @@ public class AddressServiceImpl implements AddressService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<Address> getAddressList(Long userId) {
+	public List<AddressInfoResponse> getAddressList(Long userId) {
 		if (!userRepository.existsById(userId)) {
 			log.debug("존재 하지 않는 회원의 주소 조회 요청입니다. : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
 
-		return addressRepository.findAllByUserId(userId).orElse(List.of());
+		Optional<List<Address>> addressListOptional = addressRepository.findAllByUserId(userId);
+
+		if (addressListOptional.isEmpty()) {
+			return List.of();
+		}
+
+		return addressListOptional.get().stream().map(Address::toResponse).toList();
 	}
 }
