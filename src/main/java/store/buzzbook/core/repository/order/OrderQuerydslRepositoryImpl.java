@@ -56,7 +56,8 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						orderDetail.createAt.as("orderDetailCreatedAt"),
 						orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
 						orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
-						orderDetail.product.productName.as("orderDetailProductName")
+						orderDetail.product.productName.as("orderDetailProductName"),
+						orderDetail.updateAt.as("orderDetailUpdatedAt")
 					),
 					order.sender.as("sender"),
 					order.receiverContactNumber.as("receiverContactNumber"),
@@ -109,7 +110,8 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						orderDetail.createAt.as("orderDetailCreatedAt"),
 						orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
 						orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
-						orderDetail.product.productName.as("orderDetailProductName")
+						orderDetail.product.productName.as("orderDetailProductName"),
+						orderDetail.updateAt.as("orderDetailUpdatedAt")
 					),
 					order.sender.as("sender"),
 					order.receiverContactNumber.as("receiverContactNumber"),
@@ -160,7 +162,8 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						orderDetail.createAt.as("orderDetailCreatedAt"),
 						orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
 						orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
-						orderDetail.product.productName.as("orderDetailProductName")
+						orderDetail.product.productName.as("orderDetailProductName"),
+						orderDetail.updateAt.as("orderDetailUpdatedAt")
 					),
 					order.sender.as("sender"),
 					order.receiverContactNumber.as("receiverContactNumber"),
