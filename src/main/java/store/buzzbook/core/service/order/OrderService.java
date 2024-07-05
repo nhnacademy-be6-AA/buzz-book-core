@@ -353,7 +353,7 @@ public class OrderService {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 
-		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
