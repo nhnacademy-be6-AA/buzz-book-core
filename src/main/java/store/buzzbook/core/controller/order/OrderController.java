@@ -60,7 +60,6 @@ public class OrderController {
 	private final OrderService orderService;
 	private final UserService userService;
 
-	@JwtValidate
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
 	public ResponseEntity<?> getOrders(@RequestBody ReadOrdersRequest readOrdersRequest, HttpServletRequest request) {
