@@ -2,7 +2,6 @@ package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
-import store.buzzbook.core.document.product.ProductDocument;
 import store.buzzbook.core.dto.product.CategoryResponse;
 import store.buzzbook.core.dto.product.ProductRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
@@ -26,7 +24,6 @@ import store.buzzbook.core.repository.product.CategoryRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
-import store.buzzbook.core.repository.product.elastic.ProductDocumentRepository;
 
 @RequiredArgsConstructor
 @Service
@@ -37,8 +34,8 @@ public class ProductService {
 	private final TagRepository tagRepository;
 	private final ProductTagRepository productTagRepository;
 
-	// // Elasticsearch 용 리포지토리
-	private final ProductDocumentRepository productDocumentRepository;
+	// // // Elasticsearch 용 리포지토리
+	// private final ProductDocumentRepository productDocumentRepository;
 
 	@Transactional
 	public ProductResponse saveProduct(ProductRequest productReq) {
@@ -56,8 +53,8 @@ public class ProductService {
 			.build();
 		product = productRepository.save(product);
 
-		// Elasticsearch 저장
-		productDocumentRepository.save(new ProductDocument(product));
+		// // Elasticsearch 저장
+		// productDocumentRepository.save(new ProductDocument(product));
 
 		return convertToProductResponse(product);
 	}
@@ -121,8 +118,8 @@ public class ProductService {
 
 		updatedProduct = productRepository.save(updatedProduct);
 
-		// Elasticsearch 저장
-		productDocumentRepository.save(new ProductDocument(updatedProduct));
+		// // Elasticsearch 저장
+		// productDocumentRepository.save(new ProductDocument(updatedProduct));
 
 		// 태그 업데이트 로직
 		if (productRequest.getTags() != null) {
@@ -147,7 +144,7 @@ public class ProductService {
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
 			product.getCategory(), product.getProductTags());
 
-		productDocumentRepository.save(new ProductDocument(newProduct));
+		// productDocumentRepository.save(new ProductDocument(newProduct));
 
 		return productRepository.save(newProduct);
 	}
@@ -166,11 +163,11 @@ public class ProductService {
 			.map(this::convertToProductResponse);
 	}
 
-	// Elasticsearch를 통한 검색 메소드
-	@Transactional(readOnly = true)
-	public List<ProductDocument> searchByProductName(String productName) {
-		return productDocumentRepository.findByProductNameContaining(productName);
-	}
+	// // Elasticsearch를 통한 검색 메소드
+	// @Transactional(readOnly = true)
+	// public List<ProductDocument> searchByProductName(String productName) {
+	// 	// return productDocumentRepository.findByProductNameContaining(productName);
+	// }
 
 
 	// 태그 관련 정보를 포함하는 ProductResponse 변환 메서드
@@ -178,7 +175,7 @@ public class ProductService {
 		List<TagResponse> tagResponses = product.getProductTags().stream()
 			.map(ProductTag::getTag)
 			.map(TagResponse::convertToTagResponse)
-			.collect(Collectors.toList());
+			.toList();
 
 		return ProductResponse.builder()
 			.id(product.getId())
