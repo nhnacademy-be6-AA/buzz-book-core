@@ -4,15 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import store.buzzbook.core.entity.product.Tag;
 
-@AllArgsConstructor
+import lombok.Builder;
+import lombok.Getter;
+
 @Getter
+@Builder
 public class TagResponse {
-	private int id;
-	private String name;
 
-	public static TagResponse convertToTagResponse(Tag tag)
-	{
-		return new TagResponse(tag.getId(), tag.getName());
+	private final Integer id;
+	private final String name;
+
+	public static TagResponse convertToTagResponse(Tag tag) {
+		return TagResponse.builder()
+			.id(tag.getId())
+			.name(tag.getName())
+			.build();
 	}
-
 }
