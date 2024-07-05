@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.payment.ReadAllPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
@@ -37,10 +38,11 @@ public class PaymentController {
 	private final PaymentService paymentService;
 	private final UserService userService;
 
+	@JwtOrderValidate
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
 	@PostMapping("/bill-logs")
 	public ResponseEntity<List<ReadBillLogWithoutOrderResponse>> getBillLogs(@RequestBody ReadBillLogRequest readBillLogRequest, HttpServletRequest request) {
-		if ((String)request.getAttribute(AuthService.LOGIN_ID) == null) {
+		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
 			List<ReadBillLogWithoutOrderResponse> responses = paymentService.readBillLogWithoutOrderWithoutLogin(readBillLogRequest.getOrderId());
 			return ResponseEntity.ok(responses);
 		}
