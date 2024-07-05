@@ -15,5 +15,5 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 	List<OrderDetail> findAllByOrder_IdAndOrderStatus_Id(long orderId, long orderStatusId);
 	List<OrderDetail> findAllByOrder_Id(long orderId);
 	List<OrderDetail> findAllByOrder_OrderStr(String orderStr);
-	OrderDetail findByIdAndOrder_User_LoginId(long orderId, String loginId);
+	OrderDetail findByIdAndOrder_User_LoginId(long orderDetailId, String loginId);
 }

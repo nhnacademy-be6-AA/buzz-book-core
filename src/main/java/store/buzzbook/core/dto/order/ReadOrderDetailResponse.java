@@ -25,4 +25,5 @@ public class ReadOrderDetailResponse {
 	private ReadWrappingResponse readWrappingResponse;
 	private ProductResponse productResponse;
 	private String couponCode;
+	private LocalDateTime updateAt;
 }
