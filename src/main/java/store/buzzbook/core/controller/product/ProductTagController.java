@@ -19,24 +19,24 @@ public class ProductTagController {
 	private final ProductTagService productTagService;
 
 	@GetMapping("/{productId}")
-	@Operation(summary = "특정 상품에 대한 태그 조회")
+	@Operation(summary = "특정 상품에 대한 태그 리스트 조회")
 	public ResponseEntity<List<String>> getTagsByProductId(@PathVariable int productId) {
 		List<String> tags = productTagService.getTagsByProductId(productId);
 		return ResponseEntity.ok(tags);
 	}
 
 
-	@PostMapping("/{productId}/tags/{tagId}")
+	@PostMapping("/{productId}/tags")
 	@Operation(summary = "특정 상품에 대한 태그 추가")
-	public ResponseEntity<Void> addTagToProduct(@PathVariable int productId, @PathVariable int tagId) {
-		productTagService.addTagToProduct(productId, tagId);
+	public ResponseEntity<Void> addTagToProduct(@PathVariable int productId, @RequestBody List<Integer> tagIds) {
+		productTagService.addTagToProduct(productId, tagIds);
 		return ResponseEntity.ok().build();
 	}
 
-	@DeleteMapping("/{productId}/tags/{tagId}")
-	@Operation(summary = "특정 상품에서 태그 삭제")
-	public ResponseEntity<Void> removeTagFromProduct(@PathVariable int productId, @PathVariable int tagId) {
-		productTagService.removeTagFromProduct(productId, tagId);
-		return ResponseEntity.ok().build();
+	@DeleteMapping("/{productId}/tags")
+	@Operation(summary = "특정 상품에 대한 태그 삭제")
+	public ResponseEntity<Void> removeTagFromProduct(@PathVariable int productId, @RequestBody List<Integer> tagIds) {
+		productTagService.removeAllTagsFromProduct(productId, tagIds);
+		return ResponseEntity.noContent().build();
 	}
 }
