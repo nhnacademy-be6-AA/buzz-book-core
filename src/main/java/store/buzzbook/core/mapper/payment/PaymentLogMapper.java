@@ -4,7 +4,6 @@ import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.payment.CreatePaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.entity.order.Order;
-import store.buzzbook.core.entity.payment.PaymentLog;
 
 public class PaymentLogMapper {
 	public static ReadPaymentLogResponse toDto(PaymentLog paymentLog, ReadOrderResponse readOrderResponse) {

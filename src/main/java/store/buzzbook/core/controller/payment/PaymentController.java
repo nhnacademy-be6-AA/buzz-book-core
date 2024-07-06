@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import store.buzzbook.core.dto.payment.ReadAllPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
+import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
@@ -75,26 +77,16 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
 	}
 
-	// @Operation(summary = "결제 수단 이력 조회", description = "결제 수단 이력 조회")
-	// @GetMapping("/payment-log/id")
-	// public ResponseEntity<List<ReadPaymentLogResponse>> getPaymentLogs(@RequestBody ReadPaymentLogRequest request) {
-	// 	UserInfo userInfo = userService.getUserInfoByLoginId(request.getLoginId());
-	// 	if (userInfo.isAdmin()) {
-	// 		return ResponseEntity.ok(paymentService.readPaymentLogs(request.getOrderStr()));
-	// 	}
-	// 	return ResponseEntity.ok(paymentService.readPaymentLogs(request));
-	// }
-	//
-	// @Operation(summary = "결제 수단 이력 모두 조회", description = "결제 수단 이력 모두 조회")
-	// @GetMapping("/payment-log/all")
-	// public ResponseEntity<List<ReadPaymentLogResponse>> getAllPaymentLogs(@RequestBody ReadAllPaymentLogRequest request) {
-	// 	return null;
-	// }
-	//
-	// @Operation(summary = "결제 수단 이력 추가", description = "결제 수단 이력 추가")
-	// @PostMapping("/payment-log")
-	// public ResponseEntity<ReadPaymentLogResponse> createPaymentLog(@RequestBody JSONObject createPaymentLogRequest) {
-	// 	// return ResponseEntity.ok(paymentService.createPaymentLog(createPaymentLogRequest));
-	// 	return null;
-	// }
+	@JwtOrderValidate
+	@Operation(summary = "결제키 조회", description = "결제키 조회")
+	@PostMapping("/payment-key")
+	public ResponseEntity<String> getPaymentKey(@RequestBody ReadPaymentKeyRequest readPaymentKeyRequest, HttpServletRequest request) {
+		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
+			String responses = paymentService.getPaymentKeyWithoutLogin(readPaymentKeyRequest.getOrderId(), readPaymentKeyRequest.getOrderPassword());
+			return ResponseEntity.ok(responses);
+		}
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+
+		return ResponseEntity.ok(paymentService.getPaymentKey(readPaymentKeyRequest.getOrderId(), userInfo.id()));
+	}
 }

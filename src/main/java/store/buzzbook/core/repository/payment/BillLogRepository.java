@@ -18,4 +18,7 @@ public interface BillLogRepository extends JpaRepository<BillLog, Long>, BillLog
 	Page<BillLog> findAllByLoginId(@Param("loginId") String loginId, Pageable pageable);
 
 	List<BillLog> findByOrder_OrderStr(String orderStr);
+
+	BillLog findByOrder_OrderStrAndOrder_User_Id(String orderStr, long userId);
+	BillLog findByOrder_OrderStrAndOrder_OrderPassword(String orderStr, String orderPassword);
 }
