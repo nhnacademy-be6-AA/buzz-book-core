@@ -3,7 +3,6 @@ package store.buzzbook.core.service.product;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +21,6 @@ import store.buzzbook.core.entity.product.BookAuthor;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.Publisher;
-import store.buzzbook.core.entity.product.Tag;
 import store.buzzbook.core.repository.product.AuthorRepository;
 import store.buzzbook.core.repository.product.BookAuthorRepository;
 import store.buzzbook.core.repository.product.BookRepository;
