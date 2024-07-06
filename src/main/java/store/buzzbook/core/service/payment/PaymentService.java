@@ -1,11 +1,7 @@
 package store.buzzbook.core.service.payment;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +14,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
-import store.buzzbook.core.common.exception.order.ProductNotFoundException;
-import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
@@ -60,7 +53,7 @@ public class PaymentService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 
-	private final static int ORDERSTATUS_PAID = 4;
+	private static final int ORDER_STATUS_PAID = 4;
 
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
@@ -72,12 +65,12 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
+				.orElseThrow(() -> new RuntimeException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+				.orElseThrow(() -> new RuntimeException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 			readOrderDetailResponses.add(
 				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
@@ -94,53 +87,6 @@ public class PaymentService {
 				.payment(readPaymentResponse.getMethod())
 				.payAt(
 					LocalDateTime.now())
-				.build());
-		UserInfo userInfo = UserInfo.builder()
-			.email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId())
-			.isAdmin(order.getUser().isAdmin())
-			.contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday())
-			.build();
-
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
-	}
-
-	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
-
-		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
-			ReadPaymentResponse.class);
-
-		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
-
-		BillLog billLog = billLogRepository.save(
-			BillLog.builder()
-				.price(Arrays.stream(readPaymentResponse.getCancels()).max(
-					Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(), DateTimeFormatter.ISO_OFFSET_DATE_TIME))).get().getCancelAmount())
-				.paymentKey(
-					readPaymentResponse.getPaymentKey())
-				.order(order)
-				.status(BillStatus.valueOf(readPaymentResponse.getStatus()))
-				.payment(readPaymentResponse.getMethod())
-				.payAt(
-					LocalDateTime.now())
-				.cancelReason(Arrays.stream(readPaymentResponse.getCancels()).max(
-					Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(), DateTimeFormatter.ISO_OFFSET_DATE_TIME))).get().getCancelReason())
 				.build());
 		UserInfo userInfo = UserInfo.builder()
 			.email(order.getUser().getEmail())
@@ -200,11 +146,52 @@ public class PaymentService {
 		return responses;
 	}
 
-	public String getPaymentKeyWithoutLogin(String orderId, String orderPassword) {
-		return billLogRepository.findByOrder_OrderStrAndOrder_OrderPassword(orderId, orderPassword).getPaymentKey();
-	}
+	// public List<ReadPaymentLogResponse> readPaymentLogs(ReadPaymentLogRequest request) {
+	//
+	// 	List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStrAndOrder_User_LoginId(request.getOrderStr(), request.getLoginId());
+	// 	List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(request.getOrderStr());
+	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+	// 	for (OrderDetail orderDetail : details) {
+	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+	//
+	// 		Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+	// 		readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+	// 	}
+	// 	ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(request.getOrderStr()), readOrderDetailResponses, request.getLoginId());
+	// 	return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
+	// }
+	//
+	// public List<ReadPaymentLogResponse> readPaymentLogs(String orderStr) {
+	//
+	// 	Order order = orderRepository.findByOrderStr(orderStr);
+	// 	List<PaymentLog> paymentLogs = paymentLogRepository.findByOrder_OrderStr(orderStr);
+	// 	List<OrderDetail> details = orderDetailRepository.findAllByOrder_OrderStr(orderStr);
+	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+	// 	for (OrderDetail orderDetail : details) {
+	// 		Product product = productRepository.findById(orderDetail.getProduct().getId()).orElseThrow(() -> new RuntimeException("Product not found"));
+	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+	// 		readOrderDetailResponses.add(OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product), readWrappingResponse));
+	// 	}
+	// 	ReadOrderResponse readOrderResponse = OrderMapper.toDto(orderRepository.findByOrderStr(orderStr), readOrderDetailResponses, order.getUser().getLoginId());
+	//
+	// 	return paymentLogs.stream().map(pl->PaymentLogMapper.toDto(pl, readOrderResponse)).toList();
+	// }
 
-	public String getPaymentKey(String orderId, long userId) {
-		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getPaymentKey();
-	}
+	// public ReadPaymentLogResponse createPaymentLog(JSONObject paymentRequestObject) {
+	// 	CreatePaymentLogRequest createPaymentLogRequest = objectMapper.convertValue(paymentRequestObject, CreatePaymentLogRequest.class);
+	//
+	//
+	//
+	// 	PaymentLog paymentLog = paymentLogRepository.save(PaymentLogMapper.toEntity(createPaymentLogRequest, billLog));
+	//
+	// 	Order order = orderRepository.findByOrderStr(createPaymentLogRequest.getOrderId());
+	//
+	// 	UserInfo userInfo = UserInfo.builder().email(order.getUser().getEmail())
+	// 		.loginId(order.getUser().getLoginId()).isAdmin(order.getUser().isAdmin()).contactNumber(order.getUser().getContactNumber())
+	// 		.birthday(order.getUser().getBirthday()).build();
+	//
+	// 	return PaymentLogMapper.toDto(paymentLog, readBillLog(userInfo.id(), order.getOrderStr()));
+	// }
 }
