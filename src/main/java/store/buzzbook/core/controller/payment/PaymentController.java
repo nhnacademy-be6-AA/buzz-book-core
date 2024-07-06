@@ -84,7 +84,7 @@ public class PaymentController {
 	@PostMapping("/payment-key")
 	public ResponseEntity<String> getPaymentKey(@RequestBody ReadPaymentKeyRequest readPaymentKeyRequest, HttpServletRequest request) {
 		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
-			String responses = paymentService.getPaymentKeyWithoutLogin(readPaymentKeyRequest.getOrderId(), readPaymentKeyRequest.getOrderPassword());
+			String responses = paymentService.getPaymentKeyWithoutLogin(readPaymentKeyRequest.getOrderId(), readPaymentKeyRequest.getOrderEmail());
 			return ResponseEntity.ok(responses);
 		}
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
@@ -97,7 +97,7 @@ public class PaymentController {
 	@PostMapping("/detail/payment-key")
 	public ResponseEntity<String> getPaymentKeyWithOrderDetailId(@RequestBody ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest, HttpServletRequest request) {
 		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
-			String responses = paymentService.getPaymentKeyWithoutLogin(orderService.readOrderStr(readPaymentKeyWithOrderDetailRequest.getOrderDetailId()), readPaymentKeyWithOrderDetailRequest.getOrderPassword());
+			String responses = paymentService.getPaymentKeyWithoutLogin(orderService.readOrderStr(readPaymentKeyWithOrderDetailRequest.getOrderDetailId()), readPaymentKeyWithOrderDetailRequest.getOrderEmail());
 			return ResponseEntity.ok(responses);
 		}
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
