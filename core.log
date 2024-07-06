@@ -14910,3 +14910,6 @@ java.net.SocketTimeoutException: 30,000 milliseconds timeout on connection http-
 	at java.base/java.lang.Thread.run(Thread.java:1583)
 2024-07-06 18:19:43 WARN  o.s.b.a.health.HealthEndpointSupport - Health contributor org.springframework.boot.actuate.autoconfigure.health.HealthEndpointConfiguration$AdaptedReactiveHealthContributors$1 (elasticsearch) took 30121ms to respond
 2024-07-06 18:24:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:29:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:34:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:39:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration

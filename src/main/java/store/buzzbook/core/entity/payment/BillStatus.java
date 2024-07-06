@@ -3,7 +3,7 @@ package store.buzzbook.core.entity.payment;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum BillStatus {
-	BEFORE, COMPLETED, CANCELLED, REFUND, DONE, PARTIAL_CANCELED;
+	BEFORE, COMPLETED, CANCELED, REFUND, DONE, PARTIAL_CANCELED;
 
 	@JsonCreator
 	public static BillStatus jsonCreator(String value) {
