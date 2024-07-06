@@ -5,7 +5,6 @@ import static store.buzzbook.core.dto.product.CategoryResponse.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,13 +31,13 @@ public class ProductResponse {
 	public static ProductResponse convertToProductResponse(Product product) {
 		List<TagResponse> tagResponses;
 
-		if(product.getProductTags() != null) {
+		if (product.getProductTags() != null) {
 
 			tagResponses = product.getProductTags().stream()
 				.map(ProductTag::getTag)
 				.map(TagResponse::convertToTagResponse)
-				.collect(Collectors.toList());
-		}else{
+				.toList();
+		} else {
 			tagResponses = List.of();
 		}
 

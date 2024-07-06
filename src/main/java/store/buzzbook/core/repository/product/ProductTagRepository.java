@@ -19,4 +19,6 @@ public interface ProductTagRepository extends JpaRepository<ProductTag, ProductT
 	@Modifying
 	@Query("DELETE FROM ProductTag pt WHERE pt.product.id = :productId")
 	void deleteByProductId(int productId);
+
+	void deleteAllByProductIdAndTagIdIn(final int productId, final List<Integer> tagIds);
 }

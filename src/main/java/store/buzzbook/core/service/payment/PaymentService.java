@@ -45,12 +45,14 @@ import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
+import store.buzzbook.core.repository.payment.PaymentLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 	private final BillLogRepository billLogRepository;
+	private final PaymentLogRepository paymentLogRepository;
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final ObjectMapper objectMapper;
