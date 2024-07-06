@@ -14913,3 +14913,21 @@ java.net.SocketTimeoutException: 30,000 milliseconds timeout on connection http-
 2024-07-06 18:29:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
 2024-07-06 18:34:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
 2024-07-06 18:39:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:44:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:49:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:54:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 18:59:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 19:04:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 19:09:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 19:14:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 19:19:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 19:24:12 INFO  c.n.d.s.r.aws.ConfigClusterResolver - Resolving eureka endpoints via configuration
+2024-07-06 19:24:19 INFO  o.s.c.n.e.s.EurekaServiceRegistry - Unregistering application CORE-API with eureka with status DOWN
+2024-07-06 19:24:19 INFO  c.netflix.discovery.DiscoveryClient - Saw local status change event StatusChangeEvent [timestamp=1720261459906, current=DOWN, previous=UP]
+2024-07-06 19:24:19 INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_CORE-API/core-api: registering service...
+2024-07-06 19:24:19 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-07-06 19:24:19 INFO  c.netflix.discovery.DiscoveryClient - Shutting down DiscoveryClient ...
+2024-07-06 19:24:20 INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_CORE-API/core-api - registration status: 204
+2024-07-06 19:24:20 INFO  c.netflix.discovery.DiscoveryClient - Unregistering ...
+2024-07-06 19:24:20 INFO  c.netflix.discovery.DiscoveryClient - DiscoveryClient_CORE-API/core-api - deregister  status: 200
+2024-07-06 19:24:20 INFO  c.netflix.discovery.DiscoveryClient - Completed shut down of DiscoveryClient
