@@ -437,4 +437,8 @@ public class OrderService {
 
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
+
+	public String readOrderStr(long orderDetailId) {
+		return orderDetailRepository.findOrderStrByOrderDetailId(orderDetailId);
+	}
 }

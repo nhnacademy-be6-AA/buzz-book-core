@@ -5,13 +5,9 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,16 +15,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
-import store.buzzbook.core.dto.payment.ReadAllPaymentLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
-import store.buzzbook.core.dto.payment.ReadPaymentLogRequest;
-import store.buzzbook.core.dto.payment.ReadPaymentLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
+import store.buzzbook.core.dto.payment.ReadPaymentKeyWithOrderDetailRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
+import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
@@ -39,6 +34,7 @@ import store.buzzbook.core.service.user.UserService;
 public class PaymentController {
 	private final PaymentService paymentService;
 	private final UserService userService;
+	private final OrderService orderService;
 
 	@JwtOrderValidate
 	@Operation(summary = "주문 하나에 딸린 결제 내역들 조회", description = "결제 내역 단건 조회")
@@ -88,5 +84,18 @@ public class PaymentController {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 
 		return ResponseEntity.ok(paymentService.getPaymentKey(readPaymentKeyRequest.getOrderId(), userInfo.id()));
+	}
+
+	@JwtOrderValidate
+	@Operation(summary = "주문상세 아이디로 결제키 조회", description = "주문상세 아이디로 결제키 조회")
+	@PostMapping("/detail/payment-key")
+	public ResponseEntity<String> getPaymentKeyWithOrderDetailId(@RequestBody ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest, HttpServletRequest request) {
+		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
+			String responses = paymentService.getPaymentKeyWithoutLogin(orderService.readOrderStr(readPaymentKeyWithOrderDetailRequest.getOrderDetailId()), readPaymentKeyWithOrderDetailRequest.getOrderPassword());
+			return ResponseEntity.ok(responses);
+		}
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+
+		return ResponseEntity.ok(paymentService.getPaymentKey(orderService.readOrderStr(readPaymentKeyWithOrderDetailRequest.getOrderDetailId()), userInfo.id()));
 	}
 }
