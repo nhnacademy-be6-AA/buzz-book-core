@@ -73,6 +73,12 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
 	}
 
+	@Operation(summary = "취소 내역 추가", description = "취소 내역 추가")
+	@PostMapping("/bill-log/cancel")
+	public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody JSONObject createBillLogRequest) {
+		return ResponseEntity.ok(paymentService.createCancelBillLog(createBillLogRequest));
+	}
+
 	@JwtOrderValidate
 	@Operation(summary = "결제키 조회", description = "결제키 조회")
 	@PostMapping("/payment-key")

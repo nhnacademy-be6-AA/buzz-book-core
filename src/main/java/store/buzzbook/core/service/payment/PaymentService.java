@@ -1,7 +1,10 @@
 package store.buzzbook.core.service.payment;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +91,52 @@ public class PaymentService {
 				.payment(readPaymentResponse.getMethod())
 				.payAt(
 					LocalDateTime.now())
+				.build());
+		UserInfo userInfo = UserInfo.builder()
+			.email(order.getUser().getEmail())
+			.loginId(order.getUser().getLoginId())
+			.isAdmin(order.getUser().isAdmin())
+			.contactNumber(order.getUser().getContactNumber())
+			.birthday(order.getUser().getBirthday())
+			.build();
+
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+	}
+
+	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
+
+		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
+			ReadPaymentResponse.class);
+
+		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
+				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(
+				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+					readWrappingResponse));
+		}
+
+		BillLog billLog = billLogRepository.save(
+			BillLog.builder()
+				.price(readPaymentResponse.getTotalAmount())
+				.paymentKey(
+					readPaymentResponse.getPaymentKey())
+				.order(order)
+				.status(BillStatus.valueOf(readPaymentResponse.getStatus()))
+				.payment(readPaymentResponse.getMethod())
+				.payAt(
+					LocalDateTime.now())
+				.cancelReason(Arrays.stream(readPaymentResponse.getCancels()).max(
+					Comparator.comparing(cancel -> LocalDateTime.parse(cancel.getCanceledAt(), DateTimeFormatter.ISO_DATE_TIME))).get().getCancelReason())
 				.build());
 		UserInfo userInfo = UserInfo.builder()
 			.email(order.getUser().getEmail())
