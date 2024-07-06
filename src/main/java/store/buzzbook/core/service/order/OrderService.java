@@ -3,8 +3,12 @@ package store.buzzbook.core.service.order;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
+import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
@@ -23,6 +28,7 @@ import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
@@ -30,6 +36,7 @@ import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.order.ReadOrdersResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
@@ -78,9 +85,30 @@ public class OrderService {
 
 		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAll(request, pageable);
 		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
+		List<ReadOrdersResponse> responses = new ArrayList<>();
 
-		data.put("responseData", orders);
-		data.put("total", pageOrders.getTotalElements());
+		Set<String> orderStrs = orders.stream().map(ReadOrderProjectionResponse::getOrderStr).collect(Collectors.toSet());
+		for (String orderStr : orderStrs) {
+			Iterator<ReadOrderProjectionResponse> iterator = orders.stream().filter(order -> order.getOrderStr().equals(orderStr)).iterator();
+			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream().filter(o->o.getOrderStr().equals(orderStr)).findFirst();
+			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Order not found"));
+			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
+				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver())
+				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
+				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).build();
+			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
+			while (iterator.hasNext()) {
+				ReadOrderProjectionResponse newOrder = iterator.next();
+				if (orderStr.equals(newOrder.getOrderStr())) {
+					details.add(newOrder.getOrderDetail());
+				}
+			}
+			readOrdersResponse.setDetails(details);
+			responses.add(readOrdersResponse);
+		}
+
+		data.put("responseData", responses);
+		data.put("total", responses.size());
 
 		return data;
 	}
@@ -91,9 +119,30 @@ public class OrderService {
 
 		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, loginId, pageable);
 		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
+		List<ReadOrdersResponse> responses = new ArrayList<>();
 
-		data.put("responseData", orders);
-		data.put("total", pageOrders.getTotalElements());
+		Set<String> orderStrs = orders.stream().map(ReadOrderProjectionResponse::getOrderStr).collect(Collectors.toSet());
+		for (String orderStr : orderStrs) {
+			Iterator<ReadOrderProjectionResponse> iterator = orders.stream().filter(order -> order.getOrderStr().equals(orderStr)).iterator();
+			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream().filter(o->o.getOrderStr().equals(orderStr)).findFirst();
+			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Order not found"));
+			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
+				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver())
+				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
+				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).build();
+			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
+			while (iterator.hasNext()) {
+				ReadOrderProjectionResponse newOrder = iterator.next();
+				if (orderStr.equals(newOrder.getOrderStr())) {
+					details.add(newOrder.getOrderDetail());
+				}
+			}
+			readOrdersResponse.setDetails(details);
+			responses.add(readOrdersResponse);
+		}
+
+		data.put("responseData", responses);
+		data.put("total", responses.size());
 
 		return data;
 	}
@@ -344,6 +393,7 @@ public class OrderService {
 			.wrapping(orderDetail.getWrapping())
 			.product(orderDetail.getProduct())
 			.couponCode(orderDetail.getCouponCode())
+			.updateAt(LocalDateTime.now())
 			.build());
 
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
@@ -374,6 +424,7 @@ public class OrderService {
 			.wrapping(orderDetail.getWrapping())
 			.product(orderDetail.getProduct())
 			.couponCode(orderDetail.getCouponCode())
+			.updateAt(LocalDateTime.now())
 			.build());
 
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
