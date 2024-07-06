@@ -109,15 +109,17 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrderDetail(updateOrderDetailRequest, userInfo.loginId()));
 	}
 
+	@JwtOrderValidate
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@PostMapping("/id")
-	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest readOrderRequest) {
-		ReadOrderResponse response = orderService.readOrder(readOrderRequest);
+	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest readOrderRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		ReadOrderResponse response = orderService.readOrder(readOrderRequest, userInfo.loginId());
 		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "비회원 주문 조회", description = "비회원 주문 조회")
-	@PostMapping("non-member")
+	@PostMapping("/non-member")
 	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(
 		@RequestBody ReadOrderWithoutLoginRequest readOrderWithoutLoginRequest) {
 		return ResponseEntity.ok(orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest));
@@ -196,7 +198,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readDeliveryPolicyById(readDeliveryPolicyRequest.getId()));
 	}
 
-	@JwtValidate
 	@Operation(summary = "운임비 정책 모두 조회", description = "운임비 정책 모두 조회")
 	@GetMapping("/delivery-policy/all")
 	public ResponseEntity<List<ReadDeliveryPolicyResponse>> getAllDeliveryPolicy() {
@@ -250,7 +251,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readWrappingById(readWrappingRequest.getId()));
 	}
 
-	@JwtValidate
 	@Operation(summary = "포장 모두 조회", description = "포장 모두 조회")
 	@GetMapping("/wrapping/all")
 	public ResponseEntity<List<ReadWrappingResponse>> getAllWrappings() {

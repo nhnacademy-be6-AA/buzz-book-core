@@ -198,8 +198,8 @@ public class PaymentService {
 		return responses;
 	}
 
-	public String getPaymentKeyWithoutLogin(String orderId, String orderPassword) {
-		return billLogRepository.findByOrder_OrderStrAndOrder_OrderPassword(orderId, orderPassword).getPaymentKey();
+	public String getPaymentKeyWithoutLogin(String orderId, String orderEmail) {
+		return billLogRepository.findByOrder_OrderStrAndOrder_OrderEmail(orderId, orderEmail).getPaymentKey();
 	}
 
 	public String getPaymentKey(String orderId, long userId) {
