@@ -50,8 +50,8 @@ public class PaymentController {
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(paymentService.readBillLogWithoutOrderWithAdmin(readBillLogRequest.getOrderId()));
 		}
-
-		return ResponseEntity.ok(paymentService.readBillLogWithoutOrder(userInfo.id(), readBillLogRequest.getOrderId()));
+		List<ReadBillLogWithoutOrderResponse> responses = paymentService.readBillLogWithoutOrder(userInfo.id(), readBillLogRequest.getOrderId());
+		return ResponseEntity.ok(responses);
 	}
 
 
