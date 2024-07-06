@@ -77,13 +77,23 @@ public class CartServiceImpl implements CartService {
 	@Override
 	public void createCartDetail(String uuid, CreateCartDetailRequest createCartDetailRequest) {
 		Optional<Cart> cart = cartRepository.findCartByUuid(UuidUtil.stringToByte(uuid));
+		int productId = createCartDetailRequest.productId();
 
 		if (cart.isEmpty()) {
 			throw new CartNotExistsException(uuid);
 		}
 
-		Product product = productRepository.getReferenceById(createCartDetailRequest.productId());
-		cartDetailRepository.save(createCartDetailRequest.toCartDetail(cart.get(), product));
+		Product product = productRepository.getReferenceById(productId);
+		Optional<CartDetail> existDetailOptional = cartDetailRepository.findByProductIdAndCartId(productId,
+			cart.get().getId());
+
+		if (existDetailOptional.isPresent()) {
+			existDetailOptional.get().changeQuantity(createCartDetailRequest.quantity());
+			cartDetailRepository.save(existDetailOptional.get());
+		} else {
+			cartDetailRepository.save(createCartDetailRequest.toCartDetail(cart.get(), product));
+		}
+
 	}
 
 	@Transactional
