@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.payment;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,7 +128,8 @@ public class PaymentService {
 
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
-				.price(readPaymentResponse.getTotalAmount())
+				.price(Arrays.stream(readPaymentResponse.getCancels()).max(
+					Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(), DateTimeFormatter.ISO_OFFSET_DATE_TIME))).get().getCancelAmount())
 				.paymentKey(
 					readPaymentResponse.getPaymentKey())
 				.order(order)
@@ -136,7 +138,7 @@ public class PaymentService {
 				.payAt(
 					LocalDateTime.now())
 				.cancelReason(Arrays.stream(readPaymentResponse.getCancels()).max(
-					Comparator.comparing(cancel -> LocalDateTime.parse(cancel.getCanceledAt(), DateTimeFormatter.ISO_DATE_TIME))).get().getCancelReason())
+					Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(), DateTimeFormatter.ISO_OFFSET_DATE_TIME))).get().getCancelReason())
 				.build());
 		UserInfo userInfo = UserInfo.builder()
 			.email(order.getUser().getEmail())
