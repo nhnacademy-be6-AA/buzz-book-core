@@ -69,7 +69,6 @@ public class TagController {
 		return ResponseEntity.ok(tagResponses);
 	}
 
-
 	@GetMapping({"/{id}"})
 	@Operation(summary = "태그 조회", description = "태그 조회<br>태그를 id 순서로 조회<br>주어진 id(int)에 해당하는 태그 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 TagResponse 반환")
@@ -85,6 +84,4 @@ public class TagController {
 		tagService.deleteTag(tagId);
 		return ResponseEntity.noContent().build();
 	}
-
-
 }

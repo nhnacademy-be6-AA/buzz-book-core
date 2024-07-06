@@ -25,7 +25,6 @@ public class ProductTagController {
 		return ResponseEntity.ok(tags);
 	}
 
-
 	@PostMapping("/{productId}/tags")
 	@Operation(summary = "특정 상품에 대한 태그 추가")
 	public ResponseEntity<Void> addTagToProduct(@PathVariable int productId, @RequestBody List<Integer> tagIds) {
