@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/productTags")
 @RequiredArgsConstructor
-@Tag(name = "상품태그 관리", description = "태그 CRUD")
+@Tag(name = "상품태그 관리", description = "태그 CRD")
 public class ProductTagController {
 
 	private final ProductTagService productTagService;
