@@ -7,5 +7,5 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ReadOrderWithoutLoginRequest {
 	private String orderId;
-	private String orderPassword;
+	private String orderEmail;
 }

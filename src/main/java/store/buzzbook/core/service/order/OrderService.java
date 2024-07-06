@@ -277,7 +277,7 @@ public class OrderService {
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderPassword(order.getId(),
-			request.getOrderPassword());
+			request.getOrderEmail());
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
