@@ -59,7 +59,17 @@ public class BookSearchService {
 
 		try {
 			BookApiRequest apiResponse = restTemplate.getForObject(url, BookApiRequest.class);
-			return apiResponse != null ? apiResponse.getItems() : List.of();
+			if (apiResponse != null && apiResponse.getItems() != null) {
+				// 각 아이템의 커버 이미지 URL을 큰 이미지로 변경
+				apiResponse.getItems().forEach(item -> {
+					if (item.getCover() != null) {
+						item.setCover(item.getCover().replace("coversum", "cover500"));
+					}
+				});
+				return apiResponse.getItems();
+			} else {
+				return List.of();
+			}
 		} catch (RestClientException e) {
 			e.printStackTrace();
 			return List.of();
