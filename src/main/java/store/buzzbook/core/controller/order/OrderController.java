@@ -76,7 +76,7 @@ public class OrderController {
 		return ResponseEntity.ok(data);
 	}
 
-	// httpservletrequest
+	@JwtOrderValidate
 	@Operation(summary = "주문 등록", description = "주문하기")
 	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
@@ -109,11 +109,11 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrderDetail(updateOrderDetailRequest, userInfo.loginId()));
 	}
 
-	@JwtValidate
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@PostMapping("/id")
 	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest readOrderRequest) {
-		return ResponseEntity.ok(orderService.readOrder(readOrderRequest));
+		ReadOrderResponse response = orderService.readOrder(readOrderRequest);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "비회원 주문 조회", description = "비회원 주문 조회")
