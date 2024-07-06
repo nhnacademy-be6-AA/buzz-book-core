@@ -109,10 +109,12 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.updateOrderDetail(updateOrderDetailRequest, userInfo.loginId()));
 	}
 
+	@JwtOrderValidate
 	@Operation(summary = "주문 조회", description = "주문 조회")
 	@PostMapping("/id")
-	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest readOrderRequest) {
-		ReadOrderResponse response = orderService.readOrder(readOrderRequest);
+	public ResponseEntity<ReadOrderResponse> getOrder(@RequestBody ReadOrderRequest readOrderRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		ReadOrderResponse response = orderService.readOrder(readOrderRequest, userInfo.loginId());
 		return ResponseEntity.ok(response);
 	}
 

@@ -255,7 +255,7 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
 	}
 
-	public ReadOrderResponse readOrder(ReadOrderRequest request) {
+	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
@@ -271,7 +271,7 @@ public class OrderService {
 			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
 
-		return OrderMapper.toDto(order, details, null);
+		return OrderMapper.toDto(order, details, loginId);
 	}
 
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
