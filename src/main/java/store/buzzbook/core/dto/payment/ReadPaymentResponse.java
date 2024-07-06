@@ -115,6 +115,7 @@ public class ReadPaymentResponse {
 	@JsonProperty("discount")
 	private Discount discount;
 
+	@Getter
 	public static class Cancel {
 		@JsonProperty("cancelAmount")
 		private Integer cancelAmount;
