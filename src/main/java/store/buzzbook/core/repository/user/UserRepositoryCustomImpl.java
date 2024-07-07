@@ -28,7 +28,22 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 			.innerJoin(grade)
 			.on(grade.id.eq(gradeLog.grade.id))
 			.where(user.loginId.eq(loginId))
-			.orderBy(gradeLog.changeAt.asc())
+			.orderBy(gradeLog.changeAt.desc())
+			.fetchFirst();
+
+		return Optional.ofNullable(targetGrade);
+	}
+
+	@Override
+	public Optional<Grade> findGradeByUserId(Long userId) {
+		Grade targetGrade = jpaQueryFactory.select(grade)
+			.from(user)
+			.innerJoin(gradeLog)
+			.on(user.id.eq(gradeLog.user.id))
+			.innerJoin(grade)
+			.on(grade.id.eq(gradeLog.grade.id))
+			.where(user.id.eq(userId))
+			.orderBy(gradeLog.changeAt.desc())
 			.fetchFirst();
 
 		return Optional.ofNullable(targetGrade);

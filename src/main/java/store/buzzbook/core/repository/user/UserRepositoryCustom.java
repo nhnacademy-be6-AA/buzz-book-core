@@ -9,5 +9,7 @@ import store.buzzbook.core.entity.user.User;
 public interface UserRepositoryCustom {
 	Optional<Grade> findGradeByLoginId(String loginId);
 
+	Optional<Grade> findGradeByUserId(Long userId);
+
 	List<User> findUsersByBirthdayInCurrentMonth();
 }

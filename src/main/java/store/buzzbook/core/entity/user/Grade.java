@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import store.buzzbook.core.dto.user.GradeInfoResponse;
 
 @Builder
 @Entity
@@ -36,4 +37,11 @@ public class Grade {
 
 	@NotNull
 	private double benefit;
+
+	public GradeInfoResponse toResponse() {
+		return GradeInfoResponse.builder()
+			.benefit(this.benefit)
+			.name(this.name.name())
+			.standard(this.standard).build();
+	}
 }

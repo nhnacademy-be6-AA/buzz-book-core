@@ -1,5 +1,8 @@
 package store.buzzbook.core.service.user;
 
+import java.util.List;
+
+import store.buzzbook.core.dto.user.GradeInfoResponse;
 import store.buzzbook.core.entity.user.Grade;
 
 /**
@@ -15,5 +18,7 @@ public interface GradeService {
 	 *
 	 */
 	void save(Grade grade);
+
+	List<GradeInfoResponse> getGradeInfoList();
 
 }
