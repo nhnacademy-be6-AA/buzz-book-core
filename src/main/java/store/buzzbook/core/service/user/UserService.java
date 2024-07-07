@@ -2,9 +2,12 @@ package store.buzzbook.core.service.user;
 
 import java.util.List;
 
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
+import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
+import store.buzzbook.core.dto.coupon.OrderCouponResponse;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
@@ -38,4 +41,8 @@ public interface UserService {
 	void downloadCoupon(DownloadCouponRequest request);
 
 	List<CouponResponse> getUserCoupons(Long userId, String couponStatusName);
+
+	List<OrderCouponResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses);
+
+	void deleteUserCoupon(Long userId, DeleteUserCouponRequest request);
 }
