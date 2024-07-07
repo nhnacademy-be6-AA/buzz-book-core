@@ -29,6 +29,7 @@ import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
+import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.coupon.OrderCouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
@@ -297,7 +298,7 @@ public class UserServiceImpl implements UserService {
 
 	@Transactional
 	@Override
-	public List<OrderCouponResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses) {
+	public List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses) {
 		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
 
 		if (userCoupons.isEmpty()) {
@@ -316,6 +317,17 @@ public class UserServiceImpl implements UserService {
 
 		return coupons.stream()
 			.filter(coupon -> targetIds.contains(coupon.targetId()))
+			.map(coupon -> OrderCouponDetailResponse.builder()
+				.couponCode(coupon.code())
+				.couponPolicyId(coupon.couponPolicyResponse().id())
+				.couponPolicyName(coupon.couponPolicyResponse().name())
+				.couponPolicyDiscountType(coupon.couponPolicyResponse().discountType())
+				.couponPolicyDiscountRate(coupon.couponPolicyResponse().discountRate())
+				.couponPolicyDiscountAmount(coupon.couponPolicyResponse().discountAmount())
+				.couponPolicyStandardPrice(coupon.couponPolicyResponse().standardPrice())
+				.couponPolicyMaxDiscountAmount(coupon.couponPolicyResponse().maxDiscountAmount())
+				.couponPolicyIdTargetId(coupon.targetId())
+				.build())
 			.toList();
 	}
 

@@ -21,7 +21,7 @@ import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
-import store.buzzbook.core.dto.coupon.OrderCouponResponse;
+import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.user.UserService;
@@ -58,7 +58,7 @@ public class CouponController {
 	@JwtOrderValidate
 	@PostMapping("/order")
 	@Operation(summary = "유저 주문 쿠폰 요청", description = "유저의 주문 목록에서 적용 가능한 쿠폰을 요청합니다.")
-	public ResponseEntity<List<OrderCouponResponse>> getOrderCoupons(
+	public ResponseEntity<List<OrderCouponDetailResponse>> getOrderCoupons(
 		@Valid @RequestBody List<CartDetailResponse> responses,
 		HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
