@@ -21,17 +21,25 @@ import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CouponLogRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
+import store.buzzbook.core.dto.coupon.CreateCouponRequest;
+import store.buzzbook.core.dto.coupon.CreateCouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
+import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
+import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
+import store.buzzbook.core.dto.coupon.OrderCouponResponse;
+import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
@@ -45,6 +53,7 @@ import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.product.ProductService;
 import store.buzzbook.core.service.user.UserService;
 
 @Service
@@ -59,6 +68,7 @@ public class UserServiceImpl implements UserService {
 	private final UserCouponRepository userCouponRepository;
 	private final PointLogRepository pointLogRepository;
 	private final CouponClient couponClient;
+	private final ProductService productService;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -282,12 +292,60 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
+		User user = userRepository.findById(request.userId())
+			.orElseThrow(() -> new UserNotFoundException(request.userId()));
+
 		if (Boolean.TRUE.equals(
 			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
-		userProducerService.sendDownloadCouponRequest(request);
+		CreateCouponResponse response = couponClient.createCoupon(CreateCouponRequest.builder()
+			.couponPolicyId(request.couponPolicyId())
+			.build());
+
+		UserCoupon userCoupon = UserCoupon.builder()
+			.user(user)
+			.couponPolicyId(response.couponPolicyResponse().id())
+			.couponCode(response.couponCode())
+			.build();
+
+		userCouponRepository.save(userCoupon);
+	}
+
+	@Transactional
+	@Override
+	public List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses) {
+		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
+
+		if (userCoupons.isEmpty()) {
+			throw new UserCouponNotFoundException();
+		}
+
+		List<CouponLogRequest> request = userCoupons.stream()
+			.map(CouponLogRequest::from)
+			.toList();
+
+		List<Integer> targetIds = responses.stream()
+			.flatMap(cartDetail -> List.of(cartDetail.getProductId(), cartDetail.getCategoryId()).stream())
+			.toList();
+
+		List<OrderCouponResponse> coupons = couponClient.getUserCoupons(request);
+
+		return coupons.stream()
+			.filter(coupon -> targetIds.contains(coupon.targetId()))
+			.map(coupon -> OrderCouponDetailResponse.builder()
+				.couponCode(coupon.code())
+				.couponPolicyId(coupon.couponPolicyResponse().id())
+				.couponPolicyName(coupon.couponPolicyResponse().name())
+				.couponPolicyDiscountType(coupon.couponPolicyResponse().discountType())
+				.couponPolicyDiscountRate(coupon.couponPolicyResponse().discountRate())
+				.couponPolicyDiscountAmount(coupon.couponPolicyResponse().discountAmount())
+				.couponPolicyStandardPrice(coupon.couponPolicyResponse().standardPrice())
+				.couponPolicyMaxDiscountAmount(coupon.couponPolicyResponse().maxDiscountAmount())
+				.couponPolicyIdTargetId(coupon.targetId())
+				.build())
+			.toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -304,6 +362,18 @@ public class UserServiceImpl implements UserService {
 			.toList();
 
 		return couponClient.getUserCoupons(request, couponStatusName);
+	}
+
+	@Override
+	public void deleteUserCoupon(Long userId, DeleteUserCouponRequest request) {
+		if (!userCouponRepository.existsByUserIdAndCouponPolicyId(userId, request.couponPolicyId())) {
+			throw new UserCouponNotFoundException();
+		}
+
+		couponClient.updateCoupon(UpdateCouponRequest.builder()
+			.couponCode(request.couponCode())
+			.status(CouponStatus.USED)
+			.build());
 	}
 
 	@Override

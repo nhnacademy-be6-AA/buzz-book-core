@@ -2,8 +2,10 @@ package store.buzzbook.core.dto.product;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import store.buzzbook.core.entity.product.Category;
 
+@ToString
 @Getter
 @AllArgsConstructor
 public class CategoryResponse {

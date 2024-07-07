@@ -8,6 +8,7 @@ import lombok.Getter;
 public class CartDetailResponse {
 	private long id;
 	private int productId;
+	private int categoryId;
 	private String productName;
 	private int quantity;
 	private int price;

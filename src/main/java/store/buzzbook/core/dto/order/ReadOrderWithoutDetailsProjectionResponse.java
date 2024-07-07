@@ -27,4 +27,5 @@ public class ReadOrderWithoutDetailsProjectionResponse {
 	private String sender;
 	private String receiverContactNumber;
 	private String senderContactNumber;
+	private String couponCode;
 }

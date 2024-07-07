@@ -66,6 +66,7 @@ public class CartDetail {
 			.price(this.product.getPrice())
 			.canWrap(canWrap)
 			.thumbnailPath(this.product.getThumbnailPath())
+			.categoryId(this.product.getCategory().getId())
 			.build();
 	}
 

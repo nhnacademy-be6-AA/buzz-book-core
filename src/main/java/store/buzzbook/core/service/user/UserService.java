@@ -8,9 +8,12 @@ import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
 import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
+import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
+import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
@@ -134,4 +137,8 @@ public interface UserService {
 	void downloadCoupon(DownloadCouponRequest request);
 
 	List<CouponResponse> getUserCoupons(Long userId, String couponStatusName);
+
+	List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses);
+
+	void deleteUserCoupon(Long userId, DeleteUserCouponRequest request);
 }

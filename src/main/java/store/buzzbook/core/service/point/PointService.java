@@ -18,6 +18,8 @@ public interface PointService {
 
 	List<PointPolicyResponse> getPointPolicies();
 
+	Integer getUserPoint(Long userId);
+
 	void updatePointPolicy(UpdatePointPolicyRequest request);
 
 	void deletePointPolicy(DeletePointPolicyRequest request);

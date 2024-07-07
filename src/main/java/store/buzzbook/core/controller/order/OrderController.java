@@ -79,7 +79,9 @@ public class OrderController {
 	@JwtOrderValidate
 	@Operation(summary = "주문 등록", description = "주문하기")
 	@PostMapping("/register")
-	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		createOrderRequest.setLoginId(userInfo.loginId());
 		ReadOrderResponse response = orderService.createOrder(createOrderRequest);
 		return ResponseEntity.ok(response);
 	}
@@ -122,10 +124,10 @@ public class OrderController {
 	@PostMapping("/non-member")
 	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(
 		@RequestBody ReadOrderWithoutLoginRequest readOrderWithoutLoginRequest) {
-		return ResponseEntity.ok(orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest));
+		ReadOrderResponse response = orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest);
+		return ResponseEntity.ok(response);
 	}
 
-	@JwtValidate
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
 	@PostMapping("/status/name")
 	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(
@@ -133,7 +135,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readOrderStatusByName(readOrderStatusByNameRequest.getName()));
 	}
 
-	@JwtValidate
 	@Operation(summary = "주문 상태 아이디로 조회", description = "주문 상태 조회")
 	@PostMapping("/status/id")
 	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(
@@ -141,7 +142,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readOrderStatusById(readOrderStatusByIdRequest.getStatusId()));
 	}
 
-	@JwtValidate
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
 	@GetMapping("/status/all")
 	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus() {
@@ -161,7 +161,7 @@ public class OrderController {
 		return ResponseEntity.ok(data);
 	}
 
-	@JwtOrderValidate
+	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("/status")
 	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
@@ -171,11 +171,10 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			data.put("responseData", ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest)));
 		}
-		// 회원 전체 주문 취소
 		return ResponseEntity.ok(data);
 	}
 
-	@JwtValidate
+	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
 	@DeleteMapping("/status")
 	public ResponseEntity<String> deleteOrderStatus(@RequestBody DeleteOrderStatusRequest deleteOrderStatusRequest,
@@ -190,7 +189,6 @@ public class OrderController {
 		return ResponseEntity.ok(FAILURE);
 	}
 
-	@JwtValidate
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")
 	@PostMapping("/delivery-policy/id")
 	public ResponseEntity<ReadDeliveryPolicyResponse> getDeliveryPolicy(
@@ -230,7 +228,7 @@ public class OrderController {
 		return ResponseEntity.ok(data);
 	}
 
-	@JwtValidate
+	@JwtOrderAdminValidate
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
 	@DeleteMapping("/delivery-policy")
 	public ResponseEntity<String> deleteDeliveryPolicy(
@@ -244,7 +242,6 @@ public class OrderController {
 		return ResponseEntity.ok(FAILURE);
 	}
 
-	@JwtValidate
 	@Operation(summary = "포장 조회", description = "포장 조회")
 	@PostMapping("/wrapping/id")
 	public ResponseEntity<ReadWrappingResponse> getWrapping(@RequestBody ReadWrappingRequest readWrappingRequest) {
@@ -283,7 +280,7 @@ public class OrderController {
 		return ResponseEntity.ok(data);
 	}
 
-	@JwtValidate
+	@JwtOrderAdminValidate
 	@Operation(summary = "포장 삭제", description = "포장 삭제")
 	@DeleteMapping("/wrapping")
 	public ResponseEntity<String> deleteWrapping(@RequestBody DeleteWrappingRequest deleteWrappingRequest,

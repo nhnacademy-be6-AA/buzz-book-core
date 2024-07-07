@@ -7,15 +7,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.ProductTag;
 
 @AllArgsConstructor
 @Getter
 @Builder
+@ToString
 public class ProductResponse {
 	private int id;
 	private int stock;

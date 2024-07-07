@@ -46,6 +46,12 @@ public class PointServiceImpl implements PointService {
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public Integer getUserPoint(Long userId) {
+		return pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(userId).getBalance();
+	}
+
 	@Transactional
 	@Override
 	public void updatePointPolicy(UpdatePointPolicyRequest request) {
@@ -76,7 +82,7 @@ public class PointServiceImpl implements PointService {
 		if (user == null) {
 			throw new UserNotFoundException(userId);
 		}
-		PointLog lastPointLog = pointLogRepository.findLastByUserId(userId);
+		PointLog lastPointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(userId);
 		PointLog newPointLog;
 		if (lastPointLog == null) {
 			newPointLog = PointLog.builder()
