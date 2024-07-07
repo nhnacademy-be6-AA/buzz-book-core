@@ -22,6 +22,7 @@ import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
+import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
@@ -152,9 +153,9 @@ public class OrderService {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 		User user = null;
 		if (createOrderRequest.getLoginId() != null && !createOrderRequest.getLoginId().isBlank()) {
-			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
+			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
 
-			user = userRepository.findById(userInfo.id()).get();
+			user = userRepository.findById(userInfo.id()).orElseThrow(()->new UserNotFoundException("User not found"));
 		}
 		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
 
