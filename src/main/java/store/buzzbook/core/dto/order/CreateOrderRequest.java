@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -14,12 +15,14 @@ public class CreateOrderRequest {
 	private String orderStr;
 	private int price;
 	private String request;
+	private String addresses;
 	private String address;
 	private String addressDetail;
 	private int zipcode;
 	private String desiredDeliveryDate;
 	private String receiver;
 	private Integer deliveryPolicyId;
+	@Setter
 	private String loginId;
 	private List<CreateOrderDetailRequest> details;
 	private String contactNumber;

@@ -13,6 +13,7 @@ import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
+import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
 
 public class OrderMapper {
@@ -50,6 +51,25 @@ public class OrderMapper {
 			.zipcode(createOrderRequest.getZipcode())
 			.address(createOrderRequest.getAddress())
 			.addressDetail(createOrderRequest.getAddressDetail())
+			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate(), formatter))
+			.sender(createOrderRequest.getSender())
+			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
+			.senderContactNumber(createOrderRequest.getContactNumber())
+			.orderEmail(createOrderRequest.getOrderEmail())
+			.build();
+	}
+
+	public static Order toEntityWithAddress(CreateOrderRequest createOrderRequest, User user, Address address) {
+
+		return Order.builder()
+			.user(user)
+			.orderStr(createOrderRequest.getOrderStr())
+			.price(createOrderRequest.getPrice())
+			.request(createOrderRequest.getRequest())
+			.receiver(createOrderRequest.getReceiver())
+			.zipcode(address.getZipcode())
+			.address(address.getAddress())
+			.addressDetail(address.getDetail())
 			.desiredDeliveryDate(LocalDate.parse(createOrderRequest.getDesiredDeliveryDate(), formatter))
 			.sender(createOrderRequest.getSender())
 			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
