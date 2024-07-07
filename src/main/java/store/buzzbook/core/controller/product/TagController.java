@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.TagResponse;
@@ -45,7 +46,6 @@ public class TagController {
 		return ResponseEntity.ok(tagService.getAllTags());
 	}
 
-	//임시적으로 Page 버전으로 만듦
 	@GetMapping
 	@Operation(summary = "태그 조회(Page)", description = "주어진 (String) 조회<br>태그를 id 순서로 조회<br>주어진 id(int)에 해당하는 태그 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 List<TagResponse> 반환<br>태그 이름(String) 값 존재하면 이름으로 조회한 태그 반환")
@@ -78,8 +78,8 @@ public class TagController {
 	@DeleteMapping("/{id}")
 	@Operation(summary = "태그 삭제", description = "주어진 id(int)에 해당하는 태그 삭제.")
 	@ApiResponse(responseCode = "204", description = "삭제 성공시")
-	public ResponseEntity<Void> deleteTag(@RequestParam int tagId) {
-		tagService.deleteTag(tagId);
+	public ResponseEntity<Void> deleteTag(@PathVariable int id) {
+		tagService.deleteTag(id);
 		return ResponseEntity.noContent().build();
 	}
 }
