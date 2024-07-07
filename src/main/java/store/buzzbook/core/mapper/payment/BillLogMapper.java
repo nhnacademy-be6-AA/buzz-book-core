@@ -1,14 +1,16 @@
 package store.buzzbook.core.mapper.payment;
 
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 
 import store.buzzbook.core.dto.order.ReadOrderResponse;
+import store.buzzbook.core.dto.payment.CreateBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
+import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.payment.BillLog;
+import store.buzzbook.core.entity.payment.BillStatus;
 
 public class BillLogMapper {
-	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	public static ReadBillLogResponse toDto(BillLog billLog, ReadOrderResponse readOrderResponse) {
 		return ReadBillLogResponse.builder()
@@ -32,6 +34,18 @@ public class BillLogMapper {
 			.status(billLog.getStatus())
 			.payment(billLog.getPayment())
 			.cancelReason(billLog.getCancelReason())
+			.build();
+	}
+
+	public static BillLog toEntity(CreateBillLogRequest createBillLogRequest, Order order) {
+		return BillLog.builder()
+			.order(order)
+			.payAt(LocalDateTime.now())
+			.status(BillStatus.DONE)
+			.paymentKey(createBillLogRequest.getPaymentKey())
+			.payment(createBillLogRequest.getPayment())
+			.price(createBillLogRequest.getPrice())
+			.cancelReason(createBillLogRequest.getCancelReason())
 			.build();
 	}
 }

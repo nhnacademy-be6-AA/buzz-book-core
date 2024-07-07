@@ -1,13 +1,8 @@
 package store.buzzbook.core.entity.payment;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -31,7 +26,6 @@ import store.buzzbook.core.entity.order.Order;
 @NoArgsConstructor
 @Entity
 @Table
-@EntityListeners(AuditingEntityListener.class)
 public class BillLog {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +39,6 @@ public class BillLog {
 	private int price;
 
 	@NotNull
-	@CreatedDate
 	private LocalDateTime payAt;
 
 	@NotNull
@@ -59,6 +52,6 @@ public class BillLog {
 
 	private String paymentKey;
 
-	@Size(min = 1, max = 255)
+	@Size(max = 255)
 	private String cancelReason;
 }

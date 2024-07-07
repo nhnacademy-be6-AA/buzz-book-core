@@ -47,7 +47,8 @@ public class BillLogQuerydslRepositoryImpl implements BillLogQuerydslRepository 
 						order.receiver.as("receiver"),
 						order.sender.as("sender"),
 						order.receiverContactNumber.as("receiverContactNumber"),
-						order.senderContactNumber.as("senderContactNumber")
+						order.senderContactNumber.as("senderContactNumber"),
+						order.couponCode.as("couponCode")
 					),
 					billLog.cancelReason.as("cancelReason")
 				)

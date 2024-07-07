@@ -67,6 +67,9 @@ public class Order {
 
 	@Size(min = 1, max = 255)
 	private String orderEmail;
+	
+	@Size(min = 1, max = 20)
+	private String couponCode;
 
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();

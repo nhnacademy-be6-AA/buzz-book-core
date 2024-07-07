@@ -30,4 +30,6 @@ public class CreateOrderRequest {
 	private String sender;
 	private String receiverContactNumber;
 	private String orderEmail;
+	private Integer myPoint;
+	private String couponCode;
 }

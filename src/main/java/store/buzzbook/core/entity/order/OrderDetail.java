@@ -54,20 +54,17 @@ public class OrderDetail {
 	private Wrapping wrapping;
 
 	@NotNull
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "product_id", nullable = false)
 	private Product product;
 
 	@NotNull
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "order_id", nullable = false)
 	private Order order;
 
 	@NotNull
 	private LocalDateTime createAt;
-
-	@Size(min = 1, max = 20)
-	private String couponCode;
 
 	@NotNull
 	private LocalDateTime updateAt;
