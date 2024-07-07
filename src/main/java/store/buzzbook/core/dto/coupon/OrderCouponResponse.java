@@ -18,7 +18,7 @@ import store.buzzbook.core.entity.coupon.CouponStatus;
  * @param targetId 쿠폰 정책의 상품, 카테고리 ID
  */
 public record OrderCouponResponse(
-	long id,
+	String code,
 	LocalDate createDate,
 	LocalDate expireDate,
 	CouponStatus status,

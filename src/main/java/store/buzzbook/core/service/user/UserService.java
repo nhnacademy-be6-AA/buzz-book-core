@@ -7,7 +7,7 @@ import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
-import store.buzzbook.core.dto.coupon.OrderCouponResponse;
+import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
@@ -42,7 +42,7 @@ public interface UserService {
 
 	List<CouponResponse> getUserCoupons(Long userId, String couponStatusName);
 
-	List<OrderCouponResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses);
+	List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses);
 
 	void deleteUserCoupon(Long userId, DeleteUserCouponRequest request);
 }
