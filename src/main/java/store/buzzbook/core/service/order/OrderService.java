@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
+import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
@@ -100,7 +101,7 @@ public class OrderService {
 			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
 				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver())
 				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).build();
+				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).couponCode(order.getCouponCode()).build();
 			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
 			while (iterator.hasNext()) {
 				ReadOrderProjectionResponse newOrder = iterator.next();
@@ -134,7 +135,7 @@ public class OrderService {
 			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
 				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver())
 				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).build();
+				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).couponCode(order.getCouponCode()).build();
 			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
 			while (iterator.hasNext()) {
 				ReadOrderProjectionResponse newOrder = iterator.next();
@@ -225,7 +226,6 @@ public class OrderService {
 				.order(orderDetail.getOrder())
 				.wrapping(orderDetail.getWrapping())
 				.product(orderDetail.getProduct())
-				.couponCode(orderDetail.getCouponCode())
 				.build());
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
@@ -258,7 +258,6 @@ public class OrderService {
 				.order(orderDetail.getOrder())
 				.wrapping(orderDetail.getWrapping())
 				.product(orderDetail.getProduct())
-				.couponCode(orderDetail.getCouponCode())
 				.build());
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
@@ -304,7 +303,7 @@ public class OrderService {
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
@@ -411,7 +410,6 @@ public class OrderService {
 			.order(orderDetail.getOrder())
 			.wrapping(orderDetail.getWrapping())
 			.product(orderDetail.getProduct())
-			.couponCode(orderDetail.getCouponCode())
 			.updateAt(LocalDateTime.now())
 			.build());
 
@@ -423,7 +421,7 @@ public class OrderService {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 
-		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
@@ -432,7 +430,7 @@ public class OrderService {
 	}
 
 	public ReadOrderDetailResponse updateOrderDetailWithAdmin(UpdateOrderDetailRequest request) {
-		OrderDetail orderDetail = orderDetailRepository.findById(request.getId()).orElseThrow(()-> new IllegalArgumentException("Order Detail not found"));
+		OrderDetail orderDetail = orderDetailRepository.findById(request.getId()).orElseThrow(()-> new OrderDetailNotFoundException("Order Detail not found"));
 		orderDetailRepository.save(OrderDetail.builder()
 			.orderStatus(orderStatusRepository.findByName(request.getOrderStatusName()))
 			.id(orderDetail.getId())
@@ -443,14 +441,13 @@ public class OrderService {
 			.order(orderDetail.getOrder())
 			.wrapping(orderDetail.getWrapping())
 			.product(orderDetail.getProduct())
-			.couponCode(orderDetail.getCouponCode())
 			.updateAt(LocalDateTime.now())
 			.build());
 
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
 			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);

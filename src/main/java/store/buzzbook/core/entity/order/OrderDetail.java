@@ -66,9 +66,6 @@ public class OrderDetail {
 	@NotNull
 	private LocalDateTime createAt;
 
-	@Size(min = 1, max = 20)
-	private String couponCode;
-
 	@NotNull
 	private LocalDateTime updateAt;
 }
