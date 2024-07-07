@@ -1,10 +1,12 @@
 package store.buzzbook.core.service.coupon.impl;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.client.auth.CouponClient;
 import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
@@ -108,7 +110,15 @@ public class CouponServiceImpl implements CouponService {
 			.map(CouponLogRequest::from)
 			.toList();
 
-		return couponClient.getUserCoupons(request, couponStatusName);
+		try {
+			return couponClient.getUserCoupons(request, couponStatusName);
+		} catch (FeignException e) {
+			if (e.status() == 404) {
+				return Collections.emptyList();
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	@Transactional
