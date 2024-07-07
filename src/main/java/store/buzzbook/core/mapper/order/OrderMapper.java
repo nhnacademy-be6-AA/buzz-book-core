@@ -35,7 +35,7 @@ public class OrderMapper {
 			.senderContactNumber(order.getSenderContactNumber())
 			.receiverContactNumber(order.getReceiverContactNumber())
 			.sender(order.getSender())
-			.orderPassword(order.getOrderPassword())
+			.orderEmail(order.getOrderEmail())
 			.build();
 	}
 
@@ -54,7 +54,7 @@ public class OrderMapper {
 			.sender(createOrderRequest.getSender())
 			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
 			.senderContactNumber(createOrderRequest.getContactNumber())
-			.orderPassword(createOrderRequest.getOrderPassword())
+			.orderEmail(createOrderRequest.getOrderEmail())
 			.build();
 	}
 }

@@ -66,7 +66,7 @@ public class Order {
 	private String receiverContactNumber;
 
 	@Size(min = 1, max = 255)
-	private String orderPassword;
+	private String orderEmail;
 
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();

@@ -15,5 +15,5 @@ public class ReadPaymentKeyWithOrderDetailRequest {
 	@NotNull
 	private long orderDetailId;
 	@Nullable
-	private String orderPassword;
+	private String orderEmail;
 }

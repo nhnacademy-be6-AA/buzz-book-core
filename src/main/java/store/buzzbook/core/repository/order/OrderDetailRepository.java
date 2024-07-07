@@ -12,7 +12,7 @@ import store.buzzbook.core.entity.order.OrderDetail;
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 	List<OrderDetail> findAllById(long orderId);
 	List<OrderDetail> findAllByOrder_IdAndOrder_User_LoginId(long orderId, String loginId);
-	List<OrderDetail> findAllByOrder_IdAndOrder_OrderPassword(long orderId, String orderPassword);
+	List<OrderDetail> findAllByOrder_IdAndOrder_OrderEmail(long orderId, String orderEmail);
 	List<OrderDetail> findAllByOrder_IdAndOrderStatus_Id(long orderId, long orderStatusId);
 	List<OrderDetail> findAllByOrder_Id(long orderId);
 	List<OrderDetail> findAllByOrder_OrderStr(String orderStr);
