@@ -25,6 +25,7 @@ import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
+import store.buzzbook.core.service.coupon.CouponService;
 import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
@@ -36,6 +37,7 @@ import store.buzzbook.core.service.user.UserService;
 public class MyPageController {
 	private final UserService userService;
 	private final PointService pointService;
+	private final CouponService couponService;
 
 	@JwtValidate
 	@PutMapping("/password")
@@ -89,7 +91,7 @@ public class MyPageController {
 		HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 
-		return ResponseEntity.ok(userService.getUserCoupons(userId, couponStatusName));
+		return ResponseEntity.ok(couponService.getUserCoupons(userId, couponStatusName));
 	}
 
 	@JwtValidate

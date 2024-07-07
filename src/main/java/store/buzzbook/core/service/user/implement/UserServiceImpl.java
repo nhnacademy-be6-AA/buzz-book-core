@@ -1,7 +1,6 @@
 package store.buzzbook.core.service.user.implement;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -11,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.client.auth.CouponClient;
-import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
-import store.buzzbook.core.common.exception.coupon.UserCouponNotFoundException;
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
@@ -20,32 +17,19 @@ import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
-import store.buzzbook.core.dto.cart.CartDetailResponse;
-import store.buzzbook.core.dto.coupon.CouponLogRequest;
-import store.buzzbook.core.dto.coupon.CouponResponse;
-import store.buzzbook.core.dto.coupon.CreateCouponRequest;
-import store.buzzbook.core.dto.coupon.CreateCouponResponse;
-import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
-import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
-import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
-import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
-import store.buzzbook.core.dto.coupon.OrderCouponResponse;
-import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
-import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
@@ -64,8 +48,8 @@ public class UserServiceImpl implements UserService {
 	private final DeactivationRepository deactivationRepository;
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
-	private final UserCouponRepository userCouponRepository;
 	private final PointLogRepository pointLogRepository;
+	private final UserCouponRepository userCouponRepository;
 	private final CouponClient couponClient;
 	private final ProductService productService;
 
@@ -236,127 +220,6 @@ public class UserServiceImpl implements UserService {
 		}
 
 		return user.toUserInfo(gradeOptional.get());
-	}
-
-	@Override
-	public List<UserInfo> getUserInfoByCurrentBirthday() {
-		return userRepository.findUsersByBirthdayInCurrentMonth().stream()
-			.map(user -> UserInfo.builder()
-				.id(user.getId())
-				.loginId(user.getLoginId())
-				.contactNumber(user.getContactNumber())
-				.name(user.getName())
-				.email(user.getEmail())
-				.birthday(user.getBirthday())
-				.build())
-			.toList();
-	}
-
-	@Transactional
-	@Override
-	public void addUserCoupon(CreateUserCouponRequest request) {
-		User user = userRepository.findById(request.userId())
-			.orElseThrow(() -> new UserNotFoundException(request.userId()));
-
-		if (Boolean.TRUE.equals(
-			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
-			throw new UserCouponAlreadyExistsException();
-		}
-
-		UserCoupon userCoupon = UserCoupon.builder()
-			.user(user)
-			.couponPolicyId(request.couponPolicyId())
-			.couponCode(request.couponCode())
-			.build();
-
-		userCouponRepository.save(userCoupon);
-	}
-
-	@Transactional
-	@Override
-	public void downloadCoupon(DownloadCouponRequest request) {
-		User user = userRepository.findById(request.userId())
-			.orElseThrow(() -> new UserNotFoundException(request.userId()));
-
-		if (Boolean.TRUE.equals(
-			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
-			throw new UserCouponAlreadyExistsException();
-		}
-
-		CreateCouponResponse response = couponClient.createCoupon(CreateCouponRequest.builder()
-			.couponPolicyId(request.couponPolicyId())
-			.build());
-
-		UserCoupon userCoupon = UserCoupon.builder()
-			.user(user)
-			.couponPolicyId(response.couponPolicyResponse().id())
-			.couponCode(response.couponCode())
-			.build();
-
-		userCouponRepository.save(userCoupon);
-	}
-
-	@Transactional
-	@Override
-	public List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses) {
-		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
-
-		if (userCoupons.isEmpty()) {
-			throw new UserCouponNotFoundException();
-		}
-
-		List<CouponLogRequest> request = userCoupons.stream()
-			.map(CouponLogRequest::from)
-			.toList();
-
-		List<Integer> targetIds = responses.stream()
-			.flatMap(cartDetail -> List.of(cartDetail.getProductId(), cartDetail.getCategoryId()).stream())
-			.toList();
-
-		List<OrderCouponResponse> coupons = couponClient.getUserCoupons(request);
-
-		return coupons.stream()
-			.filter(coupon -> targetIds.contains(coupon.targetId()))
-			.map(coupon -> OrderCouponDetailResponse.builder()
-				.couponCode(coupon.code())
-				.couponPolicyId(coupon.couponPolicyResponse().id())
-				.couponPolicyName(coupon.couponPolicyResponse().name())
-				.couponPolicyDiscountType(coupon.couponPolicyResponse().discountType())
-				.couponPolicyDiscountRate(coupon.couponPolicyResponse().discountRate())
-				.couponPolicyDiscountAmount(coupon.couponPolicyResponse().discountAmount())
-				.couponPolicyStandardPrice(coupon.couponPolicyResponse().standardPrice())
-				.couponPolicyMaxDiscountAmount(coupon.couponPolicyResponse().maxDiscountAmount())
-				.couponPolicyIdTargetId(coupon.targetId())
-				.build())
-			.toList();
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public List<CouponResponse> getUserCoupons(Long userId, String couponStatusName) {
-		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
-
-		if (userCoupons.isEmpty()) {
-			throw new UserCouponNotFoundException();
-		}
-
-		List<CouponLogRequest> request = userCoupons.stream()
-			.map(CouponLogRequest::from)
-			.toList();
-
-		return couponClient.getUserCoupons(request, couponStatusName);
-	}
-
-	@Override
-	public void deleteUserCoupon(Long userId, DeleteUserCouponRequest request) {
-		if (!userCouponRepository.existsByUserIdAndCouponPolicyId(userId, request.couponPolicyId())) {
-			throw new UserCouponNotFoundException();
-		}
-
-		couponClient.updateCoupon(UpdateCouponRequest.builder()
-			.couponCode(request.couponCode())
-			.status(CouponStatus.USED)
-			.build());
 	}
 
 	@Override
