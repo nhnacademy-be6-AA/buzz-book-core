@@ -2,10 +2,14 @@ package store.buzzbook.core.dto.payment;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.payment.BillStatus;
 
@@ -13,6 +17,7 @@ import store.buzzbook.core.entity.payment.BillStatus;
 @AllArgsConstructor
 @Getter
 @Builder
+@ToString
 public class ReadBillLogResponse {
 	private long id;
 
@@ -23,6 +28,9 @@ public class ReadBillLogResponse {
 	private BillStatus status;
 
 	private String paymentKey;
+
 	private ReadOrderResponse readOrderResponse;
+
+	@Nullable
 	private String cancelReason;
 }

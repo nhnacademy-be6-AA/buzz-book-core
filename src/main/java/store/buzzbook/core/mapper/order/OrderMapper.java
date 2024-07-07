@@ -41,7 +41,6 @@ public class OrderMapper {
 	}
 
 	public static Order toEntity(CreateOrderRequest createOrderRequest, User user) {
-
 		return Order.builder()
 			.user(user)
 			.orderStr(createOrderRequest.getOrderStr())

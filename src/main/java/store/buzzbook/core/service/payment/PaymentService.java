@@ -23,6 +23,7 @@ import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
+import store.buzzbook.core.dto.payment.CreateBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
@@ -58,7 +59,7 @@ public class PaymentService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 
-	private final static int ORDERSTATUS_PAID = 4;
+	private static final int ORDER_STATUS_PAID = 4;
 
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
@@ -70,7 +71,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
 				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -114,7 +115,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDERSTATUS_PAID)
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
 				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -149,6 +150,30 @@ public class PaymentService {
 			.build();
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+	}
+
+	public ReadBillLogResponse createBillLogWithDiffentPayment(CreateBillLogRequest createBillLogRequest, String loginId) {
+		Order order = orderRepository.findByOrderStr(createBillLogRequest.getOrderId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
+				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(
+				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+					readWrappingResponse));
+		}
+
+		BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
+
+		return BillLogMapper.toDto(billLog,
+			OrderMapper.toDto(order, readOrderDetailResponses, loginId));
 	}
 
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
