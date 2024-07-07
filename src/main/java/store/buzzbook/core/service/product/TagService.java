@@ -22,12 +22,11 @@ public class TagService {
 	@Transactional
 	public TagResponse saveTag(String tagName) {
 		Tag existingTag = tagRepository.findByName(tagName).orElse(null);
-		if(existingTag != null)
-		{
+		if (existingTag != null) {
 			return TagResponse.convertToTagResponse(existingTag);
 		}
 		Tag tag = new Tag(tagName);
-			tagRepository.save(tag);
+		tagRepository.save(tag);
 		return TagResponse.convertToTagResponse(tag);
 	}
 
