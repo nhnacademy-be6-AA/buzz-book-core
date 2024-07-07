@@ -14,6 +14,7 @@ import org.json.simple.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
+import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.CreateBillLogRequest;
@@ -36,7 +38,9 @@ import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
+import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.WrappingMapper;
@@ -46,11 +50,15 @@ import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
+import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
+import store.buzzbook.core.repository.user.UserRepository;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+	private static final String POINT_PAYMENT_INQUIRY = "주문 시 포인트 결제";
+
 	private final BillLogRepository billLogRepository;
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
@@ -58,6 +66,8 @@ public class PaymentService {
 	private final WrappingRepository wrappingRepository;
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
+	private final PointLogRepository pointLogRepository;
+	private final UserRepository userRepository;
 
 	private static final int ORDER_STATUS_PAID = 4;
 
@@ -152,6 +162,7 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
+	@Transactional
 	public ReadBillLogResponse createBillLogWithDiffentPayment(CreateBillLogRequest createBillLogRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(createBillLogRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -171,6 +182,13 @@ public class PaymentService {
 		}
 
 		BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
+
+		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+		int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+
+		pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(-createBillLogRequest.getPrice())
+			.user(user).balance(balance-createBillLogRequest.getPrice()).inquiry(POINT_PAYMENT_INQUIRY).build());
 
 		return BillLogMapper.toDto(billLog,
 			OrderMapper.toDto(order, readOrderDetailResponses, loginId));
