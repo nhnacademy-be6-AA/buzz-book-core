@@ -187,13 +187,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		user.get().updateUserBy(updateUserRequest);
-		User updatedUser = userRepository.save(user.get());
-		Optional<Grade> grade = userRepository.findGradeByLoginId(updatedUser.getLoginId());
-
-		if (grade.isEmpty()) {
-			throw new GradeNotFoundException(userId);
-		}
-
+		userRepository.save(user.get());
 	}
 
 	@Transactional(readOnly = true)
@@ -295,6 +289,9 @@ public class UserServiceImpl implements UserService {
 		if (!isPasswordEncrypted(changePasswordRequest.newPassword())) {
 			log.debug("암호화되지 않은 비밀번호입니다. 프론트 서버를 확인해주세요.");
 			throw new UnEncryptedPasswordException(userId);
+		} else if (!BCrypt.checkpw(changePasswordRequest.confirmPassword(), changePasswordRequest.newPassword())) {
+			log.debug("새 비밀번호 확인이 다릅니다.");
+			throw new PasswordIncorrectException();
 		}
 
 		Optional<User> user = userRepository.findById(userId);
