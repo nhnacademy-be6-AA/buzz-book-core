@@ -22,6 +22,8 @@ import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
 import store.buzzbook.core.dto.coupon.CouponLogRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
+import store.buzzbook.core.dto.coupon.CreateCouponRequest;
+import store.buzzbook.core.dto.coupon.CreateCouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
@@ -265,12 +267,25 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
+		User user = userRepository.findById(request.userId())
+			.orElseThrow(() -> new UserNotFoundException(request.userId()));
+
 		if (Boolean.TRUE.equals(
 			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
-		userProducerService.sendDownloadCouponRequest(request);
+		CreateCouponResponse response = couponClient.createCoupon(CreateCouponRequest.builder()
+			.couponPolicyId(request.couponPolicyId())
+			.build());
+
+		UserCoupon userCoupon = UserCoupon.builder()
+			.user(user)
+			.couponPolicyId(response.couponPolicyResponse().id())
+			.couponCode(response.couponCode())
+			.build();
+
+		userCouponRepository.save(userCoupon);
 	}
 
 	@Transactional(readOnly = true)
