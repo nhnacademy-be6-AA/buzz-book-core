@@ -19,7 +19,6 @@ import store.buzzbook.core.entity.user.User;
 public class OrderMapper {
 	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-
 	public static ReadOrderResponse toDto(Order order, List<ReadOrderDetailResponse> details, String loginId) {
 		return ReadOrderResponse.builder()
 			.id(order.getId())
@@ -37,11 +36,11 @@ public class OrderMapper {
 			.receiverContactNumber(order.getReceiverContactNumber())
 			.sender(order.getSender())
 			.orderEmail(order.getOrderEmail())
+			.couponCode(order.getCouponCode())
 			.build();
 	}
 
 	public static Order toEntity(CreateOrderRequest createOrderRequest, User user) {
-
 		return Order.builder()
 			.user(user)
 			.orderStr(createOrderRequest.getOrderStr())
@@ -56,6 +55,7 @@ public class OrderMapper {
 			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
 			.senderContactNumber(createOrderRequest.getContactNumber())
 			.orderEmail(createOrderRequest.getOrderEmail())
+			.couponCode(createOrderRequest.getCouponCode())
 			.build();
 	}
 
@@ -75,6 +75,7 @@ public class OrderMapper {
 			.receiverContactNumber(createOrderRequest.getReceiverContactNumber())
 			.senderContactNumber(createOrderRequest.getContactNumber())
 			.orderEmail(createOrderRequest.getOrderEmail())
+			.couponCode(createOrderRequest.getCouponCode())
 			.build();
 	}
 }

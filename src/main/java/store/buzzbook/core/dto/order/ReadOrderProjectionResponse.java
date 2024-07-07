@@ -27,12 +27,13 @@ public class ReadOrderProjectionResponse {
 	private String sender;
 	private String receiverContactNumber;
 	private String senderContactNumber;
+	private String couponCode;
 
 	public ReadOrderProjectionResponse(Long id, String orderStr, String loginId, Integer price,
 		String request, String address, String addressDetail, Integer zipcode,
 		LocalDate desiredDeliveryDate, String receiver,
 		ReadOrderDetailProjectionResponse orderDetail, String sender,
-		String receiverContactNumber, String senderContactNumber) {
+		String receiverContactNumber, String senderContactNumber, String couponCode) {
 		this.id = id;
 		this.orderStr = orderStr;
 		this.loginId = loginId;
@@ -47,5 +48,6 @@ public class ReadOrderProjectionResponse {
 		this.sender = sender;
 		this.receiverContactNumber = receiverContactNumber;
 		this.senderContactNumber = senderContactNumber;
+		this.couponCode = couponCode;
 	}
 }
