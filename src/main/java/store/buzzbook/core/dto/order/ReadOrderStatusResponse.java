@@ -17,5 +17,5 @@ import lombok.ToString;
 public class ReadOrderStatusResponse {
 	private int id;
 	private String name;
-	private LocalDateTime updateDate;
+	private LocalDateTime updateAt;
 }

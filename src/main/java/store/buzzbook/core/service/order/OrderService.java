@@ -17,11 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
+import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
@@ -51,6 +53,7 @@ import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.mapper.order.DeliveryPolicyMapper;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
@@ -63,6 +66,7 @@ import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
+import store.buzzbook.core.repository.user.AddressRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.UserService;
 
@@ -78,6 +82,7 @@ public class OrderService {
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
 	private final UserService userService;
+	private final AddressRepository addressRepository;
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -152,11 +157,25 @@ public class OrderService {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 		User user = null;
 		if (createOrderRequest.getLoginId() != null && !createOrderRequest.getLoginId().isBlank()) {
-			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId()); //null 이면 (비회원)
+			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
 
-			user = userRepository.findById(userInfo.id()).get();
+			user = userRepository.findById(userInfo.id()).orElseThrow(()->new UserNotFoundException("User not found"));
 		}
-		Order order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
+
+		Order order = null;
+
+		if (createOrderRequest.getAddress().isEmpty()) {
+			Optional<Address> address = addressRepository.findById(Long.parseLong(createOrderRequest.getAddresses()));
+			if (address.isPresent()) {
+				order = orderRepository.save(OrderMapper.toEntityWithAddress(createOrderRequest, user, address.get()));
+			} else {
+				throw new AddressNotFoundException("Address not found");
+			}
+
+		} else {
+			order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
+		}
+
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
@@ -399,7 +418,8 @@ public class OrderService {
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
 			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-		if (request.getOrderStatusName().equals("CANCELED")) {
+		if (request.getOrderStatusName().equals("CANCELED") || request.getOrderStatusName().equals("PARTIAL_CANCELED")
+			|| request.getOrderStatusName().equals("REFUND") || request.getOrderStatusName().equals("PARTIAL_REFUND")) {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 

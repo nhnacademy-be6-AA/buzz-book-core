@@ -8,7 +8,7 @@ public class OrderStatusMapper {
 		return ReadOrderStatusResponse.builder()
 			.id(orderStatus.getId())
 			.name(orderStatus.getName())
-			.updateDate(orderStatus.getUpdateAt())
+			.updateAt(orderStatus.getUpdateAt())
 			.build();
 	}
 }

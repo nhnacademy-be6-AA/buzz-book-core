@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.user.AddressInfoResponse;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
@@ -72,6 +73,17 @@ public class AddressController {
 	@GetMapping
 	@Operation(summary = "주소 리스트 조회", description = "유저의 개인 주소 수정.")
 	public ResponseEntity<List<AddressInfoResponse>> getAddressList(HttpServletRequest request) {
+		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
+
+		List<AddressInfoResponse> addressList = addressService.getAddressList(userId);
+
+		return ResponseEntity.ok().body(addressList);
+	}
+
+	@JwtOrderValidate
+	@GetMapping("/order")
+	@Operation(summary = "주문 페이지에서 주소 리스트 조회", description = "주문 페이지에서 주소 리스트 조회")
+	public ResponseEntity<List<AddressInfoResponse>> getAddressListForOrder(HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 
 		List<AddressInfoResponse> addressList = addressService.getAddressList(userId);
