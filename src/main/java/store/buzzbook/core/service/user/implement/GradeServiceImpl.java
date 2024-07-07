@@ -1,18 +1,17 @@
 package store.buzzbook.core.service.user.implement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.service.user.GradeService;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GradeServiceImpl implements GradeService {
-	private static final Logger log = LoggerFactory.getLogger(GradeServiceImpl.class);
 	private final GradeRepository gradeRepository;
 
 	@Override
