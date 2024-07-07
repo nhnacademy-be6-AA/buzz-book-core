@@ -59,7 +59,7 @@ public class CouponController {
 	@PostMapping("/order")
 	@Operation(summary = "유저 주문 쿠폰 요청", description = "유저의 주문 목록에서 적용 가능한 쿠폰을 요청합니다.")
 	public ResponseEntity<List<OrderCouponDetailResponse>> getOrderCoupons(
-		@Valid @RequestBody List<CartDetailResponse> responses,
+		@RequestBody List<CartDetailResponse> responses,
 		HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 		return ResponseEntity.ok(userService.getOrderCoupons(userId, responses));
