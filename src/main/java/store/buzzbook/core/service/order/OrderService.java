@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.common.exception.order.AddressNotFound;
+import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
@@ -46,7 +46,6 @@ import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
-import store.buzzbook.core.dto.user.AddressInfoResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
@@ -170,7 +169,7 @@ public class OrderService {
 			if (address.isPresent()) {
 				order = orderRepository.save(OrderMapper.toEntityWithAddress(createOrderRequest, user, address.get()));
 			} else {
-				throw new AddressNotFound("Address not found");
+				throw new AddressNotFoundException("Address not found");
 			}
 
 		} else {
