@@ -674,6 +674,18 @@ class UserServiceTest {
 	void testUpdatePasswordShouldThrowUnEncryptedPasswordException() {
 		String confirmedPassword = "zxc1234";
 
+		Mockito.when(userRepository.findById(Mockito.any())).thenAnswer(
+			invocation -> {
+				Long userId = (Long)invocation.getArguments()[0];
+
+				if (userId.equals(user.getId())) {
+					return Optional.of(user);
+				}
+
+				return Optional.empty();
+			}
+		);
+
 		ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(
 			registerUserRequest.password(), confirmedPassword, confirmedPassword
 		);
@@ -716,6 +728,18 @@ class UserServiceTest {
 		String confirmedPassword = "zxc1234";
 		String newPassword = passwordEncoder.encode(confirmedPassword);
 
+		Mockito.when(userRepository.findById(Mockito.any())).thenAnswer(
+			invocation -> {
+				Long userId = (Long)invocation.getArguments()[0];
+
+				if (userId.equals(user.getId())) {
+					return Optional.of(user);
+				}
+
+				return Optional.empty();
+			}
+		);
+
 		ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(
 			registerUserRequest.password(), newPassword, "confirmedPassword"
 		);
@@ -731,10 +755,6 @@ class UserServiceTest {
 		String confirmedPassword = "zxc1234";
 		String newPassword = passwordEncoder.encode(confirmedPassword);
 
-		ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(
-			confirmedPassword, newPassword, confirmedPassword
-		);
-
 		Mockito.when(userRepository.findById(Mockito.any())).thenAnswer(
 			invocation -> {
 				Long userId = (Long)invocation.getArguments()[0];
@@ -745,6 +765,10 @@ class UserServiceTest {
 
 				return Optional.empty();
 			}
+		);
+
+		ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(
+			confirmedPassword, newPassword, confirmedPassword
 		);
 
 		Assertions.assertThrowsExactly(

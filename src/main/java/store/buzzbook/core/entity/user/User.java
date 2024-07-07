@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -103,7 +105,7 @@ public class User {
 		this.lastLoginAt = LocalDateTime.now();
 	}
 
-	public UserInfo toUserInfo(Grade grade) {
+	public UserInfo toUserInfo(Grade grade, Integer point) {
 		return UserInfo.builder()
 			.id(this.getId())
 			.name(this.getName())
@@ -113,6 +115,7 @@ public class User {
 			.grade(grade)
 			.contactNumber(this.getContactNumber())
 			.email(this.getEmail())
+			.point(point)
 			.build();
 	}
 

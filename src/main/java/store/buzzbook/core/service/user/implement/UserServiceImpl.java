@@ -2,6 +2,7 @@ package store.buzzbook.core.service.user.implement;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -91,7 +92,14 @@ public class UserServiceImpl implements UserService {
 
 		userOptional.get().updateLastLoginAt();
 		User updatedUser = userRepository.save(userOptional.get());
-		return updatedUser.toUserInfo(gradeOptional.get());
+
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(updatedUser.getId());
+		int point = 0;
+		if (Objects.nonNull(pointLog)) {
+			point = pointLog.getBalance();
+		}
+
+		return updatedUser.toUserInfo(gradeOptional.get(), point);
 	}
 
 	@Transactional
@@ -205,21 +213,36 @@ public class UserServiceImpl implements UserService {
 			throw new GradeNotFoundException(userId);
 		}
 
-		return user.get().toUserInfo(grade.get());
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.get().getId());
+
+		int point = 0;
+
+		if (Objects.nonNull(pointLog)) {
+			point = pointLog.getBalance();
+		}
+
+		return user.get().toUserInfo(grade.get(), point);
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
-
 		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
 
 		if (gradeOptional.isEmpty()) {
 			throw new GradeNotFoundException(user.getId());
 		}
 
-		return user.toUserInfo(gradeOptional.get());
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
+
+		int point = 0;
+
+		if (Objects.nonNull(pointLog)) {
+			point = pointLog.getBalance();
+		}
+
+		return user.toUserInfo(gradeOptional.get(), point);
 	}
 
 	@Override
@@ -285,15 +308,6 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
-
-		if (!isPasswordEncrypted(changePasswordRequest.newPassword())) {
-			log.debug("암호화되지 않은 비밀번호입니다. 프론트 서버를 확인해주세요.");
-			throw new UnEncryptedPasswordException(userId);
-		} else if (!BCrypt.checkpw(changePasswordRequest.confirmPassword(), changePasswordRequest.newPassword())) {
-			log.debug("새 비밀번호 확인이 다릅니다.");
-			throw new PasswordIncorrectException();
-		}
-
 		Optional<User> user = userRepository.findById(userId);
 
 		if (user.isEmpty()) {
@@ -304,6 +318,14 @@ public class UserServiceImpl implements UserService {
 		String password = user.get().getPassword();
 		if (!BCrypt.checkpw(changePasswordRequest.oldPassword(), password)) {
 			log.debug("비밀번호가 틀렸습니다.");
+			throw new PasswordIncorrectException();
+		}
+
+		if (!isPasswordEncrypted(changePasswordRequest.newPassword())) {
+			log.debug("암호화되지 않은 비밀번호입니다. 프론트 서버를 확인해주세요.");
+			throw new UnEncryptedPasswordException(userId);
+		} else if (!BCrypt.checkpw(changePasswordRequest.confirmPassword(), changePasswordRequest.newPassword())) {
+			log.debug("새 비밀번호 확인이 다릅니다.");
 			throw new PasswordIncorrectException();
 		}
 
