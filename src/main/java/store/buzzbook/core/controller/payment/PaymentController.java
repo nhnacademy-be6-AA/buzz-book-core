@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
@@ -55,6 +56,7 @@ public class PaymentController {
 	}
 
 
+	@JwtOrderAdminValidate
 	@Operation(summary = "관리자의 결제 내역 모두 조회", description = "결제 내역 모두 조회 - 관리자")
 	@PostMapping("/admin/bill-logs")
 	public ResponseEntity<?> getAllBillLogs(@RequestBody ReadBillLogsRequest readBillLogsRequest, HttpServletRequest request) {

@@ -17,11 +17,13 @@ import store.buzzbook.core.repository.order.OrderStatusRepository;
 public class OrderStatusListener implements ApplicationListener<ApplicationReadyEvent> {
 	private static final String READY = "READY";
 	private static final String CANCELED = "CANCELED";
+	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
 	private static final String WAITING_FOR_DEPOSIT = "WAITING_FOR_DEPOSIT";
 	private static final String REFUND = "REFUND";
 	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
 	private static final String SHIPPING_OUT = "SHIPPING_OUT";
 	private static final String SHIPPED = "SHIPPED";
+
 
 	private final OrderStatusRepository orderStatusRepository;
 
@@ -38,6 +40,14 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 		if (!orderStatusRepository.existsByName(CANCELED)) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(CANCELED)
+				.updateAt(LocalDateTime.now())
+				.build();
+			orderStatusRepository.save(orderStatus);
+		}
+
+		if (!orderStatusRepository.existsByName(PARTIAL_CANCELED)) {
+			OrderStatus orderStatus = OrderStatus.builder()
+				.name(PARTIAL_CANCELED)
 				.updateAt(LocalDateTime.now())
 				.build();
 			orderStatusRepository.save(orderStatus);

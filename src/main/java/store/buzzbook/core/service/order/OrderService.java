@@ -418,7 +418,8 @@ public class OrderService {
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
 			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-		if (request.getOrderStatusName().equals("CANCELED")) {
+		if (request.getOrderStatusName().equals("CANCELED") || request.getOrderStatusName().equals("PARTIAL_CANCELED")
+			|| request.getOrderStatusName().equals("REFUND") || request.getOrderStatusName().equals("PARTIAL_REFUND")) {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 
