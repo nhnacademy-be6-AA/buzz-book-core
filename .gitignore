@@ -37,3 +37,4 @@ build/
 *.log
 core.log
 .log
+*.log
