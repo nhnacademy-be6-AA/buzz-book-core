@@ -18,6 +18,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 	List<Product> findByCategoryId(Integer categoryId);
 
+	List<Product> findAllByProductNameContaining(String productName);
+
 	//상품의 판매 상태가 일치하는 Product
 	Page<Product> findAllByStockStatus(Product.StockStatus stockStatus, Pageable pageable);
 
