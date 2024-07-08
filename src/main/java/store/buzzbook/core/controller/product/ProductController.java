@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.product;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,22 +52,14 @@ public class ProductController {
 	public ResponseEntity<Page<ProductResponse>> getAllProduct(
 		@RequestParam(required = false) Product.StockStatus status,
 		@RequestParam(required = false) String name,
+		@RequestParam(required = false) Integer categoryId,
+		@RequestParam(required = false) @Parameter(description = "name, score, reviews") String orderBy,
 		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호") Integer pageNo,
 		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) {
 
-		if (name == null || name.isBlank()) {
-			if (status == null) {
-				return ResponseEntity.ok(productService.getAllProducts(pageNo, pageSize));
-			} else {
-				return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
-			}
-		} else {
-			if (status == null) {
-				return ResponseEntity.ok(productService.getAllProductByName(name, pageNo, pageSize));
-			} else {
-				return ResponseEntity.ok(productService.getAllProductsByNameAndStockStatus(name, status, pageNo, pageSize));
-			}
-		}
+		Page<ProductResponse> products = productService.getProductsByCriteria(status, name, categoryId, orderBy, pageNo, pageSize);
+		return ResponseEntity.ok(products);
+
 	}
 
 
@@ -90,6 +84,16 @@ public class ProductController {
 	public ResponseEntity<ProductResponse> delProduct(@PathVariable int id) {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
+	}
+
+	// 새로운 엔드포인트 추가: 제목으로 상품 검색
+	@GetMapping("/search")
+	@Operation(summary = "상품 제목으로 검색", description = "특정 제목을 포함하는 모든 상품을 검색")
+	@ApiResponse(responseCode = "200", description = "조회 성공시 List<ProductResponse> 반환")
+	public ResponseEntity<List<ProductResponse>> getAllProductsByTitle(
+		@RequestParam @Parameter(description = "검색할 상품 제목", required = true) String title) {
+		List<ProductResponse> products = productService.getAllProductsByTitle(title);
+		return ResponseEntity.ok(products);
 	}
 
 }

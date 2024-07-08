@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.TagResponse;
@@ -38,7 +37,6 @@ public class TagController {
 	public ResponseEntity<TagResponse> saveTag(@RequestParam String tagName) {
 		return ResponseEntity.ok(tagService.saveTag(tagName));
 	}
-
 	@GetMapping("/all")
 	@Operation(summary = "태그 조회(List)", description = "모든 태그를 id 순서로 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 List<TagResponse> 반환")

@@ -2,10 +2,12 @@ package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -156,6 +158,17 @@ public class ProductService {
 			.map(this::convertToProductResponse);
 	}
 
+	//엘라 대체용으로 임시로 만듦
+	@Transactional(readOnly = true)
+	public List<ProductResponse> getAllProductsByTitle(String title) {
+
+		List<Product> products = productRepository.findAllByProductNameContaining(title);
+
+		return products.stream()
+			.map(this::convertToProductResponse)
+			.collect(Collectors.toList());
+	}
+
 	@Transactional(readOnly = true)
 	public Page<ProductResponse> getAllProductsByNameAndStockStatus(String productName, Product.StockStatus stockStatus, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
@@ -163,11 +176,40 @@ public class ProductService {
 			.map(this::convertToProductResponse);
 	}
 
+	public Page<ProductResponse> getAllProductsByStockStatusOrderedName(Product.StockStatus stockStatus, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByStockStatusOrderByProductNameDesc(stockStatus, pageable).map(this::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getAllProductOrderedByName(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByOrderByProductNameDesc(pageable).map(this::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId, String orderBy, int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+		Page<Product> products;
+
+		if ("reviews".equals(orderBy)) {
+			products = productRepository.findProductsByCriteriaOrderByReviewCountDesc(status, name, categoryId, pageable);
+		} else {
+			Specification<Product> spec = Specification.where(ProductSpecification.getProductsByCriteria(status, name, categoryId))
+				.and(ProductSpecification.orderBy(orderBy));
+			products = productRepository.findAll(spec, pageable);
+		}
+
+		return products.map(this::convertToProductResponse);
+
+	}
+
 	// // Elasticsearch를 통한 검색 메소드
 	// @Transactional(readOnly = true)
 	// public List<ProductDocument> searchByProductName(String productName) {
 	// 	// return productDocumentRepository.findByProductNameContaining(productName);
 	// }
+
+
 
 
 	// 태그 관련 정보를 포함하는 ProductResponse 변환 메서드
@@ -191,6 +233,4 @@ public class ProductService {
 			.tags(tagResponses)
 			.build();
 	}
-
-
 }

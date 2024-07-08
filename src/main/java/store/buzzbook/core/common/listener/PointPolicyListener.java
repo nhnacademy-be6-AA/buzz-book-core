@@ -16,6 +16,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 
 	private static final String SIGN_UP = "회원가입";
 	private static final String REVIEW = "리뷰작성";
+	private static final String REVIEW_PHOTO = "사진리뷰작성";
 	private static final String BOOK = "전체도서";
 
 	private final PointPolicyRepository pointPolicyRepository;
@@ -23,7 +24,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
 
-		if (!pointPolicyRepository.existsByName(SIGN_UP)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(SIGN_UP))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(SIGN_UP)
 				.rate(0)
@@ -33,7 +34,17 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 			pointPolicyRepository.save(pointPolicy);
 		}
 
-		if (!pointPolicyRepository.existsByName(REVIEW)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(REVIEW))) {
+			PointPolicy pointPolicy = PointPolicy.builder()
+				.name(REVIEW)
+				.rate(0)
+				.point(200)
+				.deleted(false)
+				.build();
+			pointPolicyRepository.save(pointPolicy);
+		}
+
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(REVIEW_PHOTO))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(REVIEW)
 				.rate(0)
@@ -43,7 +54,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 			pointPolicyRepository.save(pointPolicy);
 		}
 
-		if (!pointPolicyRepository.existsByName(BOOK)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(BOOK))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(BOOK)
 				.rate(0.1)
