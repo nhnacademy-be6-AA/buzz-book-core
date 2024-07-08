@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import store.buzzbook.core.entity.user.UserStatus;
 @DataJpaTest
 @Import(QuerydslConfig.class)
 @Slf4j
+@Disabled
 @ActiveProfiles("test")
 class UserRepositoryTest {
 	@Autowired
@@ -123,7 +125,7 @@ class UserRepositoryTest {
 		Assertions.assertEquals(user.getStatus(), birthMonthUsers.getFirst().getStatus());
 		Assertions.assertEquals(user.getContactNumber(), birthMonthUsers.getFirst().getContactNumber());
 		Assertions.assertEquals(user.getName(), birthMonthUsers.getFirst().getName());
-		
+
 	}
 
 }

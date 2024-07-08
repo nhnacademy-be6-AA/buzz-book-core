@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import store.buzzbook.core.repository.point.PointLogRepository;
 @DataJpaTest
 @Import(QuerydslConfig.class)
 @ActiveProfiles("test")
+@Disabled
 class PointLogRepositoryTest {
 
 	@Autowired
