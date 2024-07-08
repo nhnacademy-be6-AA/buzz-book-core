@@ -20,10 +20,10 @@ public class ProductSpecification {
 			List<Predicate> predicates = new ArrayList<>();
 
 			if (status != null) {
-				predicates.add(criteriaBuilder.equal(root.get("status"), status));
+				predicates.add(criteriaBuilder.equal(root.get("stockStatus"), status));
 			}
 			if (name != null && !name.isBlank()) {
-				predicates.add(criteriaBuilder.like(root.get("name"), "%" + name + "%"));
+				predicates.add(criteriaBuilder.like(root.get("productName"), "%" + name + "%"));
 			}
 			if (categoryId != null) {
 				predicates.add(criteriaBuilder.equal(root.get("categoryId"), categoryId));
@@ -34,12 +34,12 @@ public class ProductSpecification {
 
 	public static Specification<Product> orderBy(String orderBy) {
 		return (Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
-			if ("reviewCountDesc".equals(orderBy)) {
-				query.orderBy(criteriaBuilder.desc(criteriaBuilder.size(root.get("reviews"))));
-			} else if ("nameAsc".equals(orderBy)) {
-				query.orderBy(criteriaBuilder.asc(root.get("name")));
-			} else if ("scoreDesc".equals(orderBy)) {
+			if ("name".equals(orderBy)) {
+				query.orderBy(criteriaBuilder.asc(root.get("productName")));
+			} else if ("score".equals(orderBy)) {
 				query.orderBy(criteriaBuilder.desc(root.get("score")));
+			} else if("reviews".equals(orderBy)) {
+				query.orderBy(criteriaBuilder.desc(root.get("reviews")));
 			} else {
 				query.orderBy(criteriaBuilder.asc(root.get("id")));
 			}

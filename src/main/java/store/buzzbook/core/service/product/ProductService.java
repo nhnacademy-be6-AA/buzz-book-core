@@ -174,16 +174,21 @@ public class ProductService {
 		return productRepository.findAllByOrderByProductNameDesc(pageable).map(this::convertToProductResponse);
 	}
 
-	public Page<ProductResponse> getAllProductsOrderByReviewCount(int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findProductsOrderByReviewCountDesc(pageable).map(this::convertToProductResponse);
-	}
-
 	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId, String orderBy, int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
-		Specification<Product> spec = Specification.where(ProductSpecification.getProductsByCriteria(status, name, categoryId))
-			.and(ProductSpecification.orderBy(orderBy));
-		return productRepository.findAllBy(spec, pageable).map(this::convertToProductResponse);
+
+		Page<Product> products;
+
+		if ("reviews".equals(orderBy)) {
+			products = productRepository.findProductsByCriteriaOrderByReviewCountDesc(status, name, categoryId, pageable);
+		} else {
+			Specification<Product> spec = Specification.where(ProductSpecification.getProductsByCriteria(status, name, categoryId))
+				.and(ProductSpecification.orderBy(orderBy));
+			products = productRepository.findAll(spec, pageable);
+		}
+
+		return products.map(this::convertToProductResponse);
+
 	}
 
 	// // Elasticsearch를 통한 검색 메소드
