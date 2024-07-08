@@ -1,5 +1,10 @@
 package store.buzzbook.core.service.product;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.entity.product.Product;
@@ -9,14 +14,8 @@ import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ProductTagService {
 
 	private final ProductTagRepository productTagRepository;
@@ -56,10 +55,17 @@ public class ProductTagService {
 			throw new DataNotFoundException("product", productId);
 		}
 		productTagRepository.deleteTagsByProductIdAndTagIds(productId, tagIds);
-
 	}
+
+	public void removeTagFromProduct(int productId, int tagId) {
+		if (!productRepository.existsById(productId)) {
+			throw new DataNotFoundException("product", productId);
+		}
+		productTagRepository.deleteByProductIdAndTagId(productId, tagId);
+	}
+
 }
 
-//보는 사람 지우지 마세요 ㅎㅎㅎ
+//보는 사람 지우지 마세요 ㅎㅎㅎ	//넹 ㅎㅎㅎ
 //태그 관리 페이지를 통해서 태그 추가
 //관리 페이지에서 상품 편집을 통해 태그 추가하면 productTag에 추가됌

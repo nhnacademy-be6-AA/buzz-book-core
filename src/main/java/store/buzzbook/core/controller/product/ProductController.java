@@ -50,22 +50,14 @@ public class ProductController {
 	public ResponseEntity<Page<ProductResponse>> getAllProduct(
 		@RequestParam(required = false) Product.StockStatus status,
 		@RequestParam(required = false) String name,
+		@RequestParam(required = false) Integer categoryId,
+		@RequestParam(required = false) @Parameter(description = "name, score, reviews") String orderBy,
 		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호") Integer pageNo,
 		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) {
 
-		if (name == null || name.isBlank()) {
-			if (status == null) {
-				return ResponseEntity.ok(productService.getAllProducts(pageNo, pageSize));
-			} else {
-				return ResponseEntity.ok(productService.getAllProductsByStockStatus(status, pageNo, pageSize));
-			}
-		} else {
-			if (status == null) {
-				return ResponseEntity.ok(productService.getAllProductByName(name, pageNo, pageSize));
-			} else {
-				return ResponseEntity.ok(productService.getAllProductsByNameAndStockStatus(name, status, pageNo, pageSize));
-			}
-		}
+		Page<ProductResponse> products = productService.getProductsByCriteria(status, name, categoryId, orderBy, pageNo, pageSize);
+		return ResponseEntity.ok(products);
+
 	}
 
 

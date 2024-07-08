@@ -1,5 +1,8 @@
 package store.buzzbook.core.service.product;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -34,9 +38,7 @@ import store.buzzbook.core.repository.product.PublisherRepository;
 @Slf4j
 public class BookSearchService {
 
-	@Value("${aladin.api.key}")
-	private String aladinApiKey;
-
+	private final CharacterEncodingFilter characterEncodingFilter;
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final BookRepository bookRepository;
 	private final AuthorRepository authorRepository;
@@ -44,16 +46,20 @@ public class BookSearchService {
 	private final ProductRepository productRepository;
 	private final BookAuthorRepository bookAuthorRepository;
 	private final CategoryRepository categoryRepository;
+	@Value("${aladin.api.key}")
+	private String aladinApiKey;
 	// private final ProductDocumentRepository productDocumentRepository;
 
 	public List<BookApiRequest.Item> searchBooks(String query) {
-		String url = UriComponentsBuilder.fromHttpUrl("https://www.aladin.co.kr/ttb/api/ItemSearch.aspx")
+
+		URI url = UriComponentsBuilder.fromHttpUrl("https://www.aladin.co.kr/ttb/api/ItemSearch.aspx")
 			.queryParam("ttbkey", aladinApiKey)
-			.queryParam("Query", query)
+			.queryParam("Query", URLEncoder.encode(query, StandardCharsets.UTF_8))
 			.queryParam("QueryType", "Title")
 			.queryParam("Output", "JS")
 			.queryParam("Version", "20131101")
-			.toUriString();
+			.build(true)
+			.toUri();
 
 		try {
 			BookApiRequest apiResponse = restTemplate.getForObject(url, BookApiRequest.class);
@@ -86,44 +92,55 @@ public class BookSearchService {
 			// 카테고리 저장
 			String fullCategoryName = item.getCategory();
 			if (fullCategoryName == null || fullCategoryName.isEmpty()) {
-				System.err.println("Category 값이 null 이거나 empty 인 item: " + item.getTitle());
+				log.error("Category 값이 null 이거나 empty 인 item: {}", item.getTitle());
 				continue;
 			}
 
-			String[] categoryParts = fullCategoryName.split(">");
-			if (categoryParts.length < 2) {
-				System.err.println("카테고리 정보가 부족한 도서입니다 : " + item.getTitle());
+			List<String> categoryParts = List.of(fullCategoryName.split(">"));
+			if (categoryParts.size() < 2) {
+				log.info("카테고리 정보가 부족한 도서입니다. : {}", item.getTitle());
 				continue;
 			}
-
-			// 카테고리 분류 최대 3개
-			String mainCategoryName = categoryParts[0].trim();
-			String subCategoryName1 = categoryParts[1].trim();
-			String subCategoryName2 = categoryParts.length > 2 ? categoryParts[2].trim() : null;
-
-			// main
-			Category mainCategory = categoryRepository.findByName(mainCategoryName);
-			if (mainCategory == null) {
-				mainCategory = new Category(mainCategoryName, null);
-				categoryRepository.save(mainCategory);
-			}
-
-			// sub1
-			Category subCategory1 = categoryRepository.findByName(subCategoryName1);
-			if (subCategory1 == null) {
-				subCategory1 = new Category(subCategoryName1, mainCategory);
-				categoryRepository.save(subCategory1);
-			}
-
-			// sub2
-			Category subCategory2 = null;
-			if (subCategoryName2 != null) {
-				subCategory2 = categoryRepository.findByName(subCategoryName2);
-				if (subCategory2 == null) {
-					subCategory2 = new Category(subCategoryName2, subCategory1);
-					categoryRepository.save(subCategory2);
+			Category category = null;
+			Category parentCategory = null;
+			for (String categoryName : categoryParts) {
+				categoryName = categoryName.strip();
+				category = categoryRepository.findByName(categoryName);
+				if (category == null) {
+					category = new Category(categoryName, parentCategory);
+					categoryRepository.save(category);
 				}
+				parentCategory = category;
 			}
+
+			// // 카테고리 분류 최대 3개
+			// String mainCategoryName = categoryParts[0].trim();
+			// String subCategoryName1 = categoryParts[1].trim();
+			// String subCategoryName2 = categoryParts.length > 2 ? categoryParts[2].trim() : null;
+			//
+			// // main
+			// Category mainCategory = categoryRepository.findByName(mainCategoryName);
+			// if (mainCategory == null) {
+			// 	mainCategory = new Category(mainCategoryName, null);
+			// 	categoryRepository.save(mainCategory);
+			// }
+			//
+			// // sub1
+			// Category subCategory1 = categoryRepository.findByName(subCategoryName1);
+			// if (subCategory1 == null) {
+			// 	subCategory1 = new Category(subCategoryName1, mainCategory);
+			// 	categoryRepository.save(subCategory1);
+			// }
+			//
+			// // sub2
+			// Category subCategory2 = null;
+			// if (subCategoryName2 != null) {
+			// 	subCategory2 = categoryRepository.findByName(subCategoryName2);
+			// 	if (subCategory2 == null) {
+			// 		subCategory2 = new Category(subCategoryName2, subCategory1);
+			// 		categoryRepository.save(subCategory2);
+			// 	}
+			// }
 
 			// 출판사 저장
 			Publisher publisher = publisherRepository.findByName(item.getPublisher());
@@ -151,7 +168,7 @@ public class BookSearchService {
 
 			// 상품 정보 저장 및 도서와 연결
 			try {
-				int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;	//재고관리필요
+				int stock = item.getStock() != null ? Integer.parseInt(item.getStock()) : 1;    //재고관리필요
 				String productName = item.getTitle();
 				int price = item.getPricestandard();
 				LocalDate forwardDate;
@@ -164,7 +181,6 @@ public class BookSearchService {
 				int score = item.getCustomerReviewRank();
 				String thumbnailPath = item.getCover();
 				String description = item.getDescription();
-				Category category = subCategory2 != null ? subCategory2 : subCategory1;
 
 				// 기존 Product 확인 및 삭제
 				Product existingProduct = productRepository.findByThumbnailPath(thumbnailPath);
@@ -181,7 +197,7 @@ public class BookSearchService {
 					.forwardDate(forwardDate)
 					.score(score)
 					.thumbnailPath(thumbnailPath)
-					.stockStatus(Product.StockStatus.SALE)	//재고상태관리필요
+					.stockStatus(Product.StockStatus.SALE)    //재고상태관리필요
 					.category(category)
 					.build();
 

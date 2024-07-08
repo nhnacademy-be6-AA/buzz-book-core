@@ -11,6 +11,7 @@ import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.point.PointPolicyResponse;
 import store.buzzbook.core.dto.point.UpdatePointPolicyRequest;
 import store.buzzbook.core.entity.point.PointLog;
+import store.buzzbook.core.entity.user.User;
 
 public interface PointService {
 
@@ -27,4 +28,6 @@ public interface PointService {
 	Page<PointLogResponse> getPointLogs(Pageable pageable, Long userId);
 
 	PointLog createPointLogWithDelta(long userId, String inquiry, int deltaPoint);
+
+	PointLog createPointLogWithDelta(User user, String inquiry, int deltaPoint);
 }
