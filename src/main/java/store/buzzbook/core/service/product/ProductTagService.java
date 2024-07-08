@@ -1,5 +1,10 @@
 package store.buzzbook.core.service.product;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.entity.product.Product;
@@ -8,12 +13,6 @@ import store.buzzbook.core.entity.product.Tag;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +55,7 @@ public class ProductTagService {
 			throw new DataNotFoundException("product", productId);
 		}
 		productTagRepository.deleteTagsByProductIdAndTagIds(productId, tagIds);
+	}
 
 	public void removeTagFromProduct(int productId, int tagId) {
 		if (!productRepository.existsById(productId)) {
@@ -64,14 +64,6 @@ public class ProductTagService {
 		productTagRepository.deleteByProductIdAndTagId(productId, tagId);
 	}
 
-	@Transactional
-	public void removeAllTagsFromProduct(int productId, List<Integer> tagIds) {
-		if (!productRepository.existsById(productId)) {
-			throw new DataNotFoundException("product", productId);
-		}
-		productTagRepository.deleteAllByProductIdAndTagIdIn(productId, tagIds);
-
-	}
 }
 
 //보는 사람 지우지 마세요 ㅎㅎㅎ	//넹 ㅎㅎㅎ
