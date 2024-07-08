@@ -49,6 +49,10 @@ public class PointServiceImpl implements PointService {
 	@Transactional(readOnly = true)
 	@Override
 	public Integer getUserPoint(Long userId) {
+		if (Boolean.FALSE.equals(pointLogRepository.existsByUserId(userId))) {
+			return 0;
+		}
+
 		return pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(userId).getBalance();
 	}
 

@@ -89,7 +89,7 @@ public class CouponServiceImpl implements CouponService {
 		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
 
 		if (userCoupons.isEmpty()) {
-			throw new UserCouponNotFoundException();
+			return Collections.emptyList();
 		}
 
 		List<CouponLogRequest> request = userCoupons.stream()
