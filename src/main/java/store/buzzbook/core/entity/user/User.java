@@ -74,7 +74,6 @@ public class User {
 	@Past
 	private LocalDateTime createAt;
 
-	@NotNull
 	@Column(name = "last_login_at")
 	@Past
 	private LocalDateTime lastLoginAt;
