@@ -24,7 +24,7 @@ import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
-import store.buzzbook.core.service.user.UserService;
+import store.buzzbook.core.service.coupon.CouponService;
 
 @Tag(name = "회원의 쿠폰 관련 컨트롤러", description = "유저의 쿠폰 조회, 추가 관리")
 @RestController
@@ -32,27 +32,27 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class CouponController {
 
-	private final UserService userService;
+	private final CouponService couponService;
 
+	@JwtValidate
 	@PostMapping
-	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon id 를 넘겨야 한다.")
-	public ResponseEntity<Void> createUserCoupon(@Valid @RequestBody CreateUserCouponRequest request) {
-		userService.addUserCoupon(request);
+	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon policy id 를 넘겨야 한다.")
+	public ResponseEntity<Void> downloadCoupon(@Valid @RequestBody DownloadCouponRequest request) {
+		couponService.createUserCoupon(request);
 		return ResponseEntity.ok().build();
 	}
 
-	@JwtValidate
-	@PostMapping("/download")
-	@Operation(summary = "쿠폰 다운로드 요청", description = "유저의 쿠폰 다운로드 요청을 보낸다. user id 와 coupon policy id 를 넘겨야 한다.")
-	public ResponseEntity<Void> downloadCoupon(@Valid @RequestBody DownloadCouponRequest request) {
-		userService.downloadCoupon(request);
+	@PostMapping("/batch")
+	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id, coupon policy id, coupon code 를 넘겨야 한다.")
+	public ResponseEntity<Void> createUserCouponByBatch(@Valid @RequestBody CreateUserCouponRequest request) {
+		couponService.createUserCouponByBatch(request);
 		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/birthday")
 	@Operation(summary = "유저 요청", description = "현재 월에 생일이 해당하는 유저 정보를 요청합니다.")
 	public ResponseEntity<List<UserInfo>> getUsersByBirthday() {
-		return ResponseEntity.ok(userService.getUserInfoByCurrentBirthday());
+		return ResponseEntity.ok(couponService.getUserInfoByCurrentBirthday());
 	}
 
 	@JwtOrderValidate
@@ -62,7 +62,7 @@ public class CouponController {
 		@RequestBody List<CartDetailResponse> responses,
 		HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
-		return ResponseEntity.ok(userService.getOrderCoupons(userId, responses));
+		return ResponseEntity.ok(couponService.getOrderCoupons(userId, responses));
 	}
 
 	@JwtOrderValidate
@@ -71,8 +71,9 @@ public class CouponController {
 	public ResponseEntity<Void> deleteUserCoupon(@RequestBody DeleteUserCouponRequest request,
 		HttpServletRequest httpServletRequest) {
 		Long userId = (Long)httpServletRequest.getAttribute(AuthService.USER_ID);
-		userService.deleteUserCoupon(userId, request);
+		couponService.deleteUserCoupon(userId, request);
 		return ResponseEntity.ok().build();
 	}
 
+	// TODO : 쿠폰 환불 처리??
 }

@@ -1,19 +1,5 @@
 package store.buzzbook.core.service.user;
 
-import java.util.List;
-
-import store.buzzbook.core.common.exception.user.DeactivatedUserException;
-import store.buzzbook.core.common.exception.user.GradeNotFoundException;
-import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
-import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
-import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
-import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.dto.cart.CartDetailResponse;
-import store.buzzbook.core.dto.coupon.CouponResponse;
-import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
-import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
-import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
-import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
@@ -113,15 +99,6 @@ public interface UserService {
 	UserInfo getUserInfoByLoginId(String loginId);
 
 	/**
-	 * 생일이 이번 달인 사용자의 목록을 조회합니다.
-	 *
-	 * @return 오늘 생일인 사용자들의 UserInfo 객체 List
-	 */
-	List<UserInfo> getUserInfoByCurrentBirthday();
-
-	void addUserCoupon(CreateUserCouponRequest request);
-
-	/**
 	 * 주어진 user ID로 사용자의 비밀번호를 변경합니다.
 	 *
 	 * @author Heldenarr
@@ -133,12 +110,4 @@ public interface UserService {
 	 *
 	 */
 	void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest);
-
-	void downloadCoupon(DownloadCouponRequest request);
-
-	List<CouponResponse> getUserCoupons(Long userId, String couponStatusName);
-
-	List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses);
-
-	void deleteUserCoupon(Long userId, DeleteUserCouponRequest request);
 }
