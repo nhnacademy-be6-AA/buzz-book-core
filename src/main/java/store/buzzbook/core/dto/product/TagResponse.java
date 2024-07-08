@@ -9,6 +9,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class TagResponse {
 
 	private final Integer id;

@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,8 +15,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import jakarta.persistence.EntityNotFoundException;
+import store.buzzbook.core.common.exception.user.AddressMaxCountException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.dto.user.AddressInfoResponse;
 import store.buzzbook.core.dto.user.CreateAddressRequest;
 import store.buzzbook.core.dto.user.UpdateAddressRequest;
 import store.buzzbook.core.entity.user.Grade;
@@ -29,7 +29,6 @@ import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.implement.AddressServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-@Disabled
 class AddressServiceTest {
 
 	@Mock
@@ -74,14 +73,15 @@ class AddressServiceTest {
 	}
 
 	@Test
-	void createAddress() {
+	@DisplayName("주소 추가 성공")
+	void testCreateAddress() {
 		Mockito.lenient().when(userRepository.getReferenceById(Mockito.anyLong()))
 			.thenAnswer(invocation -> {
 				Long id = invocation.getArgument(0);
 				if (id.equals(user.getId())) {
 					return user;
 				}
-				throw new EntityNotFoundException();
+				return null;
 			});
 
 		Mockito.lenient().when(addressRepository.save(Mockito.any()))
@@ -95,14 +95,14 @@ class AddressServiceTest {
 
 	@Test
 	@DisplayName("존재하지 않는 id로 주소 저장 시도")
-	void createAddressShouldOccurrException() {
+	void createAddressShouldUserNotFoundException() {
 		Mockito.lenient().when(userRepository.getReferenceById(Mockito.anyLong()))
 			.thenAnswer(invocation -> {
 				Long id = invocation.getArgument(0);
 				if (id.equals(notExistId)) {
 					return user;
 				}
-				throw new EntityNotFoundException();
+				return null;
 			});
 
 		Mockito.lenient().when(addressRepository.save(Mockito.any()))
@@ -110,6 +110,31 @@ class AddressServiceTest {
 
 		Assertions.assertThrowsExactly(
 			UserNotFoundException.class,
+			() -> addressService.createAddress(createAddressRequest, user.getId())
+		);
+
+	}
+
+	@Test
+	@DisplayName("10개 넘는 주소 저장 시도")
+	void createAddressShouldAddressMaxCountException() {
+		Mockito.lenient().when(userRepository.getReferenceById(Mockito.anyLong()))
+			.thenAnswer(invocation -> {
+				Long id = invocation.getArgument(0);
+				if (id.equals(user.getId())) {
+					return user;
+				}
+				return null;
+			});
+
+		Mockito.when(addressRepository.countAllByUserId(Mockito.anyLong()))
+			.thenReturn(10);
+
+		Mockito.lenient().when(addressRepository.save(Mockito.any()))
+			.thenReturn(createAddressRequest.toAddress(user));
+
+		Assertions.assertThrowsExactly(
+			AddressMaxCountException.class,
 			() -> addressService.createAddress(createAddressRequest, user.getId())
 		);
 
@@ -169,7 +194,7 @@ class AddressServiceTest {
 				if (userId.equals(user.getId())) {
 					return user;
 				}
-				throw new EntityNotFoundException();
+				return null;
 			});
 
 		Mockito.lenient().when(addressRepository.save(Mockito.any()))
@@ -196,7 +221,7 @@ class AddressServiceTest {
 				if (userId.equals(notExistId)) {
 					return user;
 				}
-				throw new EntityNotFoundException();
+				return null;
 			});
 
 		Mockito.lenient().when(addressRepository.save(Mockito.any()))
@@ -206,7 +231,6 @@ class AddressServiceTest {
 			, () -> addressService.updateAddress(updateAddressRequest, user.getId()));
 	}
 
-	@Disabled
 	@Test
 	@DisplayName("주소 목록 조회 성공")
 	void testGetAddressListShouldOk() {
@@ -224,28 +248,20 @@ class AddressServiceTest {
 				}
 				return Optional.empty();
 			});
-		//
-		// List<Address> addressList = addressService.getAddressList(user.getId());
-		//
-		// Assertions.assertEquals(1, addressList.size());
-		// Assertions.assertEquals(user.getId(), addressList.getFirst().getUser().getId());
-		// Assertions.assertEquals(user.getLoginId(), addressList.getFirst().getUser().getLoginId());
-		// Assertions.assertEquals(user.getPassword(), addressList.getFirst().getUser().getPassword());
-		// Assertions.assertEquals(user.getBirthday(), addressList.getFirst().getUser().getBirthday());
-		// Assertions.assertEquals(user.getStatus(), addressList.getFirst().getUser().getStatus());
-		// Assertions.assertEquals(user.getName(), addressList.getFirst().getUser().getName());
-		// Assertions.assertEquals(user.getEmail(), addressList.getFirst().getUser().getEmail());
-		// Assertions.assertEquals(user.getContactNumber(), addressList.getFirst().getUser().getContactNumber());
-		// Assertions.assertEquals(createAddressRequest.address(), addressList.getFirst().getAddress());
-		// Assertions.assertEquals(createAddressRequest.detail(), addressList.getFirst().getDetail());
-		// Assertions.assertEquals(createAddressRequest.zipcode(), addressList.getFirst().getZipcode());
-		// Assertions.assertEquals(createAddressRequest.nation(), addressList.getFirst().getNation());
-		// Assertions.assertEquals(createAddressRequest.alias(), addressList.getFirst().getAlias());
+
+		List<AddressInfoResponse> addressList = addressService.getAddressList(user.getId());
+
+		Assertions.assertEquals(1, addressList.size());
+		Assertions.assertEquals(createAddressRequest.address(), addressList.getFirst().address());
+		Assertions.assertEquals(createAddressRequest.detail(), addressList.getFirst().detail());
+		Assertions.assertEquals(createAddressRequest.zipcode(), addressList.getFirst().zipcode());
+		Assertions.assertEquals(createAddressRequest.nation(), addressList.getFirst().nation());
+		Assertions.assertEquals(createAddressRequest.alias(), addressList.getFirst().alias());
 
 	}
 
 	@Test
-	@DisplayName("주소 목록 조회 성공")
+	@DisplayName("주소 목록 조회 중 회원 발견 실패")
 	void testGetAddressListShouldOccurrException() {
 		Mockito.when(userRepository.existsById(Mockito.anyLong()))
 			.thenAnswer(invocation -> {
@@ -259,9 +275,8 @@ class AddressServiceTest {
 
 	}
 
-	@Disabled
 	@Test
-	@DisplayName("주소 목록 조회 성공")
+	@DisplayName("주소 목록 조회 빈 리스트 성공")
 	void testGetAddressListShouldReturnEmpty() {
 		Mockito.when(userRepository.existsById(Mockito.anyLong()))
 			.thenAnswer(invocation -> {
@@ -278,9 +293,9 @@ class AddressServiceTest {
 				return Optional.empty();
 			});
 
-		// List<Address> addressList = addressService.getAddressList(user.getId());
-		//
-		// Assertions.assertEquals(0, addressList.size());
+		List<AddressInfoResponse> addressList = addressService.getAddressList(user.getId());
+
+		Assertions.assertEquals(0, addressList.size());
 
 	}
 

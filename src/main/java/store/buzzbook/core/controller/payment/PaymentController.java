@@ -14,7 +14,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
+import store.buzzbook.core.dto.payment.CreateBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
@@ -27,6 +30,7 @@ import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
+@Slf4j
 @Tag(name = "Payments API", description = "결제 관련 API")
 @RestController
 @RequestMapping("/api/payments")
@@ -54,7 +58,7 @@ public class PaymentController {
 		return ResponseEntity.ok(responses);
 	}
 
-
+	@JwtOrderAdminValidate
 	@Operation(summary = "관리자의 결제 내역 모두 조회", description = "결제 내역 모두 조회 - 관리자")
 	@PostMapping("/admin/bill-logs")
 	public ResponseEntity<?> getAllBillLogs(@RequestBody ReadBillLogsRequest readBillLogsRequest, HttpServletRequest request) {
@@ -77,6 +81,15 @@ public class PaymentController {
 	@PostMapping("/bill-log/cancel")
 	public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody JSONObject createBillLogRequest) {
 		return ResponseEntity.ok(paymentService.createCancelBillLog(createBillLogRequest));
+	}
+
+	@JwtOrderValidate
+	@Operation(summary = "포인트, 쿠폰 결제 내역 추가", description = "포인트, 쿠폰 결제 내역 추가")
+	@PostMapping("/bill-log/different-payment")
+	public ResponseEntity<ReadBillLogResponse> createBillLogForDifferentPayment(@RequestBody CreateBillLogRequest createBillLogRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		ReadBillLogResponse readBillLogResponse = paymentService.createBillLogWithDiffentPayment(createBillLogRequest, userInfo.loginId());
+		return ResponseEntity.ok(readBillLogResponse);
 	}
 
 	@JwtOrderValidate

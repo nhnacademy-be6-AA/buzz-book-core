@@ -2,6 +2,7 @@ package store.buzzbook.core.service.user.implement;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -20,17 +21,25 @@ import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CouponLogRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
+import store.buzzbook.core.dto.coupon.CreateCouponRequest;
+import store.buzzbook.core.dto.coupon.CreateCouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
+import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
+import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
+import store.buzzbook.core.dto.coupon.OrderCouponResponse;
+import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
@@ -44,6 +53,7 @@ import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
 import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.product.ProductService;
 import store.buzzbook.core.service.user.UserService;
 
 @Service
@@ -58,6 +68,7 @@ public class UserServiceImpl implements UserService {
 	private final UserCouponRepository userCouponRepository;
 	private final PointLogRepository pointLogRepository;
 	private final CouponClient couponClient;
+	private final ProductService productService;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -91,7 +102,14 @@ public class UserServiceImpl implements UserService {
 
 		userOptional.get().updateLastLoginAt();
 		User updatedUser = userRepository.save(userOptional.get());
-		return updatedUser.toUserInfo(gradeOptional.get());
+
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(updatedUser.getId());
+		int point = 0;
+		if (Objects.nonNull(pointLog)) {
+			point = pointLog.getBalance();
+		}
+
+		return updatedUser.toUserInfo(gradeOptional.get(), point);
 	}
 
 	@Transactional
@@ -187,13 +205,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		user.get().updateUserBy(updateUserRequest);
-		User updatedUser = userRepository.save(user.get());
-		Optional<Grade> grade = userRepository.findGradeByLoginId(updatedUser.getLoginId());
-
-		if (grade.isEmpty()) {
-			throw new GradeNotFoundException(userId);
-		}
-
+		userRepository.save(user.get());
 	}
 
 	@Transactional(readOnly = true)
@@ -211,21 +223,36 @@ public class UserServiceImpl implements UserService {
 			throw new GradeNotFoundException(userId);
 		}
 
-		return user.get().toUserInfo(grade.get());
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.get().getId());
+
+		int point = 0;
+
+		if (Objects.nonNull(pointLog)) {
+			point = pointLog.getBalance();
+		}
+
+		return user.get().toUserInfo(grade.get(), point);
 	}
 
 	@Transactional(readOnly = true)
 	@Override
 	public UserInfo getUserInfoByLoginId(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
-
 		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
 
 		if (gradeOptional.isEmpty()) {
 			throw new GradeNotFoundException(user.getId());
 		}
 
-		return user.toUserInfo(gradeOptional.get());
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
+
+		int point = 0;
+
+		if (Objects.nonNull(pointLog)) {
+			point = pointLog.getBalance();
+		}
+
+		return user.toUserInfo(gradeOptional.get(), point);
 	}
 
 	@Override
@@ -265,12 +292,60 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	@Override
 	public void downloadCoupon(DownloadCouponRequest request) {
+		User user = userRepository.findById(request.userId())
+			.orElseThrow(() -> new UserNotFoundException(request.userId()));
+
 		if (Boolean.TRUE.equals(
 			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
 			throw new UserCouponAlreadyExistsException();
 		}
 
-		userProducerService.sendDownloadCouponRequest(request);
+		CreateCouponResponse response = couponClient.createCoupon(CreateCouponRequest.builder()
+			.couponPolicyId(request.couponPolicyId())
+			.build());
+
+		UserCoupon userCoupon = UserCoupon.builder()
+			.user(user)
+			.couponPolicyId(response.couponPolicyResponse().id())
+			.couponCode(response.couponCode())
+			.build();
+
+		userCouponRepository.save(userCoupon);
+	}
+
+	@Transactional
+	@Override
+	public List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses) {
+		List<UserCoupon> userCoupons = userCouponRepository.findByUserId(userId);
+
+		if (userCoupons.isEmpty()) {
+			throw new UserCouponNotFoundException();
+		}
+
+		List<CouponLogRequest> request = userCoupons.stream()
+			.map(CouponLogRequest::from)
+			.toList();
+
+		List<Integer> targetIds = responses.stream()
+			.flatMap(cartDetail -> List.of(cartDetail.getProductId(), cartDetail.getCategoryId()).stream())
+			.toList();
+
+		List<OrderCouponResponse> coupons = couponClient.getUserCoupons(request);
+
+		return coupons.stream()
+			.filter(coupon -> targetIds.contains(coupon.targetId()))
+			.map(coupon -> OrderCouponDetailResponse.builder()
+				.couponCode(coupon.code())
+				.couponPolicyId(coupon.couponPolicyResponse().id())
+				.couponPolicyName(coupon.couponPolicyResponse().name())
+				.couponPolicyDiscountType(coupon.couponPolicyResponse().discountType())
+				.couponPolicyDiscountRate(coupon.couponPolicyResponse().discountRate())
+				.couponPolicyDiscountAmount(coupon.couponPolicyResponse().discountAmount())
+				.couponPolicyStandardPrice(coupon.couponPolicyResponse().standardPrice())
+				.couponPolicyMaxDiscountAmount(coupon.couponPolicyResponse().maxDiscountAmount())
+				.couponPolicyIdTargetId(coupon.targetId())
+				.build())
+			.toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -290,13 +365,19 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
-
-		if (!isPasswordEncrypted(changePasswordRequest.newPassword())) {
-			log.debug("암호화되지 않은 비밀번호입니다. 프론트 서버를 확인해주세요.");
-			throw new UnEncryptedPasswordException(userId);
+	public void deleteUserCoupon(Long userId, DeleteUserCouponRequest request) {
+		if (!userCouponRepository.existsByUserIdAndCouponPolicyId(userId, request.couponPolicyId())) {
+			throw new UserCouponNotFoundException();
 		}
 
+		couponClient.updateCoupon(UpdateCouponRequest.builder()
+			.couponCode(request.couponCode())
+			.status(CouponStatus.USED)
+			.build());
+	}
+
+	@Override
+	public void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
 		Optional<User> user = userRepository.findById(userId);
 
 		if (user.isEmpty()) {
@@ -307,6 +388,14 @@ public class UserServiceImpl implements UserService {
 		String password = user.get().getPassword();
 		if (!BCrypt.checkpw(changePasswordRequest.oldPassword(), password)) {
 			log.debug("비밀번호가 틀렸습니다.");
+			throw new PasswordIncorrectException();
+		}
+
+		if (!isPasswordEncrypted(changePasswordRequest.newPassword())) {
+			log.debug("암호화되지 않은 비밀번호입니다. 프론트 서버를 확인해주세요.");
+			throw new UnEncryptedPasswordException(userId);
+		} else if (!BCrypt.checkpw(changePasswordRequest.confirmPassword(), changePasswordRequest.newPassword())) {
+			log.debug("새 비밀번호 확인이 다릅니다.");
 			throw new PasswordIncorrectException();
 		}
 

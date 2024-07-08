@@ -30,7 +30,7 @@ public class Cart {
 	private User user;
 
 	@NotNull
-	@Column(nullable = false, unique = true, columnDefinition = "binary(16)")
+	@Column(name = "`uuid`", nullable = false, unique = true, columnDefinition = "binary(16)")
 	private byte[] uuid;
 
 }

@@ -46,6 +46,12 @@ public class PointServiceImpl implements PointService {
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public Integer getUserPoint(Long userId) {
+		return pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(userId).getBalance();
+	}
+
 	@Transactional
 	@Override
 	public void updatePointPolicy(UpdatePointPolicyRequest request) {

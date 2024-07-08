@@ -1,12 +1,6 @@
 package store.buzzbook.core.service.product;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.ProductTag;
@@ -15,7 +9,12 @@ import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
 
-@Slf4j
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ProductTagService {
@@ -52,6 +51,12 @@ public class ProductTagService {
 
 	//특정 상품에 대한 연결 삭제
 	@Transactional
+	public void removeAllTagsFromProduct(int productId, List<Integer> tagIds) {
+		if (!productRepository.existsById(productId)) {
+			throw new DataNotFoundException("product", productId);
+		}
+		productTagRepository.deleteTagsByProductIdAndTagIds(productId, tagIds);
+
 	public void removeTagFromProduct(int productId, int tagId) {
 		if (!productRepository.existsById(productId)) {
 			throw new DataNotFoundException("product", productId);
