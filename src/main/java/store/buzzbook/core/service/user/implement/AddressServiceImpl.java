@@ -1,12 +1,12 @@
 package store.buzzbook.core.service.user.implement;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.user.AddressMaxCountException;
@@ -30,13 +30,13 @@ public class AddressServiceImpl implements AddressService {
 	@Transactional
 	@Override
 	public void createAddress(CreateAddressRequest createAddressRequest, long userId) {
-		User user = null;
-		try {
-			user = userRepository.getReferenceById(userId);
-		} catch (EntityNotFoundException e) {
-			log.debug("회원 주소 추가 중 존재하지 않는 user id의 요청 발생 : {}", userId);
+		User user = userRepository.getReferenceById(userId);
+
+		if (Objects.isNull(user)) {
+			log.debug("주소 생성 중 user id에 해당하는 회원이 없습니다 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}
+
 		Integer addressCount = addressRepository.countAllByUserId(userId);
 
 		if (addressCount >= 10) {
@@ -60,11 +60,9 @@ public class AddressServiceImpl implements AddressService {
 	@Transactional
 	@Override
 	public void updateAddress(UpdateAddressRequest updateAddressRequest, long userId) {
-		User user = null;
+		User user = userRepository.getReferenceById(userId);
 
-		try {
-			user = userRepository.getReferenceById(userId);
-		} catch (EntityNotFoundException e) {
+		if (Objects.isNull(user)) {
 			log.debug("회원 주소 수정 중 존재하지 않는 user id의 요청 발생 : {}", userId);
 			throw new UserNotFoundException(userId);
 		}

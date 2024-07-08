@@ -9,20 +9,18 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
 
 import store.buzzbook.core.common.config.QuerydslConfig;
 import store.buzzbook.core.entity.point.PointPolicy;
 import store.buzzbook.core.repository.point.PointPolicyRepository;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Transactional
-@Disabled
+@ActiveProfiles("test")
 @Import(QuerydslConfig.class)
+@Disabled
 class PointPolicyRepositoryTest {
 
 	@Autowired
