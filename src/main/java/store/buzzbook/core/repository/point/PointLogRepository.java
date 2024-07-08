@@ -10,6 +10,8 @@ import store.buzzbook.core.entity.point.PointLog;
 
 public interface PointLogRepository extends JpaRepository<PointLog, Long> {
 
+	Boolean existsByUserId(Long userId);
+
 	List<PointLog> findByUserId(long userId);
 
 	Page<PointLog> findByUserId(long userId, Pageable pageable);
