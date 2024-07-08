@@ -24,7 +24,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
 
-		if (!pointPolicyRepository.existsByName(SIGN_UP)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(SIGN_UP))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(SIGN_UP)
 				.rate(0)
@@ -34,7 +34,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 			pointPolicyRepository.save(pointPolicy);
 		}
 
-		if (!pointPolicyRepository.existsByName(REVIEW)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(REVIEW))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(REVIEW)
 				.rate(0)
@@ -44,7 +44,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 			pointPolicyRepository.save(pointPolicy);
 		}
 
-		if (!pointPolicyRepository.existsByName(REVIEW_PHOTO)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(REVIEW_PHOTO))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(REVIEW)
 				.rate(0)
@@ -54,7 +54,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 			pointPolicyRepository.save(pointPolicy);
 		}
 
-		if (!pointPolicyRepository.existsByName(BOOK)) {
+		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(BOOK))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(BOOK)
 				.rate(0.1)
