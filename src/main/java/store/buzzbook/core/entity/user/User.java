@@ -73,7 +73,7 @@ public class User {
 	@Column(name = "created_at")
 	@Past
 	private LocalDateTime createAt;
-
+	
 	@Column(name = "last_login_at")
 	@Past
 	private LocalDateTime lastLoginAt;
