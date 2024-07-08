@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -161,6 +162,28 @@ public class ProductService {
 		Pageable pageable = PageRequest.of(page, size);
 		return productRepository.findAllByProductNameContainingAndStockStatus(productName, stockStatus, pageable)
 			.map(this::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getAllProductsByStockStatusOrderedName(Product.StockStatus stockStatus, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByStockStatusOrderByProductNameDesc(stockStatus, pageable).map(this::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getAllProductOrderedByName(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAllByOrderByProductNameDesc(pageable).map(this::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getAllProductsOrderByReviewCount(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findProductsOrderByReviewCountDesc(pageable).map(this::convertToProductResponse);
+	}
+
+	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId, String orderBy, int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Specification<Product> spec = Specification.where(ProductSpecification.getProductsByCriteria(status, name, categoryId))
+			.and(ProductSpecification.orderBy(orderBy));
+		return productRepository.findAllBy(spec, pageable).map(this::convertToProductResponse);
 	}
 
 	// // Elasticsearch를 통한 검색 메소드

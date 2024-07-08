@@ -10,16 +10,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
+import store.buzzbook.core.common.exception.review.IllegalRequestException;
 import store.buzzbook.core.dto.product.CategoryRequest;
 import store.buzzbook.core.dto.product.CategoryResponse;
 import store.buzzbook.core.entity.product.Category;
+import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.CategoryRepository;
+import store.buzzbook.core.repository.product.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
 
 	private final CategoryRepository categoryRepository;
+	private final ProductRepository productRepository;
 
 	public CategoryResponse createCategory(CategoryRequest categoryRequest) {
 		Category parentCategory = null;
@@ -43,7 +47,7 @@ public class CategoryService {
 	}
 
 	public CategoryResponse updateCategory(int categoryId, CategoryRequest categoryRequest) {
-		if(categoryRepository.existsById(categoryId)) {
+		if(!categoryRepository.existsById(categoryId)) {
 			throw new DataNotFoundException("category", categoryId);
 		}
 		Category parentCategory = null;
@@ -55,10 +59,14 @@ public class CategoryService {
 		return CategoryResponse.convertToCategoryResponse(categoryRepository.save(category));
 	}
 
+	@Transactional
 	public void deleteCategory(int categoryId) {
-		if(categoryRepository.existsById(categoryId)) {
+		if(!categoryRepository.existsById(categoryId)) {
 			throw new DataNotFoundException("category", categoryId);
 		}
-		categoryRepository.deleteById(categoryId);
+		List<Product> products = productRepository.findByCategoryId(categoryId);
+		if (!products.isEmpty()) {
+			throw new IllegalRequestException("해당 카테고리로 분류된 상품이 있어 카테고리를 삭제할 수 없습니다.");
+		}
 	}
 }

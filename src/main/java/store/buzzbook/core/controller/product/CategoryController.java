@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +22,7 @@ import store.buzzbook.core.service.product.CategoryService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products/categories")
-@Tag(name = "카테고리 조회", description = "카테고리 리스트반환")
+@Tag(name = "카테고리 관리", description = "카테고리 CRUD")
 public class CategoryController {
 
 	private final CategoryService categoryService;
@@ -43,7 +44,7 @@ public class CategoryController {
 		return categoryService.createCategory(categoryRequest);
 	}
 
-	@PostMapping("/{id}")
+	@PutMapping("/{id}")
 	public CategoryResponse updateCategory(@PathVariable("id") int id, @RequestBody CategoryRequest categoryRequest) {
 		return categoryService.updateCategory(id, categoryRequest);
 	}
