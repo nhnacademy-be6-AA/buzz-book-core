@@ -1,8 +1,6 @@
 package store.buzzbook.core.controller.product;
 
-import java.util.Collections;
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.TagResponse;
@@ -27,7 +26,7 @@ import store.buzzbook.core.service.product.TagService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/tags")
-@Tag(name = "태그 관리", description = "태그 C_UD")
+@Tag(name = "태그 관리", description = "태그 C_D")
 public class TagController {
 
 	private final TagService tagService;
@@ -41,18 +40,12 @@ public class TagController {
 	}
 
 	@GetMapping("/all")
-	@Operation(summary = "태그 조회(List)", description = "주어진 (String) 조회<br>태그를 id 순서로 조회<br>주어진 id(int)에 해당하는 태그 조회")
-	@ApiResponse(responseCode = "200", description = "조회 성공시 List<TagResponse> 반환<br>태그 이름(String) 값 존재하면 이름으로 조회한 태그 반환")
-
-	public ResponseEntity<List<TagResponse>> getAllTags(
-		@RequestParam(required = false) @Parameter(description = "검색할 태그이름(정확히 일치 해야함)") String tagName) {
-		if (tagName.isEmpty()) {
-			return ResponseEntity.ok(tagService.getAllTags());
-		}
-		return ResponseEntity.ok(Collections.singletonList(tagService.getTagByName(tagName)));
+	@Operation(summary = "태그 조회(List)", description = "모든 태그를 id 순서로 조회")
+	@ApiResponse(responseCode = "200", description = "조회 성공시 List<TagResponse> 반환")
+	public ResponseEntity<List<TagResponse>> getAllTags() {
+		return ResponseEntity.ok(tagService.getAllTags());
 	}
 
-	//임시적으로 Page 버전으로 만듦
 	@GetMapping
 	@Operation(summary = "태그 조회(Page)", description = "주어진 (String) 조회<br>태그를 id 순서로 조회<br>주어진 id(int)에 해당하는 태그 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 List<TagResponse> 반환<br>태그 이름(String) 값 존재하면 이름으로 조회한 태그 반환")
@@ -74,7 +67,6 @@ public class TagController {
 		return ResponseEntity.ok(tagResponses);
 	}
 
-
 	@GetMapping({"/{id}"})
 	@Operation(summary = "태그 조회", description = "태그 조회<br>태그를 id 순서로 조회<br>주어진 id(int)에 해당하는 태그 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 TagResponse 반환")
@@ -86,10 +78,8 @@ public class TagController {
 	@DeleteMapping("/{id}")
 	@Operation(summary = "태그 삭제", description = "주어진 id(int)에 해당하는 태그 삭제.")
 	@ApiResponse(responseCode = "204", description = "삭제 성공시")
-	public ResponseEntity<Void> deleteTag(@RequestParam int tagId) {
-		tagService.deleteTag(tagId);
+	public ResponseEntity<Void> deleteTag(@PathVariable int id) {
+		tagService.deleteTag(id);
 		return ResponseEntity.noContent().build();
 	}
-
-
 }

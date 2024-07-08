@@ -123,7 +123,7 @@ public class ProductService {
 
 		// 태그 업데이트 로직
 		if (productRequest.getTags() != null) {
-			productTagRepository.deleteByProductId(id); // 기존 태그 삭제
+			productTagRepository.deleteByProductId(id);
 			for (String tagName : productRequest.getTags()) {
 				Tag tag = tagRepository.findByName(tagName)
 					.orElseGet(() -> tagRepository.save(new Tag(tagName)));
