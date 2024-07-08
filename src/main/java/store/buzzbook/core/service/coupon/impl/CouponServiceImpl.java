@@ -17,6 +17,7 @@ import store.buzzbook.core.dto.coupon.CouponLogRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateCouponResponse;
+import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
@@ -57,6 +58,26 @@ public class CouponServiceImpl implements CouponService {
 			.user(user)
 			.couponPolicyId(response.couponPolicyResponse().id())
 			.couponCode(response.couponCode())
+			.build();
+
+		userCouponRepository.save(userCoupon);
+	}
+
+	@Transactional
+	@Override
+	public void createUserCouponByBatch(CreateUserCouponRequest request) {
+		User user = userRepository.findById(request.userId())
+			.orElseThrow(() -> new UserNotFoundException(request.userId()));
+
+		if (Boolean.TRUE.equals(
+			userCouponRepository.existsByUserIdAndCouponPolicyId(request.userId(), request.couponPolicyId()))) {
+			throw new UserCouponAlreadyExistsException();
+		}
+
+		UserCoupon userCoupon = UserCoupon.builder()
+			.user(user)
+			.couponPolicyId(request.couponPolicyId())
+			.couponCode(request.couponCode())
 			.build();
 
 		userCouponRepository.save(userCoupon);

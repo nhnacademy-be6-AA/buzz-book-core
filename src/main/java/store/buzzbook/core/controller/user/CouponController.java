@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.cart.CartDetailResponse;
+import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
@@ -35,9 +36,16 @@ public class CouponController {
 
 	@JwtValidate
 	@PostMapping
-	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon id 를 넘겨야 한다.")
+	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id 와 coupon policy id 를 넘겨야 한다.")
 	public ResponseEntity<Void> downloadCoupon(@Valid @RequestBody DownloadCouponRequest request) {
 		couponService.createUserCoupon(request);
+		return ResponseEntity.ok().build();
+	}
+
+	@PostMapping("/batch")
+	@Operation(summary = "쿠폰 추가", description = "유저의 쿠폰 리스트를 추가한다. user id, coupon policy id, coupon code 를 넘겨야 한다.")
+	public ResponseEntity<Void> createUserCouponByBatch(@Valid @RequestBody CreateUserCouponRequest request) {
+		couponService.createUserCouponByBatch(request);
 		return ResponseEntity.ok().build();
 	}
 
