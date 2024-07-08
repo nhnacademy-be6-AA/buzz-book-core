@@ -66,16 +66,13 @@ public class User {
 	private String password;
 
 	@NotNull
-	@Past
 	private LocalDate birthday;
 
 	@NotNull
 	@Column(name = "created_at")
-	@Past
 	private LocalDateTime createAt;
-	
+
 	@Column(name = "last_login_at")
-	@Past
 	private LocalDateTime lastLoginAt;
 
 	@NotNull
