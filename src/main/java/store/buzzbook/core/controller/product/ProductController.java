@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.product;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -82,6 +84,16 @@ public class ProductController {
 	public ResponseEntity<ProductResponse> delProduct(@PathVariable int id) {
 		productService.deleteProduct(id);
 		return ResponseEntity.noContent().build();
+	}
+
+	// 새로운 엔드포인트 추가: 제목으로 상품 검색
+	@GetMapping("/search")
+	@Operation(summary = "상품 제목으로 검색", description = "특정 제목을 포함하는 모든 상품을 검색")
+	@ApiResponse(responseCode = "200", description = "조회 성공시 List<ProductResponse> 반환")
+	public ResponseEntity<List<ProductResponse>> getAllProductsByTitle(
+		@RequestParam @Parameter(description = "검색할 상품 제목", required = true) String title) {
+		List<ProductResponse> products = productService.getAllProductsByTitle(title);
+		return ResponseEntity.ok(products);
 	}
 
 }
