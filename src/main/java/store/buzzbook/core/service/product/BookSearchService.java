@@ -3,7 +3,6 @@ package store.buzzbook.core.service.product;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +21,6 @@ import store.buzzbook.core.entity.product.BookAuthor;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.Publisher;
-import store.buzzbook.core.entity.product.Tag;
 import store.buzzbook.core.repository.product.AuthorRepository;
 import store.buzzbook.core.repository.product.BookAuthorRepository;
 import store.buzzbook.core.repository.product.BookRepository;
@@ -59,7 +57,17 @@ public class BookSearchService {
 
 		try {
 			BookApiRequest apiResponse = restTemplate.getForObject(url, BookApiRequest.class);
-			return apiResponse != null ? apiResponse.getItems() : List.of();
+			if (apiResponse != null && apiResponse.getItems() != null) {
+				// 각 아이템의 커버 이미지 URL을 큰 이미지로 변경
+				apiResponse.getItems().forEach(item -> {
+					if (item.getCover() != null) {
+						item.setCover(item.getCover().replace("coversum", "cover500"));
+					}
+				});
+				return apiResponse.getItems();
+			} else {
+				return List.of();
+			}
 		} catch (RestClientException e) {
 			e.printStackTrace();
 			return List.of();

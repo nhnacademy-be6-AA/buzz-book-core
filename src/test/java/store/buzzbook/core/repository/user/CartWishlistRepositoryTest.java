@@ -2,6 +2,7 @@ package store.buzzbook.core.repository.user;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,13 +10,14 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.persistence.EntityManager;
 import store.buzzbook.core.common.config.QuerydslConfig;
-import store.buzzbook.core.common.util.ZonedDateTimeParser;
+import store.buzzbook.core.common.util.UuidUtil;
+import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.entity.cart.Cart;
 import store.buzzbook.core.entity.cart.CartDetail;
 import store.buzzbook.core.entity.cart.Wishlist;
@@ -28,10 +30,9 @@ import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QuerydslConfig.class)
 @DataJpaTest
-@Disabled
+@ActiveProfiles("test")
 class CartWishlistRepositoryTest {
 	@Autowired
 	private EntityManager entityManager;
@@ -54,9 +55,11 @@ class CartWishlistRepositoryTest {
 
 	private Product product;
 	private Publisher publisher;
+	private byte[] uuidByte;
 
 	@BeforeEach
 	void setUp() {
+		uuidByte = UuidUtil.createUuidToByte();
 
 		grade = Grade.builder()
 			.benefit(2.5)
@@ -81,6 +84,7 @@ class CartWishlistRepositoryTest {
 
 		cart = Cart.builder()
 			.user(user)
+			.uuid(uuidByte)
 			.build();
 
 		Category category = Category.builder().name("test").build();
@@ -106,12 +110,14 @@ class CartWishlistRepositoryTest {
 			.price(10000)
 			.category(category)
 			.stockStatus(Product.StockStatus.SALE)
-			.forwardDate(ZonedDateTimeParser.toDate("2013-01-10").toLocalDate()).build();
+			.score(10)
+			.thumbnailPath("/images.png")
+			.forwardDate(LocalDate.now()).build();
 	}
 
 	@Test
+	@Disabled("h2 type 문제")
 	@DisplayName("장바구니 생성 테스트")
-	@Disabled
 	void testCreateCart() {
 		cartRepository.save(cart);
 		Cart resultCart = cartRepository.findById(cart.getId()).orElse(null);
@@ -125,7 +131,7 @@ class CartWishlistRepositoryTest {
 	//book fk 필요
 	@Test
 	@DisplayName("장바구니 상품 추가 테스트")
-	@Disabled
+	@Disabled("h2 type 문제")
 	void testCreateCartDetail() {
 		cartRepository.save(cart);
 
@@ -145,7 +151,7 @@ class CartWishlistRepositoryTest {
 	}
 
 	@Test
-	@Disabled
+	@Disabled("h2 type 문제")
 	@DisplayName("장바구니 상품 삭제 테스트")
 	void testCreateAndDeleteDetail() {
 		cartRepository.save(cart);
@@ -184,5 +190,33 @@ class CartWishlistRepositoryTest {
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(wishlist.getProduct().getId(), product.getId());
 
+	}
+
+	@Test
+	@Disabled("h2 type 문제")
+	@DisplayName("카트아이디로 카트 내용 찾기")
+	void testFindCartDetailByCartId() {
+		entityManager.persist(product);
+		cartRepository.save(cart);
+		CartDetail cartDetail = CartDetail.builder()
+			.cart(cart).product(product)
+			.quantity(10).build();
+		cartDetailRepository.save(cartDetail);
+
+		List<CartDetailResponse> cartDetailResponseList = cartRepository.findCartDetailByCartId(cart.getId())
+			.orElse(null);
+
+		Assertions.assertNotNull(cartDetailResponseList);
+
+		CartDetailResponse cartDetailResponse = cartDetailResponseList.getFirst();
+
+		Assertions.assertEquals(1, cartDetailResponseList.size());
+		Assertions.assertEquals(cartDetail.getId(), cartDetailResponse.getId());
+		Assertions.assertEquals(cartDetail.getProduct().getId(), cartDetailResponse.getProductId());
+		Assertions.assertEquals(cartDetail.getQuantity(), cartDetailResponse.getQuantity());
+		Assertions.assertEquals(cartDetail.getProduct().getThumbnailPath(), cartDetailResponse.getThumbnailPath());
+		Assertions.assertEquals(product.getPrice(), cartDetailResponse.getPrice());
+		Assertions.assertFalse(cartDetailResponse.isCanWrap());
+		Assertions.assertEquals(cartDetail.getProduct().getProductName(), cartDetailResponse.getProductName());
 	}
 }
