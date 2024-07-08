@@ -113,35 +113,6 @@ public class BookSearchService {
 				parentCategory = category;
 			}
 
-			// // 카테고리 분류 최대 3개
-			// String mainCategoryName = categoryParts[0].trim();
-			// String subCategoryName1 = categoryParts[1].trim();
-			// String subCategoryName2 = categoryParts.length > 2 ? categoryParts[2].trim() : null;
-			//
-			// // main
-			// Category mainCategory = categoryRepository.findByName(mainCategoryName);
-			// if (mainCategory == null) {
-			// 	mainCategory = new Category(mainCategoryName, null);
-			// 	categoryRepository.save(mainCategory);
-			// }
-			//
-			// // sub1
-			// Category subCategory1 = categoryRepository.findByName(subCategoryName1);
-			// if (subCategory1 == null) {
-			// 	subCategory1 = new Category(subCategoryName1, mainCategory);
-			// 	categoryRepository.save(subCategory1);
-			// }
-			//
-			// // sub2
-			// Category subCategory2 = null;
-			// if (subCategoryName2 != null) {
-			// 	subCategory2 = categoryRepository.findByName(subCategoryName2);
-			// 	if (subCategory2 == null) {
-			// 		subCategory2 = new Category(subCategoryName2, subCategory1);
-			// 		categoryRepository.save(subCategory2);
-			// 	}
-			// }
-
 			// 출판사 저장
 			Publisher publisher = publisherRepository.findByName(item.getPublisher());
 			if (publisher == null) {
@@ -159,7 +130,6 @@ public class BookSearchService {
 					publisher,
 					item.getPubDate()
 				);
-
 				book = bookRepository.save(book);
 			} catch (Exception e) {
 				log.error("'도서' 저장 중 오류 발생: {}", item.getTitle(), e);
@@ -172,41 +142,37 @@ public class BookSearchService {
 				String productName = item.getTitle();
 				int price = item.getPricestandard();
 				LocalDate forwardDate;
-				try {
-					forwardDate = LocalDate.parse(item.getPubDate(), dateFormatter);
-				} catch (DateTimeParseException e) {
-					log.error("날짜 파싱 오류: {}", item.getPubDate(), e);
-					continue;
-				}
+
+				forwardDate = LocalDate.parse(item.getPubDate(), dateFormatter);
+
 				int score = item.getCustomerReviewRank();
 				String thumbnailPath = item.getCover();
 				String description = item.getDescription();
 
-				// 기존 Product 확인 및 삭제
-				Product existingProduct = productRepository.findByThumbnailPath(thumbnailPath);
-				if (existingProduct != null) {
-					productRepository.delete(existingProduct);
+				// 기존 Product 확인
+				Product product = productRepository.findByThumbnailPath(thumbnailPath);
+				if (product == null) {
+					// 새로운 Product 생성 및 저장
+					Product newProduct = Product.builder()
+						.stock(stock)
+						.productName(productName)
+						.description(description)
+						.price(price)
+						.forwardDate(forwardDate)
+						.score(score)
+						.thumbnailPath(thumbnailPath)
+						.stockStatus(Product.StockStatus.SALE)    //재고상태관리필요
+						.category(category)
+						.build();
+
+					product = productRepository.save(newProduct);
 				}
-
-				// 새로운 Product 생성 및 저장
-				Product product = Product.builder()
-					.stock(stock)
-					.productName(productName)
-					.description(description)
-					.price(price)
-					.forwardDate(forwardDate)
-					.score(score)
-					.thumbnailPath(thumbnailPath)
-					.stockStatus(Product.StockStatus.SALE)    //재고상태관리필요
-					.category(category)
-					.build();
-
-				product = productRepository.save(product);
-
-				// productDocumentRepository.save(new ProductDocument(product));
 
 				book.setProduct(product);
 				book = bookRepository.save(book);
+			} catch (DateTimeParseException e) {
+				log.error("날짜 파싱 오류: {}", item.getPubDate(), e);
+				continue;
 			} catch (Exception e) {
 				log.error("'상품' 정보 저장 중 오류 발생: {}", item.getTitle(), e);
 				continue;

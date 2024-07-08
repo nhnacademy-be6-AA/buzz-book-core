@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import store.buzzbook.core.entity.product.Product;
 
@@ -45,8 +46,18 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 		"AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
 		"GROUP BY p.id " +
 		"ORDER BY COUNT(r.id) DESC")
-	Page<Product> findProductsByCriteriaOrderByReviewCountDesc(Product.StockStatus status, String name, Integer categoryId, Pageable pageable);
-
+	Page<Product> findProductsByCriteriaOrderByReviewCountDesc(Product.StockStatus status, String name,
+		Integer categoryId, Pageable pageable);
 
 	Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+
+	@Query("SELECT p, b, r " +
+		"FROM Product p " +
+		"JOIN Book b ON p.id = b.product.id " +
+		"LEFT JOIN Review r ON r.orderDetail.id IN " +
+		"(SELECT od.id FROM OrderDetail od WHERE od.product.id = p.id ORDER BY r.reviewCreatedAt DESC) " +
+		"WHERE p.id = :productId " +
+		"ORDER BY r.reviewCreatedAt DESC")
+	Object[] findRecentReviewsForProduct(@Param("productId") int productId);
+
 }
