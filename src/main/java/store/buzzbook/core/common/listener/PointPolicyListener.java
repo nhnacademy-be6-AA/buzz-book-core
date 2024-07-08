@@ -16,6 +16,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 
 	private static final String SIGN_UP = "회원가입";
 	private static final String REVIEW = "리뷰작성";
+	private static final String REVIEW_PHOTO = "사진리뷰작성";
 	private static final String BOOK = "전체도서";
 
 	private final PointPolicyRepository pointPolicyRepository;
@@ -34,6 +35,16 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 		}
 
 		if (!pointPolicyRepository.existsByName(REVIEW)) {
+			PointPolicy pointPolicy = PointPolicy.builder()
+				.name(REVIEW)
+				.rate(0)
+				.point(200)
+				.deleted(false)
+				.build();
+			pointPolicyRepository.save(pointPolicy);
+		}
+
+		if (!pointPolicyRepository.existsByName(REVIEW_PHOTO)) {
 			PointPolicy pointPolicy = PointPolicy.builder()
 				.name(REVIEW)
 				.rate(0)
