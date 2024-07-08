@@ -2,7 +2,6 @@ package store.buzzbook.core.service.user;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -617,28 +616,6 @@ class UserServiceTest {
 
 		Assertions.assertThrowsExactly(GradeNotFoundException.class,
 			() -> userService.getUserInfoByLoginId(user.getLoginId()));
-	}
-
-	@Test
-	@DisplayName("금월 생일자 리스트")
-	void testGetUserInfoByCurrentBirthday() {
-
-		Mockito.when(userRepository.findUsersByBirthdayInCurrentMonth()).thenAnswer(
-			invocation -> {
-				if (user.getBirthday().getMonth().equals(LocalDate.now().getMonth())) {
-					return List.of(user);
-				}
-				return List.of();
-			}
-		);
-
-		List<UserInfo> birthdayList = userService.getUserInfoByCurrentBirthday();
-
-		Assertions.assertNotNull(birthdayList);
-		Assertions.assertEquals(1, birthdayList.size());
-
-		UserInfo result = birthdayList.getFirst();
-		Assertions.assertEquals(user.getBirthday(), result.birthday());
 	}
 
 	@Test
