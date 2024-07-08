@@ -15,10 +15,12 @@ import store.buzzbook.core.dto.review.ReviewResponse;
 import store.buzzbook.core.dto.review.ReviewUpdateRequest;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
+import store.buzzbook.core.entity.point.PointPolicy;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.review.Review;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.review.ReviewRepository;
 import store.buzzbook.core.service.point.PointService;
@@ -28,11 +30,7 @@ import store.buzzbook.core.service.point.PointService;
 @RequiredArgsConstructor
 public class ReviewService {
 
-	private static final int REVIEW_POINT = 200;
-	private static final int REVIEW_WITH_PICTURE_POINT = 500;
-	private static final String REVIEW_POINT_MESSAGE = "리뷰 등록";
-	private static final String REVIEW_WITH_PICTURE_POINT_MESSAGE = "사진 리뷰 등록";
-
+	private final PointPolicyRepository pointPolicyRepository;
 	private final ReviewRepository reviewRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final ProductRepository productRepository;
@@ -56,11 +54,13 @@ public class ReviewService {
 		//리뷰단 고객 포인트 부여
 		Order order = review.getOrderDetail().getOrder();
 		User user = order.getUser();
+		PointPolicy pp;
 		if (review.getPicturePath() == null) {
-			pointService.createPointLogWithDelta(user, REVIEW_POINT_MESSAGE, REVIEW_POINT);
+			pp = pointPolicyRepository.findByName("리뷰 작성");
 		} else {
-			pointService.createPointLogWithDelta(user, REVIEW_WITH_PICTURE_POINT_MESSAGE, REVIEW_WITH_PICTURE_POINT);
+			pp = pointPolicyRepository.findByName("사진 리뷰 작성");
 		}
+		pointService.createPointLogWithDelta(user, pp.getName(), pp.getPoint());
 
 		return new ReviewResponse(review);
 	}

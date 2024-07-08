@@ -7,4 +7,5 @@ import store.buzzbook.core.entity.point.PointPolicy;
 public interface PointPolicyRepository extends JpaRepository<PointPolicy, Long> {
 
 	Boolean existsByName(String name);
+	PointPolicy findByName(String name);
 }
