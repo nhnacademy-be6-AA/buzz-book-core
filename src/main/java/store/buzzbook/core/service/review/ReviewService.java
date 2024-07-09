@@ -73,9 +73,9 @@ public class ReviewService {
 		return new ReviewResponse(review);
 	}
 
-	public Page<ReviewResponse> findAllReviewByProductId(Long productId, int page, int size) {
+	public Page<ReviewResponse> findAllReviewByProductId(int productId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		Page<Review> reviews = reviewRepository.findAllByOrderDetailProductId(productId, pageable);
+		Page<Review> reviews = reviewRepository.findAllByOrderDetail_ProductIdOrderByReviewCreatedAtDesc(productId, pageable);
 		return reviews.map(ReviewResponse::new);
 	}
 

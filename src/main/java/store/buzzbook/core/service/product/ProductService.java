@@ -2,7 +2,6 @@ package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -166,7 +165,7 @@ public class ProductService {
 
 		return products.stream()
 			.map(this::convertToProductResponse)
-			.collect(Collectors.toList());
+			.toList();
 	}
 
 	@Transactional(readOnly = true)

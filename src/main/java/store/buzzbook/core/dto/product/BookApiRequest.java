@@ -47,11 +47,11 @@ public class BookApiRequest {
         @JsonProperty("categoryName")
         private String category;
 
-        @JsonProperty("pricestandard")
-        private int pricestandard;
+        @JsonProperty("priceStandard")
+        private int priceStandard;
 
-        @JsonProperty("pricesales")
-        private int pricesales;
+        @JsonProperty("priceSales")
+        private int priceSales;
 
         @JsonProperty("stock")
         private String stock;
