@@ -75,6 +75,7 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
+	private static final int UNPACKAGED = 1;
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final UserRepository userRepository;
@@ -184,8 +185,14 @@ public class OrderService {
 			detail.setOrderId(order.getId());
 			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
 				.orElseThrow(() -> new OrderStatusNotFoundException("Order Status not found"));
-			Wrapping wrapping = wrappingRepository.findById(detail.getWrappingId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			Wrapping wrapping = null;
+			if (detail.getWrappingId() != 0) {
+				wrapping = wrappingRepository.findById(detail.getWrappingId())
+					.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			} else {
+				wrapping = wrappingRepository.findById(UNPACKAGED)
+					.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			}
 
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -199,7 +206,10 @@ public class OrderService {
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			ReadWrappingResponse readWrappingResponse = null;
+			if (wrapping != null) {
+				readWrappingResponse = WrappingMapper.toDto(wrapping);
+			}
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}

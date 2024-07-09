@@ -52,6 +52,7 @@ import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.WrappingMapper;
@@ -63,6 +64,7 @@ import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
+import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.user.UserService;
@@ -92,6 +94,7 @@ public class PaymentService {
 	private final PointLogRepository pointLogRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
+	private final UserCouponRepository userCouponRepository;
 
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
@@ -181,6 +184,7 @@ public class PaymentService {
 					.get()
 					.getCancelReason())
 				.build());
+
 		UserInfo userInfo = UserInfo.builder()
 			.email(order.getUser().getEmail())
 			.loginId(order.getUser().getLoginId())
@@ -193,8 +197,9 @@ public class PaymentService {
 	}
 
 	@Transactional
-	public ReadBillLogResponse createBillLogWithDiffentPayment(CreateBillLogRequest createBillLogRequest,
-		String loginId) {
+	public ReadBillLogResponse createBillLogWithDifferentPayment(CreateBillLogRequest createBillLogRequest,
+		HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 
 		Order order = orderRepository.findByOrderStr(createBillLogRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -215,17 +220,35 @@ public class PaymentService {
 
 		BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
 
-		User user = userRepository.findByLoginId(loginId)
+		User user = userRepository.findByLoginId(userInfo.loginId())
 			.orElseThrow(() -> new UserNotFoundException("User not found"));
 
-		int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+		if (createBillLogRequest.getPayment().equals(POINT)) {
+			int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
 
-		pointLogRepository.save(
-			PointLog.builder().createdAt(LocalDateTime.now()).delta(-createBillLogRequest.getPrice())
-				.user(user).balance(balance - createBillLogRequest.getPrice()).inquiry(POINT_PAYMENT_INQUIRY).build());
+			pointLogRepository.save(
+				PointLog.builder().createdAt(LocalDateTime.now()).delta(-createBillLogRequest.getPrice())
+					.user(user).balance(balance - createBillLogRequest.getPrice()).inquiry(POINT_PAYMENT_INQUIRY).build());
+		}
+
+		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment().equals(POINT)) {
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json");
+			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
+			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
+
+			UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.USED);
+
+			HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
+
+			ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
+				String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+				CouponResponse.class);
+		}
 
 		return BillLogMapper.toDto(billLog,
-			OrderMapper.toDto(order, readOrderDetailResponses, loginId));
+			OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
@@ -276,7 +299,9 @@ public class PaymentService {
 	}
 
 	public String getPaymentKeyWithoutLogin(String orderId, String orderEmail) {
-		return billLogRepository.findByOrder_OrderStrAndOrder_OrderEmail(orderId, orderEmail).getFirst().getPaymentKey();
+		return billLogRepository.findByOrder_OrderStrAndOrder_OrderEmail(orderId, orderEmail)
+			.getFirst()
+			.getPaymentKey();
 	}
 
 	public String getPaymentKey(String orderId, long userId) {
@@ -301,25 +326,37 @@ public class PaymentService {
 				.cancelReason(createCancelBillLogRequest.getCancelReason())
 				.payAt(LocalDateTime.now())
 				.build());
-			int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-			pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice())
-				.user(user).balance(balance + billLog.getPrice()).inquiry(POINT_CANCEL_INQUIRY).build());
+			if (billLog.getPayment().equals(POINT)) {
+				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice())
+					.user(user).balance(balance + billLog.getPrice()).inquiry(POINT_CANCEL_INQUIRY).build());
+			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
-				RestTemplate restTemplate = new RestTemplate();
-				HttpHeaders headers = new HttpHeaders();
-				headers.set("Content-Type", "application/json");
-				headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
-				headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
+					RestTemplate restTemplate = new RestTemplate();
+					HttpHeaders headers = new HttpHeaders();
+					headers.set("Content-Type", "application/json");
+					headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
+					headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
+					UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
+						CouponStatus.AVAILABLE);
 
-				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
+					HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
+						headers);
 
-				ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
-					CouponResponse.class);
-			}
+					ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
+						String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
+						updateCouponRequestHttpEntity,
+						CouponResponse.class);
+
+					int couponPolicyId = userCouponRepository.findByUserIdAndCouponCode(user.getId(),
+						updateCouponRequest.couponCode()).getCouponPolicyId();
+
+					userCouponRepository.save(UserCoupon.builder().couponCode(updateCouponRequest.couponCode())
+						.user(user).couponPolicyId(couponPolicyId).build());
+				}
+
 		}
 	}
 }

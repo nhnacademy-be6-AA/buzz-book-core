@@ -90,8 +90,7 @@ public class PaymentController {
 	@Operation(summary = "포인트, 쿠폰 결제 내역 추가", description = "포인트, 쿠폰 결제 내역 추가")
 	@PostMapping("/bill-log/different-payment")
 	public ResponseEntity<ReadBillLogResponse> createBillLogForDifferentPayment(@RequestBody CreateBillLogRequest createBillLogRequest, HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		ReadBillLogResponse readBillLogResponse = paymentService.createBillLogWithDiffentPayment(createBillLogRequest, userInfo.loginId());
+		ReadBillLogResponse readBillLogResponse = paymentService.createBillLogWithDifferentPayment(createBillLogRequest, request);
 		return ResponseEntity.ok(readBillLogResponse);
 	}
 
