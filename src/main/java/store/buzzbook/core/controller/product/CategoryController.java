@@ -23,7 +23,7 @@ import store.buzzbook.core.service.product.CategoryService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/products/categories")
+@RequestMapping("/api/categories")
 @Tag(name = "카테고리 관리", description = "카테고리 CRUD")
 public class CategoryController {
 

@@ -1,5 +1,6 @@
 package store.buzzbook.core.service.product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -29,7 +30,8 @@ public class CategoryService {
 		Category parentCategory = null;
 		if (categoryRequest.getParentCategory() != null) {
 			int parentId = categoryRequest.getParentCategory();
-			parentCategory = categoryRepository.findById(parentId).orElseThrow(() -> new DataNotFoundException("parent category", parentId));
+			parentCategory = categoryRepository.findById(parentId)
+				.orElseThrow(() -> new DataNotFoundException("parent category", parentId));
 		}
 		Category category = new Category(categoryRequest.getName(), parentCategory);
 		return CategoryResponse.convertToCategoryResponse(categoryRepository.save(category));
@@ -47,13 +49,14 @@ public class CategoryService {
 	}
 
 	public CategoryResponse updateCategory(int categoryId, CategoryRequest categoryRequest) {
-		if(!categoryRepository.existsById(categoryId)) {
+		if (!categoryRepository.existsById(categoryId)) {
 			throw new DataNotFoundException("category", categoryId);
 		}
 		Category parentCategory = null;
 		if (categoryRequest.getParentCategory() != null) {
 			int parentId = categoryRequest.getParentCategory();
-			parentCategory = categoryRepository.findById(parentId).orElseThrow(() -> new DataNotFoundException("parent category", parentId));
+			parentCategory = categoryRepository.findById(parentId)
+				.orElseThrow(() -> new DataNotFoundException("parent category", parentId));
 		}
 		Category category = new Category(categoryId, categoryRequest.getName(), parentCategory);
 		return CategoryResponse.convertToCategoryResponse(categoryRepository.save(category));
@@ -61,20 +64,47 @@ public class CategoryService {
 
 	@Transactional
 	public void deleteCategory(int categoryId) {
-		if(!categoryRepository.existsById(categoryId)) {
+		if (!categoryRepository.existsById(categoryId)) {
 			throw new DataNotFoundException("category", categoryId);
 		}
 		List<Product> products = productRepository.findByCategoryId(categoryId);
 		if (!products.isEmpty()) {
 			throw new IllegalRequestException("해당 카테고리로 분류된 상품이 있어 카테고리를 삭제할 수 없습니다.");
 		}
+		categoryRepository.deleteById(categoryId);
 	}
 
-	public List<CategoryResponse> getTopCategories(){
-		return categoryRepository.findByParentCategoryIsNull().stream().map(CategoryResponse::convertToCategoryResponse).toList();
+	public List<CategoryResponse> getTopCategories() {
+		return categoryRepository.findByParentCategoryIsNull()
+			.stream()
+			.map(CategoryResponse::convertToCategoryResponse)
+			.toList();
 	}
 
-	public List<CategoryResponse> getChildCategories(int categoryId){
-		return categoryRepository.findAllByParentCategoryId(categoryId).stream().map(CategoryResponse::convertToCategoryResponse).toList();
+	public List<CategoryResponse> getChildCategories(int categoryId) {
+		return categoryRepository.findAllByParentCategoryId(categoryId)
+			.stream()
+			.map(CategoryResponse::convertToCategoryResponse)
+			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<Category> findAllSubcategories(int categoryId) {
+		Category category = categoryRepository.findById(categoryId)
+			.orElseThrow(() -> new DataNotFoundException("category", categoryId));
+		List<Category> categoryList = new ArrayList<>();
+		categoryList.add(category);
+		findAllSubcategoriesRecursive(categoryId, categoryList);
+		return categoryList;
+	}
+
+	private void findAllSubcategoriesRecursive(int categoryId, List<Category> categoryList) {
+		if (categoryRepository.existsById(categoryId)) {
+			List<Category> subCategoryList = categoryRepository.findAllByParentCategoryId(categoryId);
+			for (Category subcategory : subCategoryList) {
+				categoryList.add(subcategory);
+				findAllSubcategoriesRecursive(subcategory.getId(), categoryList);
+			}
+		}
 	}
 }
