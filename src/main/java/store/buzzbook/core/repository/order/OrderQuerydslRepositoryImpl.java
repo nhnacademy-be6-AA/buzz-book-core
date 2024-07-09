@@ -62,7 +62,9 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 					order.sender.as("sender"),
 					order.receiverContactNumber.as("receiverContactNumber"),
 					order.senderContactNumber.as("senderContactNumber"),
-					order.couponCode.as("couponCode")
+					order.couponCode.as("couponCode"),
+					order.deliveryRate.as("deliveryRate"),
+					order.orderEmail.as("orderEmail")
 				)
 			)
 			.from(order)
@@ -117,7 +119,10 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 					order.sender.as("sender"),
 					order.receiverContactNumber.as("receiverContactNumber"),
 					order.senderContactNumber.as("senderContactNumber"),
-					order.couponCode.as("couponCode")
+					order.couponCode.as("couponCode"),
+					order.deliveryRate.as("deliveryRate"),
+					order.orderEmail.as("orderEmail")
+
 				)
 			)
 			.from(order)
@@ -170,7 +175,9 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 					order.sender.as("sender"),
 					order.receiverContactNumber.as("receiverContactNumber"),
 					order.senderContactNumber.as("senderContactNumber"),
-					order.couponCode.as("couponCode")
+					order.couponCode.as("couponCode"),
+					order.deliveryRate.as("deliveryRate"),
+					order.orderEmail.as("orderEmail")
 				)
 			)
 			.from(order)

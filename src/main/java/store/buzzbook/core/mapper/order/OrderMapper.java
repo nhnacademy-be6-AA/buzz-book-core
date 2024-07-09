@@ -32,6 +32,7 @@ public class OrderMapper {
 			.sender(order.getSender())
 			.orderEmail(order.getOrderEmail())
 			.couponCode(order.getCouponCode())
+			.deliveryRate(order.getDeliveryRate())
 			.build();
 	}
 
@@ -51,6 +52,7 @@ public class OrderMapper {
 			.senderContactNumber(createOrderRequest.getContactNumber())
 			.orderEmail(createOrderRequest.getOrderEmail())
 			.couponCode(createOrderRequest.getCouponCode())
+			.deliveryRate(createOrderRequest.getDeliveryRate())
 			.build();
 	}
 
@@ -71,6 +73,7 @@ public class OrderMapper {
 			.senderContactNumber(createOrderRequest.getContactNumber())
 			.orderEmail(createOrderRequest.getOrderEmail())
 			.couponCode(createOrderRequest.getCouponCode())
+			.deliveryRate(createOrderRequest.getDeliveryRate())
 			.build();
 	}
 }
