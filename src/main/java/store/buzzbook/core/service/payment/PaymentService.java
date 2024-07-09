@@ -283,6 +283,7 @@ public class PaymentService {
 		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getFirst().getPaymentKey();
 	}
 
+	@Transactional
 	public void createCancelBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
