@@ -69,4 +69,12 @@ public class CategoryService {
 			throw new IllegalRequestException("해당 카테고리로 분류된 상품이 있어 카테고리를 삭제할 수 없습니다.");
 		}
 	}
+
+	public List<CategoryResponse> getTopCategories(){
+		return categoryRepository.findByParentCategoryIsNull().stream().map(CategoryResponse::convertToCategoryResponse).toList();
+	}
+
+	public List<CategoryResponse> getChildCategories(int categoryId){
+		return categoryRepository.findAllByParentCategoryId(categoryId).stream().map(CategoryResponse::convertToCategoryResponse).toList();
+	}
 }

@@ -3,6 +3,8 @@ package store.buzzbook.core.controller.product;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,29 +30,47 @@ public class CategoryController {
 	private final CategoryService categoryService;
 
 	@GetMapping("/all")
-	public List<CategoryResponse> getAllCategories() {
-		return categoryService.getAllCategoryResponses();
+	public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+		List<CategoryResponse> categories = categoryService.getAllCategoryResponses();
+		return ResponseEntity.ok(categories);
+	}
+
+	@GetMapping("/{id}/child")
+	public ResponseEntity<List<CategoryResponse>> getChildCategories(@PathVariable int id) {
+		List<CategoryResponse> childCategories = categoryService.getChildCategories(id);
+		return ResponseEntity.ok(childCategories);
+	}
+
+	@GetMapping("/top")
+	public ResponseEntity<List<CategoryResponse>> getTopCategories() {
+		List<CategoryResponse> topCategories = categoryService.getTopCategories();
+		return ResponseEntity.ok(topCategories);
 	}
 
 	@GetMapping
-	public Page<CategoryResponse> getAllCategories(
+	public ResponseEntity<Page<CategoryResponse>> getAllCategories(
 		@RequestParam(required = false) Integer pageNo,
 		@RequestParam(required = false) Integer pageSize) {
-		return categoryService.getPageableCategoryResponses(pageNo, pageSize);
+		Page<CategoryResponse> page = categoryService.getPageableCategoryResponses(pageNo, pageSize);
+		return ResponseEntity.ok(page);
 	}
 
 	@PostMapping
-	public CategoryResponse createCategory(@RequestBody CategoryRequest categoryRequest) {
-		return categoryService.createCategory(categoryRequest);
+	public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
+		CategoryResponse createdCategory = categoryService.createCategory(categoryRequest);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdCategory);
 	}
 
 	@PutMapping("/{id}")
-	public CategoryResponse updateCategory(@PathVariable("id") int id, @RequestBody CategoryRequest categoryRequest) {
-		return categoryService.updateCategory(id, categoryRequest);
+	public ResponseEntity<CategoryResponse> updateCategory(@PathVariable("id") int id,
+		@RequestBody CategoryRequest categoryRequest) {
+		CategoryResponse updatedCategory = categoryService.updateCategory(id, categoryRequest);
+		return ResponseEntity.ok(updatedCategory);
 	}
 
 	@DeleteMapping("/{id}")
-	public void deleteCategory(@PathVariable("id") int id) {
+	public ResponseEntity<Void> deleteCategory(@PathVariable("id") int id) {
 		categoryService.deleteCategory(id);
+		return ResponseEntity.noContent().build();
 	}
 }

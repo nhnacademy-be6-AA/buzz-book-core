@@ -59,7 +59,6 @@ public class ProductController {
 
 		Page<ProductResponse> products = productService.getProductsByCriteria(status, name, categoryId, orderBy, pageNo, pageSize);
 		return ResponseEntity.ok(products);
-
 	}
 
 
