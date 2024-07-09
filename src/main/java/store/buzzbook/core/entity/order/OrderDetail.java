@@ -45,7 +45,6 @@ public class OrderDetail {
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
 
-	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "wrapping_id")
 	private Wrapping wrapping;

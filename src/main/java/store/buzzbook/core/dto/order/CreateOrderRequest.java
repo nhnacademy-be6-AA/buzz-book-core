@@ -2,6 +2,8 @@ package store.buzzbook.core.dto.order;
 
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +16,7 @@ import lombok.Setter;
 public class CreateOrderRequest {
 	private String orderStr;
 	private int price;
+	@Nullable
 	private String request;
 	private String addresses;
 	private String address;
