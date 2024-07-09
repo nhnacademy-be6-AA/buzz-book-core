@@ -1,11 +1,20 @@
 package store.buzzbook.core.service.user;
 
+import java.util.List;
+
+import store.buzzbook.core.common.exception.user.DeactivatedUserException;
+import store.buzzbook.core.common.exception.user.GradeNotFoundException;
+import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
+import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
+import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
+import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.dto.user.UserRealBill;
 
 /**
  * 회원 관리를 위한 서비스입니다.
@@ -110,4 +119,6 @@ public interface UserService {
 	 *
 	 */
 	void updatePassword(Long userId, ChangePasswordRequest changePasswordRequest);
+
+	List<UserRealBill> getUserRealBills();
 }

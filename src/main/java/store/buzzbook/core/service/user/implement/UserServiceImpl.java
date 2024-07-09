@@ -26,6 +26,7 @@ import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.dto.user.UserRealBill;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
@@ -265,6 +266,11 @@ public class UserServiceImpl implements UserService {
 
 		user.get().changePassword(changePasswordRequest.newPassword());
 		userRepository.save(user.get());
+	}
+
+	@Override
+	public List<UserRealBill> getUserRealBills() {
+		return userRepository.findUserRealBillsIn3Month();
 	}
 
 	private boolean isPasswordEncrypted(String password) {
