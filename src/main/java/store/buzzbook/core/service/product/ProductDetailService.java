@@ -9,13 +9,13 @@ import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.BookResponse;
 import store.buzzbook.core.dto.product.ProductDetailResponse;
-import store.buzzbook.core.dto.review.ReviewResponse;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.review.Review;
 import store.buzzbook.core.repository.product.BookRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.review.ReviewRepository;
+import store.buzzbook.core.service.review.ReviewService;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +23,7 @@ public class ProductDetailService {
 	private final ProductRepository productRepository;
 	private final BookRepository bookRepository;
 	private final ReviewRepository reviewRepository;
+	private final ReviewService reviewService;
 
 	public ProductDetailResponse convertProductDetailResponse(Product product) {
 
@@ -32,7 +33,7 @@ public class ProductDetailService {
 
 		return ProductDetailResponse.builder()
 			.book(BookResponse.convertToBookResponse(book))
-			.reviews(reviews.stream().map(ReviewResponse::new).toList())
+			.reviews(reviews.stream().map(reviewService::constructorReviewResponse).toList())
 			.build();
 	}
 
