@@ -34,4 +34,5 @@ public class ReadOrdersResponse {
 	private String senderContactNumber;
 	private String couponCode;
 	private int deliveryRate;
+	private String orderEmail;
 }

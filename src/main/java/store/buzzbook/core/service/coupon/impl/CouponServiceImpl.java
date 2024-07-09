@@ -103,7 +103,7 @@ public class CouponServiceImpl implements CouponService {
 		List<OrderCouponResponse> coupons = couponClient.getUserCoupons(request);
 
 		return coupons.stream()
-			.filter(coupon -> targetIds.contains(coupon.targetId()))
+			.filter(coupon -> coupon.targetId() == 0 || targetIds.contains(coupon.targetId()))
 			.map(coupon -> OrderCouponDetailResponse.builder()
 				.couponCode(coupon.code())
 				.couponPolicyId(coupon.couponPolicyResponse().id())

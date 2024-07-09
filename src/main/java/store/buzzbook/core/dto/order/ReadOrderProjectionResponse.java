@@ -31,4 +31,5 @@ public class ReadOrderProjectionResponse {
 	private String senderContactNumber;
 	private String couponCode;
 	private int deliveryRate;
+	private String orderEmail;
 }
