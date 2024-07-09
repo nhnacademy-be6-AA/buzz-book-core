@@ -34,5 +34,6 @@ public class BookSearchController {
     @Operation(summary = "Search and save books", description = "aladin API에서 도서를 검색하고 데이터베이스에 저장함")
     public void searchAndSaveBooks(@RequestParam(required = false, defaultValue = "") String query) {
         bookSearchService.searchAndSaveBooks(query);
+        log.info("{}", query);
     }
 }

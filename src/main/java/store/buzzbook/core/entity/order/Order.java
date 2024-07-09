@@ -58,10 +58,8 @@ public class Order {
 	@Size(min = 1, max = 20)
 	@NotNull
 	private String sender;
-	@Max(value = 15)
 	@NotNull
 	private String senderContactNumber;
-	@Max(value = 15)
 	@NotNull
 	private String receiverContactNumber;
 
@@ -70,6 +68,8 @@ public class Order {
 	
 	@Size(min = 1, max = 20)
 	private String couponCode;
+
+	private Integer deliveryRate;
 
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
