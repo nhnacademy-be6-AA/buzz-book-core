@@ -19,6 +19,8 @@ public interface BillLogRepository extends JpaRepository<BillLog, Long>, BillLog
 
 	List<BillLog> findByOrder_OrderStr(String orderStr);
 
-	BillLog findByOrder_OrderStrAndOrder_User_Id(String orderStr, long userId);
-	BillLog findByOrder_OrderStrAndOrder_OrderEmail(String orderStr, String orderEmail);
+	List<BillLog> findByOrder_OrderStrAndOrder_User_Id(String orderStr, long userId);
+	List<BillLog> findByOrder_OrderStrAndOrder_OrderEmail(String orderStr, String orderEmail);
+
+	List<BillLog> findAllByPaymentKey(String paymentKey);
 }

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.payment.CreateBillLogRequest;
+import store.buzzbook.core.dto.payment.CreateCancelBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
@@ -36,6 +37,8 @@ import store.buzzbook.core.service.user.UserService;
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
+	private static final String CANCELED = "Canceled";
+
 	private final PaymentService paymentService;
 	private final UserService userService;
 	private final OrderService orderService;
@@ -90,6 +93,14 @@ public class PaymentController {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		ReadBillLogResponse readBillLogResponse = paymentService.createBillLogWithDiffentPayment(createBillLogRequest, userInfo.loginId());
 		return ResponseEntity.ok(readBillLogResponse);
+	}
+
+	@JwtOrderValidate
+	@Operation(summary = "포인트, 쿠폰 취소 내역 추가", description = "포인트, 쿠폰 결제 내역 취소 내역 추가")
+	@PostMapping("/bill-log/different-payment/cancel")
+	public ResponseEntity<String> createCancelBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
+		paymentService.createCancelBillLogWithDifferentPayment(createCancelBillLogRequest, request);
+		return ResponseEntity.ok(CANCELED);
 	}
 
 	@JwtOrderValidate
