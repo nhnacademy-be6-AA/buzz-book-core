@@ -13,6 +13,7 @@ import store.buzzbook.core.entity.product.Book;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 	Book findByProductId(int productId);
+	boolean existsByIsbn(@NonNull String isbn);
 
 	List<Book> findAllByProductIdIn(List<Integer> productIdList);
 

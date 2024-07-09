@@ -51,13 +51,16 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 	Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 
-	@Query("SELECT p, b, r " +
+	@Query("SELECT DISTINCT b, r " +
 		"FROM Product p " +
 		"JOIN Book b ON p.id = b.product.id " +
-		"LEFT JOIN Review r ON r.orderDetail.id IN " +
-		"(SELECT od.id FROM OrderDetail od WHERE od.product.id = p.id ORDER BY r.reviewCreatedAt DESC) " +
+		"LEFT JOIN OrderDetail od ON p.id = od.product.id " +
+		"JOIN Review r ON p.id = r.orderDetail.product.id " +
 		"WHERE p.id = :productId " +
-		"ORDER BY r.reviewCreatedAt DESC")
-	Object[] findRecentReviewsForProduct(@Param("productId") int productId);
+		"ORDER BY r.reviewCreatedAt DESC " +
+		"LIMIT 5 "
+	)
+	List<Object[]> findProductDetailWithReviews(@Param("productId") int productId);
 
 }
+

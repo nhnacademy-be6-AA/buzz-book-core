@@ -11,9 +11,7 @@ import store.buzzbook.core.dto.review.ReviewResponse;
 @Getter
 @Builder
 public class ProductDetailResponse {
-	ProductResponse product;
 	@Nullable
 	BookResponse book;
 	List<ReviewResponse> reviews;
-
 }
