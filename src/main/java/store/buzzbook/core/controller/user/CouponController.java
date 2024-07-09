@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,11 +68,11 @@ public class CouponController {
 
 	@JwtOrderValidate
 	@DeleteMapping("/order")
-	@Operation(summary = "유저 주문 쿠폰 삭제 요청", description = "유저의 주문 목록에서 적용 가능한 쿠폰을 요청합니다.")
-	public ResponseEntity<Void> deleteUserCoupon(@RequestBody DeleteUserCouponRequest request,
+	@Operation(summary = "유저 주문 쿠폰 삭제 요청", description = "주문 시 적용한 쿠폰을 삭제합니다.")
+	public ResponseEntity<Void> deleteUserCoupon(@RequestParam("couponCode") String couponCode,
 		HttpServletRequest httpServletRequest) {
 		Long userId = (Long)httpServletRequest.getAttribute(AuthService.USER_ID);
-		couponService.deleteUserCoupon(userId, request);
+		couponService.deleteUserCoupon(userId, couponCode, httpServletRequest);
 		return ResponseEntity.ok().build();
 	}
 

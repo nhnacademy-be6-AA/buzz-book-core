@@ -2,6 +2,7 @@ package store.buzzbook.core.service.coupon;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
@@ -20,7 +21,7 @@ public interface CouponService {
 
 	List<OrderCouponDetailResponse> getOrderCoupons(Long userId, List<CartDetailResponse> responses);
 
-	void deleteUserCoupon(Long userId, DeleteUserCouponRequest request);
+	void deleteUserCoupon(Long userId, String couponCode, HttpServletRequest request);
 
 	List<UserInfo> getUserInfoByCurrentBirthday();
 }

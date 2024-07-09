@@ -165,7 +165,7 @@ public class OrderController {
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("/status")
 	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
-		HttpServletRequest request, HttpServletResponse response) {
+		HttpServletRequest request) {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {

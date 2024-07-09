@@ -3,10 +3,17 @@ package store.buzzbook.core.service.coupon.impl;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.client.auth.CouponClient;
 import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
@@ -29,11 +36,17 @@ import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.coupon.CouponService;
 
 @Service
 @RequiredArgsConstructor
 public class CouponServiceImpl implements CouponService {
+	@Value("${api.gateway.host}")
+	private String host;
+
+	@Value("${api.gateway.port}")
+	private int port;
 
 	private final UserRepository userRepository;
 	private final UserCouponRepository userCouponRepository;
@@ -144,16 +157,25 @@ public class CouponServiceImpl implements CouponService {
 
 	@Transactional
 	@Override
-	public void deleteUserCoupon(Long userId, DeleteUserCouponRequest request) {
+	public void deleteUserCoupon(Long userId, String couponCode, HttpServletRequest request) {
 		if (Boolean.FALSE.equals(
-			userCouponRepository.existsByUserIdAndCouponPolicyId(userId, request.couponPolicyId()))) {
+			userCouponRepository.existsByUser_IdAndCouponCode(userId, couponCode))) {
 			throw new UserCouponNotFoundException();
 		}
 
-		couponClient.updateCoupon(UpdateCouponRequest.builder()
-			.couponCode(request.couponCode())
-			.status(CouponStatus.USED)
-			.build());
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
+		headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
+		headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
+
+		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(couponCode, CouponStatus.USED);
+
+		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
+
+		ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
+			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+			CouponResponse.class);
 	}
 
 	@Transactional(readOnly = true)
