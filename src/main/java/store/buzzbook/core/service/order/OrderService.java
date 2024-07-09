@@ -99,7 +99,7 @@ public class OrderService {
 			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream().filter(o->o.getOrderStr().equals(orderStr)).findFirst();
 			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Order not found"));
 			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
-				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver())
+				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver()).deliveryRate(order.getDeliveryRate())
 				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
 				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).couponCode(order.getCouponCode()).build();
 			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
@@ -133,7 +133,7 @@ public class OrderService {
 			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream().filter(o->o.getOrderStr().equals(orderStr)).findFirst();
 			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Order not found"));
 			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
-				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver())
+				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver()).deliveryRate(order.getDeliveryRate())
 				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
 				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).couponCode(order.getCouponCode()).build();
 			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();

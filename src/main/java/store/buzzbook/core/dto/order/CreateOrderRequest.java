@@ -32,4 +32,5 @@ public class CreateOrderRequest {
 	private String orderEmail;
 	private Integer myPoint;
 	private String couponCode;
+	private int deliveryRate;
 }
