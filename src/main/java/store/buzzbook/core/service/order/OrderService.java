@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,10 +86,10 @@ public class OrderService {
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
-		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+		int page = request.getPage() - 1;
+		int size = request.getSize();
 
-		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAll(request, pageable);
-		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
+		List<ReadOrderProjectionResponse> orders = orderRepository.findAll(request);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
 		Set<String> orderStrs = orders.stream().map(ReadOrderProjectionResponse::getOrderStr).collect(Collectors.toSet());
@@ -114,18 +112,29 @@ public class OrderService {
 			responses.add(readOrdersResponse);
 		}
 
-		data.put("responseData", responses);
-		data.put("total", responses.size());
+		int totalElements = responses.size();
+		int totalPages = (int) Math.ceil((double) totalElements / size);
+
+		int fromIndex = Math.min(page * size, totalElements);
+		int toIndex = Math.min((page + 1) * size, totalElements);
+
+		List<ReadOrdersResponse> paginatedResponses = responses.subList(fromIndex, toIndex);
+
+		data.put("responseData", paginatedResponses);
+		data.put("total", paginatedResponses.size());
+		// data.put("totalPages", totalPages);
+		// data.put("currentPage", page + 1);
+		// data.put("pageSize", size);
 
 		return data;
 	}
 
 	public Map<String, Object> readMyOrders(ReadOrdersRequest request, String loginId) {
 		Map<String, Object> data = new HashMap<>();
-		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+		int page = request.getPage() - 1;
+		int size = request.getSize();
 
-		Page<ReadOrderProjectionResponse> pageOrders = orderRepository.findAllByUser_LoginId(request, loginId, pageable);
-		List<ReadOrderProjectionResponse> orders = pageOrders.getContent();
+		List<ReadOrderProjectionResponse> orders = orderRepository.findAllByUser_LoginId(request, loginId);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
 		Set<String> orderStrs = orders.stream().map(ReadOrderProjectionResponse::getOrderStr).collect(Collectors.toSet());
@@ -148,8 +157,19 @@ public class OrderService {
 			responses.add(readOrdersResponse);
 		}
 
-		data.put("responseData", responses);
-		data.put("total", responses.size());
+		int totalElements = responses.size();
+		int totalPages = (int) Math.ceil((double) totalElements / size);
+
+		int fromIndex = Math.min(page * size, totalElements);
+		int toIndex = Math.min((page + 1) * size, totalElements);
+
+		List<ReadOrdersResponse> paginatedResponses = responses.subList(fromIndex, toIndex);
+
+		data.put("responseData", paginatedResponses);
+		data.put("total", paginatedResponses.size());
+		// data.put("totalPages", totalPages);
+		// data.put("currentPage", page + 1);
+		// data.put("pageSize", size);
 
 		return data;
 	}
