@@ -80,7 +80,11 @@ public class OrderController {
 	@Operation(summary = "주문 등록", description = "주문하기")
 	@PostMapping("/register")
 	public ResponseEntity<ReadOrderResponse> createOrder(@RequestBody CreateOrderRequest createOrderRequest, HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		String loginId = (String)request.getAttribute(AuthService.LOGIN_ID);
+		if (loginId == null) {
+			return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
+		}
+		UserInfo userInfo = userService.getUserInfoByLoginId(loginId);
 		createOrderRequest.setLoginId(userInfo.loginId());
 		ReadOrderResponse response = orderService.createOrder(createOrderRequest);
 		return ResponseEntity.ok(response);
