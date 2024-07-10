@@ -123,8 +123,6 @@ public class CartServiceImpl implements CartService {
 		}
 
 		cartDetailRepository.deleteAllByCart(cart.get());
-		log.debug("{}", cart.get());
-
 	}
 
 	@Transactional
