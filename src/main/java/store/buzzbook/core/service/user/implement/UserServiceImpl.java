@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,16 +13,21 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.client.auth.CouponClient;
+import store.buzzbook.core.client.auth.DoorayClient;
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
+import store.buzzbook.core.common.exception.user.DoorayException;
+import store.buzzbook.core.common.exception.user.DormantUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
 import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
+import store.buzzbook.core.common.util.AuthCodeGenerator;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
+import store.buzzbook.core.dto.user.DoorayMessagePayload;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
@@ -33,6 +39,7 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
@@ -52,17 +59,19 @@ public class UserServiceImpl implements UserService {
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
 	private final PointLogRepository pointLogRepository;
+	private final DoorayClient doorayClient;
 	private final UserCouponRepository userCouponRepository;
 	private final CouponClient couponClient;
 	private final ProductService productService;
+	private static final String DOORAY_URL = "https://hook.dooray.com/services/3204376758577275363/3844281503041287963/rhI2AlZaT-SjIHz-Zu-BiQ";
+	private static final String AUTH_BOT_NAME = "BUZZ-BOOK";
 
 	@Transactional(readOnly = true)
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
-		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
-		if (isDeactivate) {
+		if (user.getStatus().equals(UserStatus.WITHDRAW)) {
 			log.debug("로그인 실패 : 탈퇴한 유저의 아이디 {} 입니다.", user.getId());
 			throw new DeactivatedUserException(loginId);
 		}
@@ -78,6 +87,21 @@ public class UserServiceImpl implements UserService {
 
 		if (userOptional.isEmpty()) {
 			throw new UserNotFoundException(loginId);
+		}
+
+		if (userOptional.get().getStatus().equals(UserStatus.DORMANT)) {
+			log.debug("휴면된 유저의 로그인 요청입니다.");
+			String code = AuthCodeGenerator.generate();
+			DoorayMessagePayload messagePayload = DoorayMessagePayload.builder()
+				.text(code)
+				.botName(AUTH_BOT_NAME)
+				.build();
+			ResponseEntity<String> responseEntity = doorayClient.sendMessage(messagePayload);
+			if (responseEntity.getStatusCode().isError()) {
+				throw new DoorayException();
+			}
+
+			throw new DormantUserException();
 		}
 
 		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
@@ -173,10 +197,15 @@ public class UserServiceImpl implements UserService {
 		if (userOptional.isEmpty()) {
 			log.debug("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
 			throw new UserNotFoundException(loginId);
+		} else if (userOptional.get().getStatus().equals(UserStatus.WITHDRAW)) {
+			log.debug("탈퇴한 계정의 활성화 요청입니다. : {}", loginId);
+			throw new DeactivatedUserException(loginId);
+		} else if (userOptional.get().getStatus().equals(UserStatus.ACTIVE)) {
+			log.debug("탈퇴한 계정의 활성화 요청입니다. : {}", loginId);
+			throw new UserAlreadyExistsException(loginId);
 		}
 
 		userOptional.get().activate();
-
 		userRepository.save(userOptional.get());
 	}
 
@@ -210,7 +239,6 @@ public class UserServiceImpl implements UserService {
 		}
 
 		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.get().getId());
-
 		int point = 0;
 
 		if (Objects.nonNull(pointLog)) {

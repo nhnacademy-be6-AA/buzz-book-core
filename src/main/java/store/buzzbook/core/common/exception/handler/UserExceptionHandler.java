@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import store.buzzbook.core.common.exception.user.AddressMaxCountException;
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
+import store.buzzbook.core.common.exception.user.DormantUserException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -16,9 +17,14 @@ import store.buzzbook.core.common.exception.user.UserNotFoundException;
 public class UserExceptionHandler {
 	@ExceptionHandler({UserNotFoundException.class, UserAlreadyExistsException.class})
 	public ResponseEntity<ErrorResponse> handleUserNotFoundException(RuntimeException e) {
-
 		return ResponseEntity.badRequest()
 			.body(ErrorResponse.create(e, HttpStatus.BAD_REQUEST, e.getMessage()));
+	}
+
+	@ExceptionHandler(DormantUserException.class)
+	public ResponseEntity<ErrorResponse> handleDormantUserException(DormantUserException e) {
+		return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+			.body(ErrorResponse.create(e, HttpStatus.NOT_ACCEPTABLE, e.getMessage()));
 	}
 
 	@ExceptionHandler(AddressMaxCountException.class)
