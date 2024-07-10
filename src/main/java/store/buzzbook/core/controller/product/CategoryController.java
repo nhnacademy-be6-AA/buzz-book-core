@@ -1,7 +1,5 @@
 package store.buzzbook.core.controller.product;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,23 +27,28 @@ public class CategoryController {
 
 	private final CategoryService categoryService;
 
-	@GetMapping("/all")
-	public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-		List<CategoryResponse> categories = categoryService.getAllCategoryResponses();
-		return ResponseEntity.ok(categories);
+	//해당 카테고리의 모든 하위 카테고리들
+	//0요청하면 모든 카테고리 반환
+	@GetMapping("/{id}/all")
+	public ResponseEntity<CategoryResponse> getAllSubCategories(@PathVariable int id) {
+		CategoryResponse subCategories = categoryService.getAllSubCategories(id);
+		return ResponseEntity.ok(subCategories);
 	}
 
-	@GetMapping("/{id}/child")
-	public ResponseEntity<List<CategoryResponse>> getChildCategories(@PathVariable int id) {
-		List<CategoryResponse> childCategories = categoryService.getChildCategories(id);
-		return ResponseEntity.ok(childCategories);
+	//해당 카테고리의 1차 하위 카테고리들
+	@GetMapping("/{id}/sub")
+	public ResponseEntity<CategoryResponse> getSubCategories(@PathVariable int id) {
+		if(id ==0){
+			return ResponseEntity.ok(categoryService.getTopCategories());
+		}
+		return ResponseEntity.ok(categoryService.getSubCategoriesResponse(id));
 	}
 
-	@GetMapping("/top")
-	public ResponseEntity<List<CategoryResponse>> getTopCategories() {
-		List<CategoryResponse> topCategories = categoryService.getTopCategories();
-		return ResponseEntity.ok(topCategories);
-	}
+	// @GetMapping("/top")
+	// public ResponseEntity<CategoryResponse> getTopCategories() {
+	// 	CategoryResponse topCategories = categoryService.getTopCategories();
+	// 	return ResponseEntity.ok(topCategories);
+	// }
 
 	@GetMapping
 	public ResponseEntity<Page<CategoryResponse>> getAllCategories(

@@ -12,7 +12,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 
 @Slf4j
@@ -48,10 +47,12 @@ public class ProductSpecification {
 				predicates.add(criteriaBuilder.like(root.get("productName"), "%" + name + "%"));
 			}
 			if (categoryId != null) {
-				List<Integer> categoryIds = categoryService.findAllSubcategories(categoryId).stream().map(Category::getId).toList();
+				List<Integer> categoryIds = categoryService.getSubAllCategoryIds(categoryId);
 				predicates.add(root.get("category").get("id").in(categoryIds));
 			}
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 	}
+
+
 }
