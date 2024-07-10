@@ -25,9 +25,9 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 	private final JPAQueryFactory jpaQueryFactory;
 
 	@Override
-	public Page<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, String loginId, Pageable pageable) {
+	public List<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, String loginId) {
 
-		List<ReadOrderProjectionResponse> results = jpaQueryFactory
+		return jpaQueryFactory
 			.select(
 				Projections.constructor(
 					ReadOrderProjectionResponse.class,
@@ -71,20 +71,13 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.join(order.user).on(order.user.id.eq(user.id))
 			.leftJoin(order.details, orderDetail)
 			.where(order.user.loginId.eq(loginId))
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
 			.fetch();
-
-		List<ReadOrderProjectionResponse> content = results;
-		long total = results.size();
-
-		return new PageImpl<>(content, pageable, total);
 	}
 
 	@Override
-	public Page<ReadOrderProjectionResponse> findAll(ReadOrdersRequest request, Pageable pageable) {
+	public List<ReadOrderProjectionResponse> findAll(ReadOrdersRequest request) {
 
-		List<ReadOrderProjectionResponse> results = jpaQueryFactory
+		return jpaQueryFactory
 			.select(
 				Projections.constructor(
 					ReadOrderProjectionResponse.class,
@@ -128,14 +121,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.from(order)
 			.join(order.user).on(order.user.id.eq(user.id))
 			.leftJoin(order.details, orderDetail)
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
 			.fetch();
-
-		List<ReadOrderProjectionResponse> content = results;
-		long total = results.size();
-
-		return new PageImpl<>(content, pageable, total);
 	}
 
 	@Override
