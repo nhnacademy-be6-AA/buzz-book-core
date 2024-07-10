@@ -2,8 +2,6 @@ package store.buzzbook.core.service.image;
 
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,6 +17,7 @@ import store.buzzbook.core.client.image.CloudImageClient;
 public class ImageService {
 
 	private final CloudImageClient cloudImageClient;
+
 
 	@Value("${nhncloud.image.appkey}")
 	private String appKey;
@@ -38,10 +37,11 @@ public class ImageService {
 
 		try {
 			String paramsJson = new ObjectMapper().writeValueAsString(paramsMap);
-			ResponseEntity<String> response = cloudImageClient.uploadImages(secretKey, paramsJson, files);
+			ResponseEntity<String> response = cloudImageClient.uploadImages(appKey, authorizationHeader, paramsJson, files);
 			return response.getBody();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to upload images", e);
 		}
 	}
+
 }

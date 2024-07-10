@@ -57,7 +57,7 @@ nhncloud:
       password: 3a23273e707b438e94f104f47ce7a7ba
   image:
     appkey: vyiy4M85i8mJ5mgP
-    secretkey: ffpUQvzkmH8RsQDTuvpZD7U9tWIqExe4
+    secretkey: fBlt6m4cSRJs07X05mhPBfmofWoBlcSU
 
 feign:
   client:
