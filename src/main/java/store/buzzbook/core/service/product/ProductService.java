@@ -34,6 +34,7 @@ public class ProductService {
 	private final CategoryRepository categoryRepository;
 	private final TagRepository tagRepository;
 	private final ProductTagRepository productTagRepository;
+	private final ProductSpecification productSpecification;
 
 	// // // Elasticsearch 용 리포지토리
 	// private final ProductDocumentRepository productDocumentRepository;
@@ -68,12 +69,6 @@ public class ProductService {
 			.toList();
 	}
 
-	@Transactional(readOnly = true)
-	public List<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus) {
-		return productRepository.findAllByStockStatus(stockStatus).stream()
-			.map(ProductResponse::convertToProductResponse)
-			.toList();
-	}
 
 	@Transactional(readOnly = true)
 	public Page<ProductResponse> getAllProducts(int page, int size) {
@@ -81,12 +76,6 @@ public class ProductService {
 		return productRepository.findAll(pageable).map(ProductResponse::convertToProductResponse);
 	}
 
-	@Transactional(readOnly = true)
-	public Page<ProductResponse> getAllProductsByStockStatus(Product.StockStatus stockStatus, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByStockStatus(stockStatus, pageable)
-			.map(ProductResponse::convertToProductResponse);
-	}
 
 	@Transactional(readOnly = true)
 	public ProductResponse getProductById(int id) {
@@ -150,12 +139,6 @@ public class ProductService {
 		return productRepository.save(newProduct);
 	}
 
-	@Transactional(readOnly = true)
-	public Page<ProductResponse> getAllProductByName(String productName, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByProductNameContaining(productName, pageable)
-			.map(this::convertToProductResponse);
-	}
 
 	//엘라 대체용으로 임시로 만듦
 	@Transactional(readOnly = true)
@@ -168,22 +151,6 @@ public class ProductService {
 			.toList();
 	}
 
-	@Transactional(readOnly = true)
-	public Page<ProductResponse> getAllProductsByNameAndStockStatus(String productName, Product.StockStatus stockStatus, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByProductNameContainingAndStockStatus(productName, stockStatus, pageable)
-			.map(this::convertToProductResponse);
-	}
-
-	public Page<ProductResponse> getAllProductsByStockStatusOrderedName(Product.StockStatus stockStatus, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByStockStatusOrderByProductNameDesc(stockStatus, pageable).map(this::convertToProductResponse);
-	}
-
-	public Page<ProductResponse> getAllProductOrderedByName(int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findAllByOrderByProductNameDesc(pageable).map(this::convertToProductResponse);
-	}
 
 	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId, String orderBy, int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
@@ -193,8 +160,8 @@ public class ProductService {
 		if ("reviews".equals(orderBy)) {
 			products = productRepository.findProductsByCriteriaOrderByReviewCountDesc(status, name, categoryId, pageable);
 		} else {
-			Specification<Product> spec = Specification.where(ProductSpecification.getProductsByCriteria(status, name, categoryId))
-				.and(ProductSpecification.orderBy(orderBy));
+			Specification<Product> spec = Specification.where(productSpecification.getProductsByCriteria(status, name, categoryId))
+				.and(productSpecification.orderBy(orderBy));
 			products = productRepository.findAll(spec, pageable);
 		}
 
@@ -202,7 +169,7 @@ public class ProductService {
 
 	}
 
-	// // Elasticsearch를 통한 검색 메소드
+	// // Elasticsearch 사용한 검색 메소드
 	// @Transactional(readOnly = true)
 	// public List<ProductDocument> searchByProductName(String productName) {
 	// 	// return productDocumentRepository.findByProductNameContaining(productName);
