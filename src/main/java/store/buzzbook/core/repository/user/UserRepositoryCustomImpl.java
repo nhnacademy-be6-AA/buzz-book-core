@@ -129,31 +129,5 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 		}
 
 		return new LinkedList<>(userRealBillMap.values());
-		//
-		// return jpaQueryFactory.select(Projections.constructor(UserRealBill.class,
-		// 		user.id,
-		// 		Projections.list(
-		// 			Projections.constructor(UserRealBillInfo.class,
-		// 				order.deliveryRate,
-		// 				Projections.list(
-		// 					Projections.constructor(UserRealBillInfoDetail.class,
-		// 						billLog.status,
-		// 						billLog.price
-		// 					)
-		// 				)
-		// 			)
-		// 		)
-		// 	))
-		// 	.from(billLog)
-		// 	.leftJoin(order)
-		// 	.on(billLog.order.id.eq(order.id)
-		// 		.and(order.isNotNull()
-		// 			.and(billLog.status.in(BillStatus.DONE, BillStatus.CANCELED, BillStatus.REFUND,
-		// 				BillStatus.CANCELED))))
-		// 	.leftJoin(user)
-		// 	.on(user.id.eq(order.user.id))
-		// 	.where(billLog.payAt.after(threeMonthsAgo))
-		// 	.groupBy(user.id)
-		// 	.fetch();
 	}
 }
