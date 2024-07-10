@@ -92,15 +92,36 @@ public class OrderService {
 		List<ReadOrderProjectionResponse> orders = orderRepository.findAll(request);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
-		Set<String> orderStrs = orders.stream().map(ReadOrderProjectionResponse::getOrderStr).collect(Collectors.toSet());
+		Set<String> orderStrs = orders.stream()
+			.map(ReadOrderProjectionResponse::getOrderStr)
+			.collect(Collectors.toSet());
 		for (String orderStr : orderStrs) {
-			Iterator<ReadOrderProjectionResponse> iterator = orders.stream().filter(order -> order.getOrderStr().equals(orderStr)).iterator();
-			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream().filter(o->o.getOrderStr().equals(orderStr)).findFirst();
-			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Order not found"));
-			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
-				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver()).deliveryRate(order.getDeliveryRate()).price(order.getPrice())
-				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate()).orderEmail(order.getOrderEmail())
-				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).couponCode(order.getCouponCode()).build();
+			Iterator<ReadOrderProjectionResponse> iterator = orders.stream()
+				.filter(order -> order.getOrderStr().equals(orderStr))
+				.iterator();
+			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream()
+				.filter(o -> o.getOrderStr().equals(orderStr))
+				.findFirst();
+			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(
+				() -> new OrderNotFoundException("Order not found"));
+			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder()
+				.id(order.getId())
+				.orderStr(order.getOrderStr())
+				.address(order.getAddress())
+				.addressDetail(order.getAddressDetail())
+				.zipcode(order.getZipcode())
+				.receiver(order.getReceiver())
+				.deliveryRate(order.getDeliveryRate())
+				.price(order.getPrice())
+				.request(order.getRequest())
+				.loginId(order.getLoginId())
+				.desiredDeliveryDate(order.getDesiredDeliveryDate())
+				.orderEmail(order.getOrderEmail())
+				.sender(order.getSender())
+				.receiverContactNumber(order.getReceiverContactNumber())
+				.senderContactNumber(order.getSenderContactNumber())
+				.couponCode(order.getCouponCode())
+				.build();
 			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
 			while (iterator.hasNext()) {
 				ReadOrderProjectionResponse newOrder = iterator.next();
@@ -113,7 +134,7 @@ public class OrderService {
 		}
 
 		int totalElements = responses.size();
-		int totalPages = (int) Math.ceil((double) totalElements / size);
+		int totalPages = (int)Math.ceil((double)totalElements / size);
 
 		int fromIndex = Math.min(page * size, totalElements);
 		int toIndex = Math.min((page + 1) * size, totalElements);
@@ -137,15 +158,35 @@ public class OrderService {
 		List<ReadOrderProjectionResponse> orders = orderRepository.findAllByUser_LoginId(request, loginId);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
-		Set<String> orderStrs = orders.stream().map(ReadOrderProjectionResponse::getOrderStr).collect(Collectors.toSet());
+		Set<String> orderStrs = orders.stream()
+			.map(ReadOrderProjectionResponse::getOrderStr)
+			.collect(Collectors.toSet());
 		for (String orderStr : orderStrs) {
-			Iterator<ReadOrderProjectionResponse> iterator = orders.stream().filter(order -> order.getOrderStr().equals(orderStr)).iterator();
-			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream().filter(o->o.getOrderStr().equals(orderStr)).findFirst();
-			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(() -> new OrderNotFoundException("Order not found"));
-			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder().id(order.getId()).orderStr(order.getOrderStr()).address(order.getAddress())
-				.addressDetail(order.getAddressDetail()).zipcode(order.getZipcode()).receiver(order.getReceiver()).deliveryRate(order.getDeliveryRate()).price(order.getPrice())
-				.request(order.getRequest()).loginId(order.getLoginId()).desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.sender(order.getSender()).receiverContactNumber(order.getReceiverContactNumber()).senderContactNumber(order.getSenderContactNumber()).couponCode(order.getCouponCode()).build();
+			Iterator<ReadOrderProjectionResponse> iterator = orders.stream()
+				.filter(order -> order.getOrderStr().equals(orderStr))
+				.iterator();
+			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream()
+				.filter(o -> o.getOrderStr().equals(orderStr))
+				.findFirst();
+			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(
+				() -> new OrderNotFoundException("Order not found"));
+			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder()
+				.id(order.getId())
+				.orderStr(order.getOrderStr())
+				.address(order.getAddress())
+				.addressDetail(order.getAddressDetail())
+				.zipcode(order.getZipcode())
+				.receiver(order.getReceiver())
+				.deliveryRate(order.getDeliveryRate())
+				.price(order.getPrice())
+				.request(order.getRequest())
+				.loginId(order.getLoginId())
+				.desiredDeliveryDate(order.getDesiredDeliveryDate())
+				.sender(order.getSender())
+				.receiverContactNumber(order.getReceiverContactNumber())
+				.senderContactNumber(order.getSenderContactNumber())
+				.couponCode(order.getCouponCode())
+				.build();
 			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
 			while (iterator.hasNext()) {
 				ReadOrderProjectionResponse newOrder = iterator.next();
@@ -158,7 +199,7 @@ public class OrderService {
 		}
 
 		int totalElements = responses.size();
-		int totalPages = (int) Math.ceil((double) totalElements / size);
+		int totalPages = (int)Math.ceil((double)totalElements / size);
 
 		int fromIndex = Math.min(page * size, totalElements);
 		int toIndex = Math.min((page + 1) * size, totalElements);
@@ -181,7 +222,8 @@ public class OrderService {
 		if (createOrderRequest.getLoginId() != null && !createOrderRequest.getLoginId().isBlank()) {
 			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
 
-			user = userRepository.findById(userInfo.id()).orElseThrow(()->new UserNotFoundException("User not found"));
+			user = userRepository.findById(userInfo.id())
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
 		}
 
 		Order order = null;
@@ -197,7 +239,6 @@ public class OrderService {
 		} else {
 			order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
 		}
-
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
@@ -240,15 +281,17 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
 	}
 
+	@Transactional
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
+		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
-		for (OrderDetail orderDetail : orderDetails)
-		{
-			orderDetailRepository.save(OrderDetail.builder().orderStatus(orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName()))
+		List<OrderDetail> updatedOrderDetails = orderDetails.stream().map(orderDetail -> {
+			return OrderDetail.builder()
 				.id(orderDetail.getId())
+				.orderStatus(orderStatus)
 				.wrap(orderDetail.isWrap())
 				.createAt(orderDetail.getCreateAt())
 				.price(orderDetail.getPrice())
@@ -256,20 +299,28 @@ public class OrderService {
 				.order(orderDetail.getOrder())
 				.wrapping(orderDetail.getWrapping())
 				.product(orderDetail.getProduct())
-				.build());
+				.updateAt(LocalDateTime.now())
+				.build();
+		}).toList();
 
+		orderDetailRepository.saveAll(updatedOrderDetails);
+
+		for (OrderDetail orderDetail : updatedOrderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
+
 		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
 	}
+
 
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
@@ -277,9 +328,9 @@ public class OrderService {
 			order.getId(), loginId);
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
-		for (OrderDetail orderDetail : orderDetails)
-		{
-			orderDetailRepository.save(OrderDetail.builder().orderStatus(orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName()))
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetailRepository.save(OrderDetail.builder()
+				.orderStatus(orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName()))
 				.id(orderDetail.getId())
 				.wrap(orderDetail.isWrap())
 				.createAt(orderDetail.getCreateAt())
@@ -293,7 +344,8 @@ public class OrderService {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
@@ -313,7 +365,8 @@ public class OrderService {
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
@@ -333,7 +386,8 @@ public class OrderService {
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
 
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
@@ -451,7 +505,8 @@ public class OrderService {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 
-		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+			.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
@@ -460,7 +515,8 @@ public class OrderService {
 	}
 
 	public ReadOrderDetailResponse updateOrderDetailWithAdmin(UpdateOrderDetailRequest request) {
-		OrderDetail orderDetail = orderDetailRepository.findById(request.getId()).orElseThrow(()-> new OrderDetailNotFoundException("Order Detail not found"));
+		OrderDetail orderDetail = orderDetailRepository.findById(request.getId())
+			.orElseThrow(() -> new OrderDetailNotFoundException("Order Detail not found"));
 		orderDetailRepository.save(OrderDetail.builder()
 			.orderStatus(orderStatusRepository.findByName(request.getOrderStatusName()))
 			.id(orderDetail.getId())
@@ -477,7 +533,8 @@ public class OrderService {
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
 			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId()).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+			.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 
 		ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
