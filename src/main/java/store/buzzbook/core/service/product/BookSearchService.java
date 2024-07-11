@@ -104,7 +104,7 @@ public class BookSearchService {
 					categoryName = categoryName.strip();
 					Category category = categoryRepository.findByName(categoryName);
 					if (category == null) {
-						category = new Category(categoryName, parentCategory);
+						category = new Category(categoryName, parentCategory, List.of());
 						categoryRepository.save(category);
 					}
 					parentCategory = category;

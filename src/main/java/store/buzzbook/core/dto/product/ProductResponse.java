@@ -51,7 +51,7 @@ public class ProductResponse {
 			.score(product.getScore())
 			.thumbnailPath(product.getThumbnailPath())
 			.stockStatus(product.getStockStatus())
-			.category(convertToCategoryResponse(product.getCategory()))
+			.category(convertSub1ToCategoryResponse(product.getCategory()))
 			.tags(tagResponses)
 			.build();
 	}

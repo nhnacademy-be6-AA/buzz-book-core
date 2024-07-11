@@ -132,7 +132,6 @@ public class CartServiceImpl implements CartService {
 		}
 
 		cartDetailRepository.deleteAllByCart(cart.get());
-		cartRepository.deleteByUuid(UuidUtil.stringToByte(uuid));
 	}
 
 	@Transactional
