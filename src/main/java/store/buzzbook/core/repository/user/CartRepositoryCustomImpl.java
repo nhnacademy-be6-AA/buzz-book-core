@@ -29,8 +29,7 @@ public class CartRepositoryCustomImpl implements CartRepositoryCustom {
 
 		List<CartDetailResponse> cartResponseList = new LinkedList<>();
 
-		cartDetailList.forEach(
-			cartDetail -> cartResponseList.add(cartDetail.toResponse()));
+		toResponseList(cartDetailList, cartResponseList);
 
 		return Optional.of(cartResponseList);
 	}
@@ -47,11 +46,28 @@ public class CartRepositoryCustomImpl implements CartRepositoryCustom {
 		}
 
 		List<CartDetailResponse> cartResponseList = new LinkedList<>();
-
-		cartDetailList.forEach(
-			cartDetail -> cartResponseList.add(cartDetail.toResponse()));
+		toResponseList(cartDetailList, cartResponseList);
 
 		return Optional.of(cartResponseList);
+	}
+
+	private void toResponseList(List<CartDetail> cartDetailList, List<CartDetailResponse> cartResponseList) {
+		List<Long> forDeleteIds = new LinkedList<>();
+
+		cartDetailList.forEach(
+			cartDetail -> {
+				if (cartDetail.getProduct().getStock() <= 0) {
+					forDeleteIds.add(cartDetail.getId());
+				} else {
+					cartResponseList.add(cartDetail.toResponse());
+				}
+			});
+
+		if (!forDeleteIds.isEmpty()) {
+			jpaQueryFactory.delete(cartDetail)
+				.where(cartDetail.cart.id.in(forDeleteIds))
+				.execute();
+		}
 	}
 
 }
