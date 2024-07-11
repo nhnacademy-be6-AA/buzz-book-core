@@ -58,7 +58,6 @@ public class SignController {
 		}
 
 		return ResponseEntity.ok(userInfo);
-
 	}
 
 	@PutMapping("/activate")

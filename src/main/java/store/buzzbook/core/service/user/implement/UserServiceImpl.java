@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.client.auth.CouponClient;
-import store.buzzbook.core.client.auth.DoorayClient;
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
-import store.buzzbook.core.common.exception.user.DoorayException;
 import store.buzzbook.core.common.exception.user.DormantUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
@@ -23,11 +20,9 @@ import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
 import store.buzzbook.core.common.exception.user.UserAlreadyExistsException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.common.service.UserProducerService;
-import store.buzzbook.core.common.util.AuthCodeGenerator;
 import store.buzzbook.core.dto.coupon.CreateWelcomeCouponRequest;
 import store.buzzbook.core.dto.user.ChangePasswordRequest;
 import store.buzzbook.core.dto.user.DeactivateUserRequest;
-import store.buzzbook.core.dto.user.DoorayMessagePayload;
 import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
@@ -59,12 +54,9 @@ public class UserServiceImpl implements UserService {
 	private final GradeLogRepository gradeLogRepository;
 	private final UserProducerService userProducerService;
 	private final PointLogRepository pointLogRepository;
-	private final DoorayClient doorayClient;
 	private final UserCouponRepository userCouponRepository;
 	private final CouponClient couponClient;
 	private final ProductService productService;
-	private static final String DOORAY_URL = "https://hook.dooray.com/services/3204376758577275363/3844281503041287963/rhI2AlZaT-SjIHz-Zu-BiQ";
-	private static final String AUTH_BOT_NAME = "BUZZ-BOOK";
 
 	@Transactional(readOnly = true)
 	@Override
@@ -90,17 +82,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (userOptional.get().getStatus().equals(UserStatus.DORMANT)) {
-			log.debug("휴면된 유저의 로그인 요청입니다.");
-			String code = AuthCodeGenerator.generate();
-			DoorayMessagePayload messagePayload = DoorayMessagePayload.builder()
-				.text(code)
-				.botName(AUTH_BOT_NAME)
-				.build();
-			ResponseEntity<String> responseEntity = doorayClient.sendMessage(messagePayload);
-			if (responseEntity.getStatusCode().isError()) {
-				throw new DoorayException();
-			}
-
+			log.debug("로그인 실패. 휴면 계정입니다.");
 			throw new DormantUserException();
 		}
 

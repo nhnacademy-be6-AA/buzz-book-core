@@ -21,7 +21,7 @@ public class DatabaseInitializeConfig {
 	@Bean
 	public ApplicationRunner initDatabase() {
 		int[] standard = new int[] {0, 100000, 200000, 300000};
-		double[] benfit = new double[] {1.0d, 2.0d, 2.0d, 3.0d};
+		double[] benfit = new double[] {0.01d, 0.02d, 0.02d, 0.03d};
 
 		return args -> {
 			for (int i = 0; i < GradeName.values().length; i++) {
