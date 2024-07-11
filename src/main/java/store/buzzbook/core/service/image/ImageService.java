@@ -18,7 +18,6 @@ public class ImageService {
 
 	private final CloudImageClient cloudImageClient;
 
-
 	@Value("${nhncloud.image.appkey}")
 	private String appKey;
 
@@ -44,4 +43,14 @@ public class ImageService {
 		}
 	}
 
+	public Map<String, Object> getFolderImages(String folderPath){
+		String authorizationHeader = secretKey;
+		try{
+			ResponseEntity<String> response = cloudImageClient.getFolderFiles(appKey,authorizationHeader,folderPath);
+			ObjectMapper mapper = new ObjectMapper();
+			return mapper.readValue(response.getBody(),Map.class);
+		}catch (Exception e){
+			throw new RuntimeException("폴더에서 파일 로딩 실패", e);
+		}
+	}
 }

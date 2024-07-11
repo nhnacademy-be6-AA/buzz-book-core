@@ -1,8 +1,10 @@
 package store.buzzbook.core.controller.image;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,6 +28,12 @@ public class ImageUploadController {
 		@RequestParam("folderPath") String folderPath
 	) {
 		String response = imageService.uploadImagesToCloud(files, folderPath);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/list")
+	public ResponseEntity<Map<String, Object>> getFolderFiles(@RequestParam("folderPath") String folderPath) {
+		Map<String, Object> response = imageService.getFolderImages(folderPath);
 		return ResponseEntity.ok(response);
 	}
 }
