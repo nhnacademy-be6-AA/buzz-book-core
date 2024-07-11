@@ -1,13 +1,15 @@
 package store.buzzbook.core.dto.product;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.lang.Nullable;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
+
 @NoArgsConstructor
 @Getter
 public class CategoryRequest {
@@ -15,4 +17,6 @@ public class CategoryRequest {
 	private String name;
 	@Nullable
 	private Integer parentCategory;
+	@Nullable
+	private List<Integer> subCategories = new ArrayList<>();
 }

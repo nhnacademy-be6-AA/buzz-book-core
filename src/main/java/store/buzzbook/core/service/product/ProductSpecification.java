@@ -12,15 +12,17 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.repository.product.CategoryRepository;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductSpecification {
 
-	private final CategoryService categoryService;
+	private final CategoryRepository categoryRepository;
 
 	public Specification<Product> orderBy(String orderBy) {
 		return (Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
@@ -48,10 +50,14 @@ public class ProductSpecification {
 				predicates.add(criteriaBuilder.like(root.get("productName"), "%" + name + "%"));
 			}
 			if (categoryId != null) {
-				List<Integer> categoryIds = categoryService.findAllSubcategories(categoryId).stream().map(Category::getId).toList();
+				Category category = categoryRepository.findById(categoryId).orElseThrow(
+					() -> new DataNotFoundException("Category", categoryId)
+				);
+				List<Integer> categoryIds = category.getAllSubCategoryIdsIterative();
 				predicates.add(root.get("category").get("id").in(categoryIds));
 			}
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 		};
 	}
+
 }

@@ -14,7 +14,7 @@ public class DataAlreadyException extends RuntimeException{
 		super(cause);
 	}
 
-	public DataAlreadyException(String message, Throwable cause) {
-		super(message, cause);
+	public DataAlreadyException(String message) {
+		super(message);
 	}
 }
