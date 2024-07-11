@@ -44,12 +44,6 @@ public class CategoryController {
 		return ResponseEntity.ok(categoryService.getSubCategoriesResponse(id));
 	}
 
-	// @GetMapping("/top")
-	// public ResponseEntity<CategoryResponse> getTopCategories() {
-	// 	CategoryResponse topCategories = categoryService.getTopCategories();
-	// 	return ResponseEntity.ok(topCategories);
-	// }
-
 	@GetMapping
 	public ResponseEntity<Page<CategoryResponse>> getAllCategories(
 		@RequestParam(required = false) Integer pageNo,
