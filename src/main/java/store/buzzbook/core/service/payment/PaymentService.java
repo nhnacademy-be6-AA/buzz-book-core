@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
@@ -86,6 +85,7 @@ public class PaymentService {
 	private static final String POINT_PAYMENT_INQUIRY = "주문 시 포인트 결제";
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final int ORDER_STATUS_PAID = 4;
+	private static final int ORDER_STATUS_CANCELED = 2;
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 
@@ -157,7 +157,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_CANCELED)
 				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
