@@ -50,6 +50,7 @@ import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.point.PointLog;
+import store.buzzbook.core.entity.point.PointPolicy;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserCoupon;
@@ -63,6 +64,7 @@ import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
@@ -223,7 +225,7 @@ public class PaymentService {
 		BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
 
 		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 
 		if (createBillLogRequest.getPayment().equals(POINT)) {
 			int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
@@ -250,7 +252,7 @@ public class PaymentService {
 		}
 
 		return BillLogMapper.toDto(billLog,
-			OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
@@ -316,7 +318,7 @@ public class PaymentService {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 
 		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey());
 		for (BillLog billLog : billLogs.stream().filter(b -> !b.getPayment().equals(SIMPLE_PAYMENT)).toList()) {
 			billLogRepository.save(BillLog.builder()

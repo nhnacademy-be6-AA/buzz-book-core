@@ -27,6 +27,7 @@ import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
@@ -44,6 +45,8 @@ import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
+import store.buzzbook.core.dto.point.CreatePointLogRequest;
+import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
@@ -51,6 +54,7 @@ import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
+import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
@@ -64,6 +68,8 @@ import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
+import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.AddressRepository;
 import store.buzzbook.core.repository.user.UserRepository;
@@ -74,6 +80,7 @@ import store.buzzbook.core.service.user.UserService;
 @Slf4j
 public class OrderService {
 	private static final int UNPACKAGED = 1;
+
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final UserRepository userRepository;
@@ -83,6 +90,8 @@ public class OrderService {
 	private final OrderStatusRepository orderStatusRepository;
 	private final UserService userService;
 	private final AddressRepository addressRepository;
+	private final PointLogRepository pointLogRepository;
+	private final PointPolicyRepository pointPolicyRepository;
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -223,7 +232,7 @@ public class OrderService {
 			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
 
 			user = userRepository.findById(userInfo.id())
-				.orElseThrow(() -> new UserNotFoundException("User not found"));
+				.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		}
 
 		Order order = null;
@@ -279,6 +288,18 @@ public class OrderService {
 		}
 
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
+	}
+
+	@Transactional
+	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, String loginId) {
+		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
+		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
+		int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+		int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
+		PointLog pointLog = pointLogRepository.save(PointLog.builder().inquiry(createPointLogForOrderRequest.getPointOrderInquiry()).createdAt(LocalDateTime.now())
+			.delta(point).balance(balance+point).user(user).build());
+
+		return PointLogResponse.from(pointLog);
 	}
 
 	@Transactional
