@@ -1,10 +1,13 @@
 package store.buzzbook.core.entity.product;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,13 +35,11 @@ public class Category {
 	@Column(nullable = false, length = 20)
 	private String name; //카테고리명
 
-	@ManyToOne//(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parent_id")
 	private Category parentCategory;
 
-	@OneToMany(mappedBy = "parentCategory"
-		//, fetch = FetchType.LAZY
-	)
+	@OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
 	private List<Category> subCategories = new ArrayList<>();
 
 	public Category(String name, Category parentCategory, List<Category> subCategories) {
@@ -48,5 +49,21 @@ public class Category {
 			subCategories = new ArrayList<>();
 		}
 		this.subCategories = subCategories;
+	}
+
+	public List<Integer> getAllSubCategoryIdsIterative() {
+		List<Integer> allSubCategoryIds = new ArrayList<>();
+		Deque<Category> stack = new ArrayDeque<>();
+		stack.push(this);
+
+		while (!stack.isEmpty()) {
+			Category currentCategory = stack.pop();
+			allSubCategoryIds.add(currentCategory.getId());
+
+			for (Category subCategory : currentCategory.getSubCategories()) {
+				stack.push(subCategory);
+			}
+		}
+		return allSubCategoryIds;
 	}
 }
