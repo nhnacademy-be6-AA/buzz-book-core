@@ -329,8 +329,10 @@ public class PaymentService {
 
 		User user = userRepository.findByLoginId(userInfo.loginId())
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey());
-		for (BillLog billLog : billLogs.stream().filter(b -> !(b.getPayment().equals(SIMPLE_PAYMENT))).toList()) {
+		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
+			.stream().filter(b->!b.getPayment().equals(SIMPLE_PAYMENT)).toList();
+
+		for (BillLog billLog : billLogs) {
 			billLogRepository.save(BillLog.builder()
 				.price(billLog.getPrice())
 				.paymentKey(createCancelBillLogRequest.getPaymentKey())
