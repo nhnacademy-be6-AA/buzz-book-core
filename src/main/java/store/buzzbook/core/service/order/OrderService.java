@@ -309,11 +309,10 @@ public class OrderService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
-
-		List<OrderDetail> updatedOrderDetails = orderDetails.stream().map(orderDetail -> {
-			return OrderDetail.builder()
-				.id(orderDetail.getId())
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetailRepository.save(OrderDetail.builder()
 				.orderStatus(orderStatus)
+				.id(orderDetail.getId())
 				.wrap(orderDetail.isWrap())
 				.createAt(orderDetail.getCreateAt())
 				.price(orderDetail.getPrice())
@@ -321,13 +320,8 @@ public class OrderService {
 				.order(orderDetail.getOrder())
 				.wrapping(orderDetail.getWrapping())
 				.product(orderDetail.getProduct())
-				.updateAt(LocalDateTime.now())
-				.build();
-		}).toList();
+				.build());
 
-		orderDetailRepository.saveAll(updatedOrderDetails);
-
-		for (OrderDetail orderDetail : updatedOrderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
@@ -339,8 +333,7 @@ public class OrderService {
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
-
-		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
+		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
 
 
@@ -351,11 +344,10 @@ public class OrderService {
 			order.getId(), loginId);
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
-
-		List<OrderDetail> updatedOrderDetails = orderDetails.stream().map(orderDetail -> {
-			return OrderDetail.builder()
-				.id(orderDetail.getId())
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetailRepository.save(OrderDetail.builder()
 				.orderStatus(orderStatus)
+				.id(orderDetail.getId())
 				.wrap(orderDetail.isWrap())
 				.createAt(orderDetail.getCreateAt())
 				.price(orderDetail.getPrice())
@@ -363,13 +355,8 @@ public class OrderService {
 				.order(orderDetail.getOrder())
 				.wrapping(orderDetail.getWrapping())
 				.product(orderDetail.getProduct())
-				.updateAt(LocalDateTime.now())
-				.build();
-		}).toList();
+				.build());
 
-		orderDetailRepository.saveAll(updatedOrderDetails);
-
-		for (OrderDetail orderDetail : updatedOrderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
@@ -381,7 +368,6 @@ public class OrderService {
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
-
 		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
 	}
 
