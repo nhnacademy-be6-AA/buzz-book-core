@@ -256,7 +256,7 @@ public class PaymentService {
 			HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
 				headers);
 
-			ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
+			ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
 				String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
 				CouponResponse.class);
 		}
@@ -354,13 +354,16 @@ public class PaymentService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				HttpEntity<Object> reviveCouponRequestHttpEntity = new HttpEntity<>(headers);
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
 
-				ResponseEntity<CouponResponse> reviveResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons/couponCode/%s", host, port, billLog.getPayment()), HttpMethod.GET, reviveCouponRequestHttpEntity,
+				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
+					headers);
+
+				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
 					CouponResponse.class);
 
-				int couponPolicyId = Objects.requireNonNull(reviveResponseResponseEntity.getBody())
+				int couponPolicyId = Objects.requireNonNull(couponResponseResponseEntity.getBody())
 					.couponPolicyResponse().id();
 
 				userCouponRepository.save(UserCoupon.builder().couponCode(billLog.getPayment())

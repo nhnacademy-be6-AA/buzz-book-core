@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
@@ -92,6 +94,9 @@ public class OrderService {
 	private final AddressRepository addressRepository;
 	private final PointLogRepository pointLogRepository;
 	private final PointPolicyRepository pointPolicyRepository;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -309,30 +314,27 @@ public class OrderService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
+
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetailRepository.save(OrderDetail.builder()
-				.orderStatus(orderStatus)
-				.id(orderDetail.getId())
-				.wrap(orderDetail.isWrap())
-				.createAt(orderDetail.getCreateAt())
-				.price(orderDetail.getPrice())
-				.quantity(orderDetail.getQuantity())
-				.order(orderDetail.getOrder())
-				.wrapping(orderDetail.getWrapping())
-				.product(orderDetail.getProduct())
-				.build());
+			orderDetail.changeOrderStatus(orderStatus);
+			entityManager.flush();
+		}
+
+		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+
+		for (OrderDetail orderDetail : newOrderDetails) {
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
 				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
+
 		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
 
@@ -344,31 +346,28 @@ public class OrderService {
 			order.getId(), loginId);
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
+
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetailRepository.save(OrderDetail.builder()
-				.orderStatus(orderStatus)
-				.id(orderDetail.getId())
-				.wrap(orderDetail.isWrap())
-				.createAt(orderDetail.getCreateAt())
-				.price(orderDetail.getPrice())
-				.quantity(orderDetail.getQuantity())
-				.order(orderDetail.getOrder())
-				.wrapping(orderDetail.getWrapping())
-				.product(orderDetail.getProduct())
-				.build());
+			orderDetail.changeOrderStatus(orderStatus);
+			entityManager.flush();
+		}
+		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
+			order.getId(), loginId);
+
+		for (OrderDetail orderDetail : newOrderDetails) {
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
 				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
-		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
+
+		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {

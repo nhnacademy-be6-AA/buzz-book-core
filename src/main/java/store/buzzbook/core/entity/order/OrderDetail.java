@@ -64,4 +64,9 @@ public class OrderDetail {
 
 	@NotNull
 	private LocalDateTime updateAt;
+
+	public void changeOrderStatus(OrderStatus orderStatus) {
+		this.orderStatus = orderStatus;
+		this.updateAt = LocalDateTime.now();
+	}
 }
