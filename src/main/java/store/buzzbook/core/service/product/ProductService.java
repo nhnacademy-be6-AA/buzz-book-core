@@ -2,6 +2,7 @@ package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -176,8 +177,6 @@ public class ProductService {
 	// }
 
 
-
-
 	// 태그 관련 정보를 포함하는 ProductResponse 변환 메서드
 	private ProductResponse convertToProductResponse(Product product) {
 		List<TagResponse> tagResponses = product.getProductTags().stream()
@@ -198,5 +197,13 @@ public class ProductService {
 			.category(CategoryResponse.convertSub1ToCategoryResponse(product.getCategory()))
 			.tags(tagResponses)
 			.build();
+	}
+
+	@Transactional(readOnly = true)
+	public List<ProductResponse> getLatestProducts(int count) {
+		Pageable pageable = PageRequest.of(0, count);
+		return productRepository.findProductsByLatestForwardDate(pageable).stream()
+			.map(this::convertToProductResponse)
+			.collect(Collectors.toList());
 	}
 }

@@ -32,5 +32,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 	Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 
+	@Query("SELECT p FROM Product p ORDER BY p.forwardDate DESC")
+	List<Product> findProductsByLatestForwardDate(Pageable pageable);
+
 }
 
