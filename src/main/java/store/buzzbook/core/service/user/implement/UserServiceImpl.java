@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.client.auth.CouponClient;
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
+import store.buzzbook.core.common.exception.user.DormantUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
 import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
@@ -33,6 +34,7 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
@@ -60,9 +62,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public LoginUserResponse requestLogin(String loginId) {
 		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
-		boolean isDeactivate = deactivationRepository.existsById(user.getId());
 
-		if (isDeactivate) {
+		if (user.getStatus().equals(UserStatus.WITHDRAW)) {
 			log.debug("로그인 실패 : 탈퇴한 유저의 아이디 {} 입니다.", user.getId());
 			throw new DeactivatedUserException(loginId);
 		}
@@ -78,6 +79,11 @@ public class UserServiceImpl implements UserService {
 
 		if (userOptional.isEmpty()) {
 			throw new UserNotFoundException(loginId);
+		}
+
+		if (userOptional.get().getStatus().equals(UserStatus.DORMANT)) {
+			log.debug("로그인 실패. 휴면 계정입니다.");
+			throw new DormantUserException();
 		}
 
 		Optional<Grade> gradeOptional = userRepository.findGradeByLoginId(loginId);
@@ -173,10 +179,15 @@ public class UserServiceImpl implements UserService {
 		if (userOptional.isEmpty()) {
 			log.debug("존재하지 않는 계정의 활성화 요청입니다. : {}", loginId);
 			throw new UserNotFoundException(loginId);
+		} else if (userOptional.get().getStatus().equals(UserStatus.WITHDRAW)) {
+			log.debug("탈퇴한 계정의 활성화 요청입니다. : {}", loginId);
+			throw new DeactivatedUserException(loginId);
+		} else if (userOptional.get().getStatus().equals(UserStatus.ACTIVE)) {
+			log.debug("탈퇴한 계정의 활성화 요청입니다. : {}", loginId);
+			throw new UserAlreadyExistsException(loginId);
 		}
 
 		userOptional.get().activate();
-
 		userRepository.save(userOptional.get());
 	}
 
@@ -210,7 +221,6 @@ public class UserServiceImpl implements UserService {
 		}
 
 		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.get().getId());
-
 		int point = 0;
 
 		if (Objects.nonNull(pointLog)) {

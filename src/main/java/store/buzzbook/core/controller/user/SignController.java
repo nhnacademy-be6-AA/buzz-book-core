@@ -58,7 +58,13 @@ public class SignController {
 		}
 
 		return ResponseEntity.ok(userInfo);
+	}
 
+	@PutMapping("/activate")
+	@Operation(summary = "계정 활성화 요청", description = "휴면상태의 계정 활성화 요청")
+	public ResponseEntity<Void> activate(@RequestBody String loginId) {
+		userService.activate(loginId);
+		return ResponseEntity.ok().build();
 	}
 
 }

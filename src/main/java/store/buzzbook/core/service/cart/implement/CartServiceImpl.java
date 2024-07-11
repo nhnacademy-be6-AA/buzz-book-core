@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.cart.CartNotExistsException;
+import store.buzzbook.core.common.exception.cart.NotEnoughProductStockException;
+import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.util.UuidUtil;
 import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.cart.CreateCartDetailRequest;
@@ -83,7 +85,14 @@ public class CartServiceImpl implements CartService {
 			throw new CartNotExistsException(uuid);
 		}
 
-		Product product = productRepository.getReferenceById(productId);
+		Product product = productRepository.findById(productId)
+			.orElseThrow(() -> new DataNotFoundException("도서", productId));
+
+		if (product.getStock() <= 0) {
+			log.debug("상품의 재고가 부족합니다.");
+			throw new NotEnoughProductStockException();
+		}
+
 		Optional<CartDetail> existDetailOptional = cartDetailRepository.findByProductIdAndCartId(productId,
 			cart.get().getId());
 
