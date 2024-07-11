@@ -1,9 +1,6 @@
 package store.buzzbook.core.dto.product;
 
-import static store.buzzbook.core.dto.product.CategoryResponse.*;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -26,7 +23,7 @@ public class ProductResponse {
 	private String thumbnailPath;
 	private Product.StockStatus stockStatus;
 	private CategoryResponse category;
-	private List<TagResponse> tags = new ArrayList<>();
+	private List<TagResponse> tags;
 
 	public static ProductResponse convertToProductResponse(Product product) {
 		List<TagResponse> tagResponses;
@@ -51,7 +48,7 @@ public class ProductResponse {
 			.score(product.getScore())
 			.thumbnailPath(product.getThumbnailPath())
 			.stockStatus(product.getStockStatus())
-			.category(convertSub1ToCategoryResponse(product.getCategory()))
+			.category(new CategoryResponse(product.getCategory()))
 			.tags(tagResponses)
 			.build();
 	}

@@ -195,7 +195,7 @@ public class ProductService {
 			.score(product.getScore())
 			.thumbnailPath(product.getThumbnailPath())
 			.stockStatus(product.getStockStatus())
-			.category(CategoryResponse.convertSub1ToCategoryResponse(product.getCategory()))
+			.category(new CategoryResponse(product.getCategory()))
 			.tags(tagResponses)
 			.build();
 	}
