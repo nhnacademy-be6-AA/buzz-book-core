@@ -291,13 +291,14 @@ public class OrderService {
 	}
 
 	@Transactional
-	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, String loginId) {
-		User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new UserNotFoundException(loginId));
+	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
+		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
 		int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+		int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
 		int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
 		PointLog pointLog = pointLogRepository.save(PointLog.builder().inquiry(createPointLogForOrderRequest.getPointOrderInquiry()).createdAt(LocalDateTime.now())
-			.delta(point).balance(balance+point).user(user).build());
+			.delta(point+benefit).balance(balance+point+benefit).user(user).build());
 
 		return PointLogResponse.from(pointLog);
 	}

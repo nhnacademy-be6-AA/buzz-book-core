@@ -108,7 +108,7 @@ public class User {
 			.loginId(this.getLoginId())
 			.birthday(this.getBirthday())
 			.isAdmin(this.isAdmin())
-			.grade(grade)
+			.grade(grade.toResponse())
 			.contactNumber(this.getContactNumber())
 			.email(this.getEmail())
 			.point(point)

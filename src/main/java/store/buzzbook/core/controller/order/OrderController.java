@@ -136,11 +136,11 @@ public class OrderController {
 	}
 
 	@JwtOrderValidate
-	@Operation(summary = "주문 및 결제 시 포인트 변경", description = "주문 및 결제 시 포인트 변경")
+	@Operation(summary = "주문 및 취소 시 포인트 변경", description = "주문 및 취소 시 포인트 변경")
 	@PostMapping("/point")
 	public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		PointLogResponse response = orderService.updatePointLog(createPointLogForOrderRequest, userInfo.loginId());
+		PointLogResponse response = orderService.updatePointLog(createPointLogForOrderRequest, userInfo);
 		return ResponseEntity.ok(response);
 	}
 
