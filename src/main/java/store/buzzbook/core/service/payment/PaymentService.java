@@ -9,8 +9,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
@@ -72,6 +76,7 @@ import store.buzzbook.core.service.user.UserService;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+	private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 	@Value("${api.gateway.host}")
 	private String host;
 
@@ -223,17 +228,23 @@ public class PaymentService {
 		BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
 
 		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 
 		if (createBillLogRequest.getPayment().equals(POINT)) {
 			int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
 
 			pointLogRepository.save(
-				PointLog.builder().createdAt(LocalDateTime.now()).delta(-createBillLogRequest.getPrice())
-					.user(user).balance(balance - createBillLogRequest.getPrice()).inquiry(POINT_PAYMENT_INQUIRY).build());
+				PointLog.builder()
+					.createdAt(LocalDateTime.now())
+					.delta(-createBillLogRequest.getPrice())
+					.user(user)
+					.balance(balance - createBillLogRequest.getPrice())
+					.inquiry(POINT_PAYMENT_INQUIRY)
+					.build());
 		}
 
-		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment().equals(POINT)) {
+		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment()
+			.equals(POINT)) {
 			RestTemplate restTemplate = new RestTemplate();
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
@@ -242,7 +253,8 @@ public class PaymentService {
 
 			UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.USED);
 
-			HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
+			HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
+				headers);
 
 			ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
 				String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
@@ -250,7 +262,7 @@ public class PaymentService {
 		}
 
 		return BillLogMapper.toDto(billLog,
-			OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
@@ -316,7 +328,7 @@ public class PaymentService {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 
 		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey());
 		for (BillLog billLog : billLogs.stream().filter(b -> !b.getPayment().equals(SIMPLE_PAYMENT)).toList()) {
 			billLogRepository.save(BillLog.builder()
@@ -328,6 +340,7 @@ public class PaymentService {
 				.cancelReason(createCancelBillLogRequest.getCancelReason())
 				.payAt(LocalDateTime.now())
 				.build());
+
 			if (billLog.getPayment().equals(POINT)) {
 				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
 				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice())
@@ -335,29 +348,22 @@ public class PaymentService {
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
-					RestTemplate restTemplate = new RestTemplate();
-					HttpHeaders headers = new HttpHeaders();
-					headers.set("Content-Type", "application/json");
-					headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
-					headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
+				RestTemplate restTemplate = new RestTemplate();
+				HttpHeaders headers = new HttpHeaders();
+				headers.set("Content-Type", "application/json");
 
-					UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
-						CouponStatus.AVAILABLE);
+				HttpEntity<Object> reviveCouponRequestHttpEntity = new HttpEntity<>(headers);
 
-					HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
-						headers);
+				ResponseEntity<CouponResponse> reviveResponseResponseEntity = restTemplate.exchange(
+					String.format("http://%s:%d/api/coupons/couponCode/%s", host, port, createCancelBillLogRequest.getPayment()), HttpMethod.GET, reviveCouponRequestHttpEntity,
+					CouponResponse.class);
 
-					ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
-						String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
-						updateCouponRequestHttpEntity,
-						CouponResponse.class);
+				int couponPolicyId = Objects.requireNonNull(reviveResponseResponseEntity.getBody())
+					.couponPolicyResponse().id();
 
-					int couponPolicyId = userCouponRepository.findByUserIdAndCouponCode(user.getId(),
-						updateCouponRequest.couponCode()).getCouponPolicyId();
-
-					userCouponRepository.save(UserCoupon.builder().couponCode(updateCouponRequest.couponCode())
-						.user(user).couponPolicyId(couponPolicyId).build());
-				}
+				userCouponRepository.save(UserCoupon.builder().couponCode(createCancelBillLogRequest.getPayment())
+					.user(user).couponPolicyId(couponPolicyId).build());
+			}
 
 		}
 	}
