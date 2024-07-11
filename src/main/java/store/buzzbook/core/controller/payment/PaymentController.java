@@ -103,6 +103,14 @@ public class PaymentController {
 	}
 
 	@JwtOrderValidate
+	@Operation(summary = "포인트, 쿠폰 환불 내역 추가", description = "포인트, 쿠폰 환불 내역 추가")
+	@PostMapping("/bill-log/different-payment/refund")
+	public ResponseEntity<String> createRefundBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
+		paymentService.createRefundBillLogWithDifferentPayment(createCancelBillLogRequest, request);
+		return ResponseEntity.ok(CANCELED);
+	}
+
+	@JwtOrderValidate
 	@Operation(summary = "결제키 조회", description = "결제키 조회")
 	@PostMapping("/payment-key")
 	public ResponseEntity<String> getPaymentKey(@RequestBody ReadPaymentKeyRequest readPaymentKeyRequest, HttpServletRequest request) {

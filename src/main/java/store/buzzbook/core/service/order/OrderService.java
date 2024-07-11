@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.order;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
+import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
@@ -47,7 +49,6 @@ import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
-import store.buzzbook.core.dto.point.CreatePointLogRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -82,6 +83,10 @@ import store.buzzbook.core.service.user.UserService;
 @Slf4j
 public class OrderService {
 	private static final int UNPACKAGED = 1;
+	private static final String REFUND = "REFUND";
+	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
+	private static final int REFUND_PERIOD = 10;
+	private static final int BREAKAGE_REFUND_PERIOD = 30;
 
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
@@ -342,8 +347,26 @@ public class OrderService {
 	@Transactional
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
+
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
 			order.getId(), loginId);
+
+		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (isCreatedBeforeTenDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (isCreatedBeforeTenDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
@@ -351,6 +374,7 @@ public class OrderService {
 			orderDetail.changeOrderStatus(orderStatus);
 			entityManager.flush();
 		}
+
 		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
 			order.getId(), loginId);
 
@@ -368,6 +392,11 @@ public class OrderService {
 		}
 
 		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
+	}
+
+	private static boolean isCreatedBeforeTenDays(LocalDateTime createAt, int sub) {
+		LocalDateTime tenDaysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
+		return createAt.isBefore(tenDaysAgo);
 	}
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
