@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.review;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -10,7 +12,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,10 +41,10 @@ public class ReviewController {
 	@Operation(summary = "리뷰 추가", description = "새로운 리뷰 등록")
 	@ApiResponse(responseCode = "200", description = "리뷰 등록 성공시 등록된 리뷰의 ReviewResponse 반환")
 
-	public ResponseEntity<ReviewResponse> saveReview(@Validated @RequestBody ReviewCreateRequest reviewReq) {
-		return ResponseEntity.ok(reviewService.saveReview(reviewReq));
+	public ResponseEntity<ReviewResponse> saveReview(@Validated @RequestBody ReviewCreateRequest reviewReq,
+		@RequestPart(value = "files", required = false) MultipartFile files) {
+		return ResponseEntity.ok(reviewService.saveReview(reviewReq, files));
 	}
-
 
 	@GetMapping("/{reviewId}")
 	@Operation(summary = "리뷰 1건 조회")
@@ -50,16 +54,15 @@ public class ReviewController {
 		return ResponseEntity.ok(reviewService.getReview(reviewId));
 	}
 
-
 	@GetMapping
 	@Operation(summary = "리뷰 조회", description = "주어진 parameter로 리뷰 조회")
 	@ApiResponse(responseCode = "200", description = "조회 성공시 Page<ReviewResponse> 반환")
 
 	public ResponseEntity<Page<ReviewResponse>> getAllReviews(
 		@RequestParam(required = false) @Parameter(description = "상품 id(long)에 해당하는 모든 리뷰 조회") Integer productId,
+		@RequestParam(required = false) @Parameter(description = "유저 id(long)로 해당 유저가 작성한 모든 리뷰 조회") Long userId,
 		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호") Integer pageNo,
-		@RequestParam(required = false, defaultValue = "5") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize,
-		@RequestParam(required = false) @Parameter(description = "유저 id(long)로 해당 유저가 작성한 모든 리뷰 조회") Long userId) {
+		@RequestParam(required = false, defaultValue = "5") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) {
 
 		if (productId != null) {
 			return ResponseEntity.ok(reviewService.findAllReviewByProductId(productId, pageNo, pageSize));

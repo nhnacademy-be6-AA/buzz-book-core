@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.review.ReviewRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.image.ImageService;
 import store.buzzbook.core.service.point.PointService;
 
 @Slf4j
@@ -40,35 +43,33 @@ public class ReviewService {
 	private final OrderDetailRepository orderDetailRepository;
 	private final ProductRepository productRepository;
 	private final PointService pointService;
+	private final ImageService imageClient;
 
-	public ReviewResponse saveReview(ReviewCreateRequest reviewReq) {
+	@Transactional
+	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, MultipartFile imageFile) {
+		// 상품상세조회확인
+		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId())
+			.orElseThrow(() -> new DataNotFoundException("orderDetail", reviewReq.getOrderDetailId()));
 
-		//리뷰
-		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId()).orElse(null);
-		if (orderDetail == null) {
-			throw new DataNotFoundException("orderDetail", reviewReq.getOrderDetailId());
-		}
-		Review review = new Review(reviewReq.getContent(), reviewReq.getPicturePath(), reviewReq.getReviewScore(),
-			orderDetail);
-
+		// 리뷰저장
+		String url = (imageFile == null) ? null : imageClient.reviewImageUpload(imageFile);
+		Review review = new Review(reviewReq.getContent(), url, reviewReq.getReviewScore(), orderDetail);
 		reviewRepository.save(review);
 
-		//리뷰 점수로 상품 점수 수정
-		updateProductScore(review.getOrderDetail().getProduct().getId());
+		// 상품점수에 리뷰반영
+		updateProductScore(orderDetail.getProduct().getId());
 
-		//리뷰단 고객 포인트 부여
-		Order order = review.getOrderDetail().getOrder();
+		// 고객에 포인트 부여
+		PointPolicy pp = (imageFile == null) ? pointPolicyRepository.findByName("리뷰 작성") :
+			pointPolicyRepository.findByName("사진 리뷰 작성");
+		Order order = orderDetail.getOrder();
 		User user = order.getUser();
-		PointPolicy pp;
-		if (review.getPicturePath() == null) {
-			pp = pointPolicyRepository.findByName("리뷰 작성");
-		} else {
-			pp = pointPolicyRepository.findByName("사진 리뷰 작성");
-		}
 		pointService.createPointLogWithDelta(user, pp.getName(), pp.getPoint());
+
 
 		return constructorReviewResponse(review);
 	}
+
 
 	public ReviewResponse getReview(int reviewId) {
 		Review review = reviewRepository.findById(reviewId).orElse(null);
@@ -91,6 +92,7 @@ public class ReviewService {
 		return reviews.map(this::constructorReviewResponse);
 	}
 
+	@Transactional
 	public ReviewResponse updateReview(ReviewUpdateRequest reviewReq) {
 		Review review = reviewRepository.findById(reviewReq.getId()).orElse(null);
 		if (review == null) {
