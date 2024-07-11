@@ -153,7 +153,7 @@ public class ProductService {
 
 
 	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId, String orderBy, int pageNo, int pageSize) {
-		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
 
 		Page<Product> products;
 
