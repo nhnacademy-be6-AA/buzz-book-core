@@ -350,10 +350,10 @@ public class OrderService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
 			order.getId(), loginId);
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
-
+		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetailRepository.save(OrderDetail.builder()
-				.orderStatus(orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName()))
+				.orderStatus(orderStatus)
 				.id(orderDetail.getId())
 				.wrap(orderDetail.isWrap())
 				.createAt(orderDetail.getCreateAt())
