@@ -330,7 +330,7 @@ public class PaymentService {
 		User user = userRepository.findByLoginId(userInfo.loginId())
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
-			.stream().filter(b->!b.getPayment().equals(SIMPLE_PAYMENT)).toList();
+			.stream().filter(b->!(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
 
 		for (BillLog billLog : billLogs) {
 			billLogRepository.save(BillLog.builder()
@@ -357,13 +357,13 @@ public class PaymentService {
 				HttpEntity<Object> reviveCouponRequestHttpEntity = new HttpEntity<>(headers);
 
 				ResponseEntity<CouponResponse> reviveResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons/couponCode/%s", host, port, createCancelBillLogRequest.getPayment()), HttpMethod.GET, reviveCouponRequestHttpEntity,
+					String.format("http://%s:%d/api/coupons/couponCode/%s", host, port, billLog.getPayment()), HttpMethod.GET, reviveCouponRequestHttpEntity,
 					CouponResponse.class);
 
 				int couponPolicyId = Objects.requireNonNull(reviveResponseResponseEntity.getBody())
 					.couponPolicyResponse().id();
 
-				userCouponRepository.save(UserCoupon.builder().couponCode(createCancelBillLogRequest.getPayment())
+				userCouponRepository.save(UserCoupon.builder().couponCode(billLog.getPayment())
 					.user(user).couponPolicyId(couponPolicyId).build());
 			}
 
