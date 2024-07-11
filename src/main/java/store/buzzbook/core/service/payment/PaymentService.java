@@ -96,6 +96,7 @@ public class PaymentService {
 	private final UserService userService;
 	private final UserCouponRepository userCouponRepository;
 
+	@Transactional
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
@@ -140,6 +141,7 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
+	@Transactional
 	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,

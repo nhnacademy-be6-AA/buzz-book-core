@@ -322,6 +322,7 @@ public class OrderService {
 	}
 
 
+	@Transactional
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
@@ -396,6 +397,7 @@ public class OrderService {
 		return OrderMapper.toDto(order, details, null);
 	}
 
+	@Transactional
 	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
 
 		return OrderStatusMapper.toDto(
@@ -403,6 +405,7 @@ public class OrderService {
 				LocalDateTime.now()).build()));
 	}
 
+	@Transactional
 	public ReadOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
 
 		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder()
@@ -429,6 +432,7 @@ public class OrderService {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
 	}
 
+	@Transactional
 	public ReadDeliveryPolicyResponse createDeliveryPolicy(CreateDeliveryPolicyRequest createDeliveryPolicyRequest) {
 		return DeliveryPolicyMapper.toDto(
 			deliveryPolicyRepository.save(DeliveryPolicy.builder()
@@ -438,6 +442,7 @@ public class OrderService {
 				.build()));
 	}
 
+	@Transactional
 	public ReadDeliveryPolicyResponse updateDeliveryPolicy(UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest) {
 		return DeliveryPolicyMapper.toDto(
 			deliveryPolicyRepository.save(DeliveryPolicy.builder().id(updateDeliveryPolicyRequest.getId())
@@ -458,11 +463,13 @@ public class OrderService {
 		return deliveryPolicyRepository.findAll().stream().map(DeliveryPolicyMapper::toDto).toList();
 	}
 
+	@Transactional
 	public ReadWrappingResponse createWrapping(CreateWrappingRequest createWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().paper(createWrappingRequest.getPaper())
 			.price(createWrappingRequest.getPrice()).build()));
 	}
 
+	@Transactional
 	public ReadWrappingResponse updateWrapping(UpdateWrappingRequest updateWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().id(updateWrappingRequest.getId())
 			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).build()));
@@ -514,6 +521,7 @@ public class OrderService {
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
 
+	@Transactional
 	public ReadOrderDetailResponse updateOrderDetailWithAdmin(UpdateOrderDetailRequest request) {
 		OrderDetail orderDetail = orderDetailRepository.findById(request.getId())
 			.orElseThrow(() -> new OrderDetailNotFoundException("Order Detail not found"));
