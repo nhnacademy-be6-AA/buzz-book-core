@@ -351,10 +351,11 @@ public class OrderService {
 			order.getId(), loginId);
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetailRepository.save(OrderDetail.builder()
-				.orderStatus(orderStatus)
+
+		List<OrderDetail> updatedOrderDetails = orderDetails.stream().map(orderDetail -> {
+			return OrderDetail.builder()
 				.id(orderDetail.getId())
+				.orderStatus(orderStatus)
 				.wrap(orderDetail.isWrap())
 				.createAt(orderDetail.getCreateAt())
 				.price(orderDetail.getPrice())
@@ -362,8 +363,13 @@ public class OrderService {
 				.order(orderDetail.getOrder())
 				.wrapping(orderDetail.getWrapping())
 				.product(orderDetail.getProduct())
-				.build());
+				.updateAt(LocalDateTime.now())
+				.build();
+		}).toList();
 
+		orderDetailRepository.saveAll(updatedOrderDetails);
+
+		for (OrderDetail orderDetail : updatedOrderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
@@ -375,6 +381,7 @@ public class OrderService {
 
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
+
 		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
 	}
 
