@@ -39,12 +39,12 @@ public class CategoryService {
 		}
 
 		Category category = new Category(categoryRequest.getName(), parentCategory, null);
-		return CategoryResponse.convertToCategoryResponse(categoryRepository.save(category));
+		return new CategoryResponse(categoryRepository.save(category));
 	}
 
 	public Page<CategoryResponse> getPageableCategoryResponses(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		return categoryRepository.findAll(pageable).map(CategoryResponse::convertToCategoryResponse);
+		return categoryRepository.findAll(pageable).map(CategoryResponse::new);
 	}
 
 	public CategoryResponse updateCategory(int categoryId, CategoryRequest categoryRequest) {
@@ -79,7 +79,7 @@ public class CategoryService {
 			.build();
 
 		// 업데이트된 카테고리 저장 및 응답 반환
-		return CategoryResponse.convertToCategoryResponse(categoryRepository.save(updatedCategory));
+		return new CategoryResponse(categoryRepository.save(updatedCategory));
 	}
 
 	@Transactional
@@ -100,21 +100,13 @@ public class CategoryService {
 		if (topCategories.size() > 2) {
 			throw new DataAlreadyException("왜 최상위 카테고리가 여러개지?");
 		}
-		return CategoryResponse.convertSub1ToCategoryResponse(topCategories.getFirst());
+		return new CategoryResponse(topCategories.getFirst());
 	}
 
-	// 1차 하위 카테고리들
+	// 상위카테고리들 + 하위 1차 카테고리들
 	public CategoryResponse getSubCategoriesResponse(int categoryId) {
-		return CategoryResponse.convertSub1ToCategoryResponse(categoryRepository.findById(categoryId).orElseThrow(
-			() -> new DataNotFoundException("category", categoryId)
-		));
-	}
-
-	// 모든 하위 카테고리들
-	public CategoryResponse getAllSubCategories(int categoryId) {
-		return CategoryResponse.convertToCategoryResponse(categoryRepository.findById(categoryId).orElseThrow(
-			() -> new DataNotFoundException("category", categoryId)
-		));
+		return new CategoryResponse((categoryRepository.findById(categoryId).orElseThrow(
+			() -> new DataNotFoundException("category", categoryId))));
 	}
 
 }
