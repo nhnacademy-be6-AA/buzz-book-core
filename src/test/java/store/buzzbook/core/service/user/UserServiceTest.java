@@ -34,6 +34,7 @@ import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
@@ -143,9 +144,6 @@ class UserServiceTest {
 				return Optional.empty();
 			});
 
-		Mockito.when(deactivationRepository.existsById(Mockito.any()))
-			.thenReturn(false);
-
 		LoginUserResponse loginUserResponse = userService.requestLogin(registerUserRequest.loginId());
 		Assertions.assertNotNull(loginUserResponse);
 		Assertions.assertEquals(registerUserRequest.loginId(), loginUserResponse.loginId());
@@ -177,14 +175,13 @@ class UserServiceTest {
 			.thenAnswer(invocation -> {
 				String loginId = (String)invocation.getArguments()[0];
 				if (loginId.equals(registerUserRequest.loginId())) {
-					return Optional.of(convertToUser(registerUserRequest));
+					User user = convertToUser(registerUserRequest);
+					user.deactivate();
+					return Optional.of(user);
 				}
 
 				return Optional.empty();
 			});
-
-		Mockito.when(deactivationRepository.existsById(Mockito.any()))
-			.thenReturn(true);
 
 		Assertions.assertThrowsExactly(DeactivatedUserException.class,
 			() -> userService.requestLogin(registerUserRequest.loginId()));
@@ -362,7 +359,7 @@ class UserServiceTest {
 			}
 		);
 
-		Assertions.assertDoesNotThrow(() -> userService.activate(user.getLoginId()));
+		Assertions.assertThrowsExactly(UserAlreadyExistsException.class, () -> userService.activate(user.getLoginId()));
 	}
 
 	@Test
@@ -458,10 +455,9 @@ class UserServiceTest {
 
 		UserInfo result = userService.getUserInfoByUserId(user.getId());
 		Assertions.assertNotNull(result);
-		Assertions.assertEquals(grade.getName(), result.grade().getName());
-		Assertions.assertEquals(grade.getBenefit(), result.grade().getBenefit());
-		Assertions.assertEquals(grade.getStandard(), result.grade().getStandard());
-		Assertions.assertEquals(grade.getId(), result.grade().getId());
+		Assertions.assertEquals(grade.getName().name(), result.grade().name());
+		Assertions.assertEquals(grade.getBenefit(), result.grade().benefit());
+		Assertions.assertEquals(grade.getStandard(), result.grade().standard());
 		Assertions.assertEquals(user.getId(), result.id());
 		Assertions.assertEquals(user.getName(), result.name());
 		Assertions.assertEquals(user.getLoginId(), result.loginId());
@@ -553,10 +549,9 @@ class UserServiceTest {
 
 		UserInfo result = userService.getUserInfoByLoginId(user.getLoginId());
 		Assertions.assertNotNull(result);
-		Assertions.assertEquals(grade.getName(), result.grade().getName());
-		Assertions.assertEquals(grade.getBenefit(), result.grade().getBenefit());
-		Assertions.assertEquals(grade.getStandard(), result.grade().getStandard());
-		Assertions.assertEquals(grade.getId(), result.grade().getId());
+		Assertions.assertEquals(grade.getName().name(), result.grade().name());
+		Assertions.assertEquals(grade.getBenefit(), result.grade().benefit());
+		Assertions.assertEquals(grade.getStandard(), result.grade().standard());
 		Assertions.assertEquals(user.getId(), result.id());
 		Assertions.assertEquals(user.getName(), result.name());
 		Assertions.assertEquals(user.getLoginId(), result.loginId());
@@ -762,6 +757,7 @@ class UserServiceTest {
 			.name(request.name())
 			.birthday(request.birthday())
 			.createAt(LocalDateTime.now())
+			.status(UserStatus.ACTIVE)
 			.password(password)
 			.email(request.email())
 			.modifyAt(null)
