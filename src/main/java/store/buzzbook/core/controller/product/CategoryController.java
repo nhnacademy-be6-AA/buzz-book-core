@@ -28,7 +28,7 @@ public class CategoryController {
 	private final CategoryService categoryService;
 
 	//해당 카테고리의 모든 하위 카테고리들
-	//0요청하면 모든 카테고리 반환
+	//'0'요청하면 모든 카테고리 반환
 	@GetMapping("/{id}/all")
 	public ResponseEntity<CategoryResponse> getAllSubCategories(@PathVariable int id) {
 		CategoryResponse subCategories = categoryService.getAllSubCategories(id);
