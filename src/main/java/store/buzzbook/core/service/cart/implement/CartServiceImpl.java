@@ -54,7 +54,7 @@ public class CartServiceImpl implements CartService {
 		return cartDetailResponses;
 	}
 
-	@Transactional(readOnly = true)
+	@Transactional
 	@Override
 	public List<CartDetailResponse> getCartByUserId(Long userId) {
 		Optional<Cart> cart = cartRepository.findCartByUserId(userId);
