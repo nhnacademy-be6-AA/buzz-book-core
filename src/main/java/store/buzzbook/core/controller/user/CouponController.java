@@ -20,7 +20,6 @@ import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.cart.CartDetailResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
-import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -75,6 +74,4 @@ public class CouponController {
 		couponService.deleteUserCoupon(userId, couponCode, httpServletRequest);
 		return ResponseEntity.ok().build();
 	}
-
-	// TODO : 쿠폰 환불 처리??
 }
