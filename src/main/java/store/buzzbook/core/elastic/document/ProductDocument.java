@@ -11,13 +11,17 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.product.Product;
 
 @Data
+@NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(indexName = "aa-bb_product_index")
 @AllArgsConstructor
+@Builder
 public class ProductDocument {
 
 	@Id
@@ -29,7 +33,7 @@ public class ProductDocument {
 	@Field(type = FieldType.Text, analyzer = "nori")
 	private String productName;
 
-	@Field(type = FieldType.Text, analyzer = "nori")
+	@Field(type = FieldType.Text, index = false)
 	private String description;
 
 	@Field(type = FieldType.Integer, index = true)
@@ -69,4 +73,5 @@ public class ProductDocument {
 			.map(productTag -> new TagDocument(productTag.getTag()))
 			.toList();
 	}
+
 }
