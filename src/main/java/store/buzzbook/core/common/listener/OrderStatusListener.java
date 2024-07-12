@@ -23,6 +23,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
 	private static final String SHIPPING_OUT = "SHIPPING_OUT";
 	private static final String SHIPPED = "SHIPPED";
+	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
 
 
 	private final OrderStatusRepository orderStatusRepository;
@@ -88,6 +89,14 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 		if (!orderStatusRepository.existsByName(SHIPPED)) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(SHIPPED)
+				.updateAt(LocalDateTime.now())
+				.build();
+			orderStatusRepository.save(orderStatus);
+		}
+
+		if (!orderStatusRepository.existsByName(BREAKAGE_REFUND)) {
+			OrderStatus orderStatus = OrderStatus.builder()
+				.name(BREAKAGE_REFUND)
 				.updateAt(LocalDateTime.now())
 				.build();
 			orderStatusRepository.save(orderStatus);

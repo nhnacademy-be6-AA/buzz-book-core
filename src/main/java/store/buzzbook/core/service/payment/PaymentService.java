@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
@@ -85,7 +84,10 @@ public class PaymentService {
 
 	private static final String POINT_PAYMENT_INQUIRY = "주문 시 포인트 결제";
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
+	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
+	private static final String POINT_REFUND_POINT_INQUIRY = "반품에 의한 포인트 적립 취소";
 	private static final int ORDER_STATUS_PAID = 4;
+	private static final int ORDER_STATUS_CANCELED = 2;
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 
@@ -157,7 +159,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
+			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_CANCELED)
 				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -256,7 +258,7 @@ public class PaymentService {
 			HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
 				headers);
 
-			ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
+			ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
 				String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
 				CouponResponse.class);
 		}
@@ -329,8 +331,10 @@ public class PaymentService {
 
 		User user = userRepository.findByLoginId(userInfo.loginId())
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey());
-		for (BillLog billLog : billLogs.stream().filter(b -> !(b.getPayment().equals(SIMPLE_PAYMENT))).toList()) {
+		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
+			.stream().filter(b->!(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
+
+		for (BillLog billLog : billLogs) {
 			billLogRepository.save(BillLog.builder()
 				.price(billLog.getPrice())
 				.paymentKey(createCancelBillLogRequest.getPaymentKey())
@@ -352,19 +356,78 @@ public class PaymentService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				HttpEntity<Object> reviveCouponRequestHttpEntity = new HttpEntity<>(headers);
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
 
-				ResponseEntity<CouponResponse> reviveResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons/couponCode/%s", host, port, createCancelBillLogRequest.getPayment()), HttpMethod.GET, reviveCouponRequestHttpEntity,
+				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
+					headers);
+
+				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
 					CouponResponse.class);
 
-				int couponPolicyId = Objects.requireNonNull(reviveResponseResponseEntity.getBody())
+				int couponPolicyId = Objects.requireNonNull(couponResponseResponseEntity.getBody())
 					.couponPolicyResponse().id();
 
-				userCouponRepository.save(UserCoupon.builder().couponCode(createCancelBillLogRequest.getPayment())
+				userCouponRepository.save(UserCoupon.builder().couponCode(billLog.getPayment())
 					.user(user).couponPolicyId(couponPolicyId).build());
 			}
+		}
+	}
 
+	@Transactional
+	public void createRefundBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
+		HttpServletRequest request) {
+
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+
+		User user = userRepository.findByLoginId(userInfo.loginId())
+			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
+		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey());
+
+		for (BillLog billLog : billLogs) {
+			billLogRepository.save(BillLog.builder()
+				.price(billLog.getPrice())
+				.paymentKey(createCancelBillLogRequest.getPaymentKey())
+				.payment(billLog.getPayment())
+				.status(createCancelBillLogRequest.getStatus())
+				.order(billLog.getOrder())
+				.cancelReason(createCancelBillLogRequest.getCancelReason())
+				.payAt(LocalDateTime.now())
+				.build());
+
+			if (billLog.getPayment().equals(SIMPLE_PAYMENT)) {
+				int deliveryRate = billLog.getOrder().getDeliveryRate();
+				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice()-deliveryRate)
+					.user(user).balance(balance + billLog.getPrice()-deliveryRate).inquiry(POINT_REFUND_INQUIRY).build());
+			}
+
+			if (billLog.getPayment().equals(POINT)) {
+				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(-billLog.getPrice())
+					.user(user).balance(balance - billLog.getPrice()).inquiry(POINT_REFUND_POINT_INQUIRY).build());
+			}
+
+			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
+				RestTemplate restTemplate = new RestTemplate();
+				HttpHeaders headers = new HttpHeaders();
+				headers.set("Content-Type", "application/json");
+
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
+
+				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
+					headers);
+
+				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+					CouponResponse.class);
+
+				int couponPolicyId = Objects.requireNonNull(couponResponseResponseEntity.getBody())
+					.couponPolicyResponse().id();
+
+				userCouponRepository.save(UserCoupon.builder().couponCode(billLog.getPayment())
+					.user(user).couponPolicyId(couponPolicyId).build());
+			}
 		}
 	}
 }
