@@ -32,13 +32,13 @@ public class ProductDocument {
 	@Field(type = FieldType.Text, analyzer = "nori")
 	private String description;
 
-	@Field(type = FieldType.Integer, index = false)
+	@Field(type = FieldType.Integer, index = true)
 	private int price;
 
-	@Field(type = FieldType.Date)
+	@Field(type = FieldType.Date, index = true)
 	private LocalDate forwardDate;
 
-	@Field(type = FieldType.Integer, index = false)
+	@Field(type = FieldType.Integer, index = true)
 	private int score;
 
 	@Field(type = FieldType.Keyword, index = false,  docValues = false)

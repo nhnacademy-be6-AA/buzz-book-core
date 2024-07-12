@@ -15,7 +15,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import store.buzzbook.core.elastic.document.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.dto.product.BookApiRequest;

@@ -1,8 +1,7 @@
-// package store.buzzbook.core.elastic.repository;
-//
-// import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-//
-// import store.buzzbook.core.document.product.BookDocument;
-//
-// public interface BookDocumentRepository extends ElasticsearchRepository<BookDocument, Long> {
-// }
+package store.buzzbook.core.elastic.repository;
+
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import store.buzzbook.core.elastic.document.BookDocument;
+
+public interface BookDocumentRepository extends ElasticsearchRepository<BookDocument, Long> {
+}

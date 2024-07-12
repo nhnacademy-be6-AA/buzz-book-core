@@ -14,7 +14,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-
+import store.buzzbook.core.elastic.document.ProductDocument;
+import store.buzzbook.core.elastic.service.ElasticDataTransferService;
+import store.buzzbook.core.elastic.service.ElasticsearchService;
 
 @RestController
 @RequestMapping("/api/product-search")
