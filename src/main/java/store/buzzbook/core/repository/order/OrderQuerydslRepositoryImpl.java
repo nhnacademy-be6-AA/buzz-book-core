@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
@@ -126,6 +127,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 
 	@Override
 	public List<ReadOrderProjectionResponse> findByUser_LoginIdAndOrderStr(String loginId, String orderStr) {
+
 		return jpaQueryFactory
 			.select(
 				Projections.constructor(

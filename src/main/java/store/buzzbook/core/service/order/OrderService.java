@@ -358,7 +358,7 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -366,7 +366,7 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -407,9 +407,9 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
 
-	private static boolean isCreatedBeforeTenDays(LocalDateTime createAt, int sub) {
-		LocalDateTime tenDaysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
-		return createAt.isBefore(tenDaysAgo);
+	private static boolean isCreatedBeforeDays(LocalDateTime createAt, int sub) {
+		LocalDateTime daysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
+		return createAt.isBefore(daysAgo);
 	}
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
