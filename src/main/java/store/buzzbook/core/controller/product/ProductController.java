@@ -95,4 +95,13 @@ public class ProductController {
 		return ResponseEntity.ok(products);
 	}
 
+	@GetMapping("/latest")
+	@Operation(summary = "최신 상품 조회", description = "최신 forwardDate 순서로 지정된 개수만큼의 상품을 조회")
+	@ApiResponse(responseCode = "200", description = "조회 성공시 List<ProductResponse> 반환")
+	public ResponseEntity<List<ProductResponse>> getLatestProducts(@RequestParam(defaultValue = "5") @Parameter(description = "조회할 상품 개수", required = false)
+	int count) {
+		List<ProductResponse> latestProducts = productService.getLatestProducts(count);
+		return ResponseEntity.ok(latestProducts);
+	}
+
 }
