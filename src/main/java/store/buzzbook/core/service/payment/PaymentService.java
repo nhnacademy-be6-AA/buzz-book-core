@@ -113,6 +113,7 @@ public class PaymentService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
 				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
@@ -137,13 +138,22 @@ public class PaymentService {
 				.payAt(
 					LocalDateTime.now())
 				.build());
-		UserInfo userInfo = UserInfo.builder()
-			.email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId())
-			.isAdmin(order.getUser().isAdmin())
-			.contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday())
-			.build();
+		UserInfo userInfo = null;
+		if (order.getUser() != null) {
+			userInfo = UserInfo.builder()
+				.email(order.getOrderEmail())
+				.loginId(order.getUser().getLoginId())
+				.isAdmin(order.getUser().isAdmin())
+				.contactNumber(order.getUser().getContactNumber())
+				.birthday(order.getUser().getBirthday())
+				.build();
+		} else {
+			userInfo = UserInfo.builder()
+				.loginId(order.getOrderEmail())
+				.build();
+		}
+
+
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
