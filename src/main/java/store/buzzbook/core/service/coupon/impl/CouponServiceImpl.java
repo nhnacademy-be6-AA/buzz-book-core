@@ -163,8 +163,6 @@ public class CouponServiceImpl implements CouponService {
 			throw new UserCouponNotFoundException();
 		}
 
-		userCouponRepository.deleteByUserIdAndCouponCode(userId, couponCode);
-
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Content-Type", "application/json");
