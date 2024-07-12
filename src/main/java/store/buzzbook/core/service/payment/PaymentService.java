@@ -364,12 +364,6 @@ public class PaymentService {
 				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
 					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
 					CouponResponse.class);
-
-				int couponPolicyId = Objects.requireNonNull(couponResponseResponseEntity.getBody())
-					.couponPolicyResponse().id();
-
-				userCouponRepository.save(UserCoupon.builder().couponCode(billLog.getPayment())
-					.user(user).couponPolicyId(couponPolicyId).build());
 			}
 		}
 	}
@@ -422,11 +416,6 @@ public class PaymentService {
 					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
 					CouponResponse.class);
 
-				int couponPolicyId = Objects.requireNonNull(couponResponseResponseEntity.getBody())
-					.couponPolicyResponse().id();
-
-				userCouponRepository.save(UserCoupon.builder().couponCode(billLog.getPayment())
-					.user(user).couponPolicyId(couponPolicyId).build());
 			}
 		}
 	}
