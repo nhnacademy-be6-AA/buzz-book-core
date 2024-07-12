@@ -86,8 +86,8 @@ public class PaymentService {
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
 	private static final String POINT_REFUND_POINT_INQUIRY = "반품에 의한 포인트 적립 취소";
-	private static final int ORDER_STATUS_PAID = 4;	// 고치기
-	private static final int ORDER_STATUS_CANCELED = 2;	// 고치기
+	private static final String PAID = "PAID";
+	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 
@@ -114,8 +114,7 @@ public class PaymentService {
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
@@ -168,8 +167,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_CANCELED)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(CANCELED));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
@@ -224,8 +222,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
