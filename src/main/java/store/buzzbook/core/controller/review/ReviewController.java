@@ -1,7 +1,5 @@
 package store.buzzbook.core.controller.review;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -41,9 +39,9 @@ public class ReviewController {
 	@Operation(summary = "리뷰 추가", description = "새로운 리뷰 등록")
 	@ApiResponse(responseCode = "200", description = "리뷰 등록 성공시 등록된 리뷰의 ReviewResponse 반환")
 
-	public ResponseEntity<ReviewResponse> saveReview(@Validated @RequestBody ReviewCreateRequest reviewReq,
-		@RequestPart(value = "files", required = false) MultipartFile files) {
-		return ResponseEntity.ok(reviewService.saveReview(reviewReq, files));
+	public ResponseEntity<ReviewResponse> saveReview(@RequestPart ReviewCreateRequest reviewReq,
+		@RequestPart(value = "file", required = false) MultipartFile file) {
+		return ResponseEntity.ok(reviewService.saveReview(reviewReq, file));
 	}
 
 	@GetMapping("/{reviewId}")
