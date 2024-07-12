@@ -44,6 +44,10 @@ spring:
   cache:
     jcache:
       config: classpath:cache/ehcache.xml
+  servlet:
+    multipart:
+      enabled: true
+
 aladin:
   api:
     key: ttbheej19982032001
