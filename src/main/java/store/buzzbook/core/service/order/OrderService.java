@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
+import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
@@ -85,9 +86,13 @@ public class OrderService {
 	private static final int UNPACKAGED = 1;
 	private static final String REFUND = "REFUND";
 	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
+	private static final String SHIPPED = "SHIPPED";
+	private static final String CANCELED = "CANCELED";
+	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
+	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
+	private static final String PAID = "PAID";
 	private static final int REFUND_PERIOD = 10;
 	private static final int BREAKAGE_REFUND_PERIOD = 30;
-	private static final String SHIPPED = "SHIPPED";
 
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
@@ -368,6 +373,14 @@ public class OrderService {
 			}
 		}
 
+		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (!orderDetail.getOrderStatus().equals(PAID)) {
+					throw new NotPaidException("The order is not paid");
+				}
+			}
+		}
+
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
@@ -551,8 +564,8 @@ public class OrderService {
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
 			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-		if (request.getOrderStatusName().equals("CANCELED") || request.getOrderStatusName().equals("PARTIAL_CANCELED")
-			|| request.getOrderStatusName().equals("REFUND") || request.getOrderStatusName().equals("PARTIAL_REFUND")) {
+		if (request.getOrderStatusName().equals(CANCELED) || request.getOrderStatusName().equals(PARTIAL_CANCELED)
+			|| request.getOrderStatusName().equals(REFUND) || request.getOrderStatusName().equals(PARTIAL_REFUND)) {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 
