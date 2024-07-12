@@ -36,6 +36,9 @@ public class LogBackConfig {
 	@Value("${logncrash.host}")
 	private String host;
 
+	@Value("${logncrash.platform}")
+	private String platform;
+
 	@Value("${logncrash.log.version}")
 	private String logVersion;
 
@@ -84,7 +87,7 @@ public class LogBackConfig {
 		createLogger("jdbc", INFO, false);
 		createLogger("jdbc.sqlonly", INFO, false);
 		createLogger("jdbc.sqltiming", INFO, false);
-		createLogger("store.buzzbook.core.*", DEBUG, false);
+		createLogger("store.buzzbook.core.common", DEBUG, false);
 	}
 
 	// 어펜더 추가 시 로거 등록 필요
@@ -92,15 +95,19 @@ public class LogBackConfig {
 		Logger logger = logCtx.getLogger(loggerName);
 		logger.setAdditive(additive);
 		logger.setLevel(logLevel);
+
 		logger.addAppender(consoleAppender);
 		logger.addAppender(fileAppender);
 		logger.addAppender(filterAppender);
-		logger.addAppender(logNCrashAppender);
+
+		if (logLevel.equals(DEBUG)) {
+			logger.addAppender(logNCrashAppender);
+		}
 	}
 
 	private LogNCrashAppender getLogNCrashAppender() {
-		LogNCrashAppender logNCrashAppender = new LogNCrashAppender(version, host, logVersion, logSource, logType,
-			appKey, logNCrashAdapter);
+		LogNCrashAppender logNCrashAppender = new LogNCrashAppender(version, host, platform, logVersion, logSource,
+			logType, appKey, logNCrashAdapter);
 		logNCrashAppender.start();
 		return logNCrashAppender;
 	}
