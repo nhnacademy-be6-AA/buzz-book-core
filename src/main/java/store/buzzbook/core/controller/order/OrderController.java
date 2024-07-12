@@ -24,6 +24,7 @@ import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.DeleteDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.DeleteOrderStatusRequest;
@@ -45,6 +46,8 @@ import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
+import store.buzzbook.core.dto.point.CreatePointLogRequest;
+import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
@@ -129,6 +132,15 @@ public class OrderController {
 	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(
 		@RequestBody ReadOrderWithoutLoginRequest readOrderWithoutLoginRequest) {
 		ReadOrderResponse response = orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest);
+		return ResponseEntity.ok(response);
+	}
+
+	@JwtOrderValidate
+	@Operation(summary = "주문 및 취소 시 포인트 변경", description = "주문 및 취소 시 포인트 변경")
+	@PostMapping("/point")
+	public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+		PointLogResponse response = orderService.updatePointLog(createPointLogForOrderRequest, userInfo);
 		return ResponseEntity.ok(response);
 	}
 

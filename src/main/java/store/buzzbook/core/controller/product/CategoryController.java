@@ -27,21 +27,11 @@ public class CategoryController {
 
 	private final CategoryService categoryService;
 
-	//해당 카테고리의 모든 하위 카테고리들
-	//'0'요청하면 모든 카테고리 반환
-	@GetMapping("/{id}/all")
+	//해당 카테고리의 상위카테고리들 + 1차 하위카테고리
+	@GetMapping("/{id}")
 	public ResponseEntity<CategoryResponse> getAllSubCategories(@PathVariable int id) {
-		CategoryResponse subCategories = categoryService.getAllSubCategories(id);
+		CategoryResponse subCategories = categoryService.getSubCategoriesResponse(id);
 		return ResponseEntity.ok(subCategories);
-	}
-
-	//해당 카테고리의 1차 하위 카테고리들
-	@GetMapping("/{id}/sub")
-	public ResponseEntity<CategoryResponse> getSubCategories(@PathVariable int id) {
-		if(id ==0){
-			return ResponseEntity.ok(categoryService.getTopCategories());
-		}
-		return ResponseEntity.ok(categoryService.getSubCategoriesResponse(id));
 	}
 
 	@GetMapping

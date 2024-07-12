@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.order;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,10 +14,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
+import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
+import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
@@ -27,6 +32,7 @@ import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
+import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
@@ -44,6 +50,7 @@ import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
+import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
@@ -51,6 +58,7 @@ import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
+import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
@@ -64,6 +72,8 @@ import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
+import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.AddressRepository;
 import store.buzzbook.core.repository.user.UserRepository;
@@ -74,6 +84,16 @@ import store.buzzbook.core.service.user.UserService;
 @Slf4j
 public class OrderService {
 	private static final int UNPACKAGED = 1;
+	private static final String REFUND = "REFUND";
+	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
+	private static final String SHIPPED = "SHIPPED";
+	private static final String CANCELED = "CANCELED";
+	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
+	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
+	private static final String PAID = "PAID";
+	private static final int REFUND_PERIOD = 10;
+	private static final int BREAKAGE_REFUND_PERIOD = 30;
+
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final UserRepository userRepository;
@@ -83,6 +103,11 @@ public class OrderService {
 	private final OrderStatusRepository orderStatusRepository;
 	private final UserService userService;
 	private final AddressRepository addressRepository;
+	private final PointLogRepository pointLogRepository;
+	private final PointPolicyRepository pointPolicyRepository;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -223,7 +248,7 @@ public class OrderService {
 			UserInfo userInfo = userService.getUserInfoByLoginId(createOrderRequest.getLoginId());
 
 			user = userRepository.findById(userInfo.id())
-				.orElseThrow(() -> new UserNotFoundException("User not found"));
+				.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		}
 
 		Order order = null;
@@ -282,78 +307,110 @@ public class OrderService {
 	}
 
 	@Transactional
+	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
+		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
+		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
+		int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
+		int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
+		int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
+		PointLog pointLog = pointLogRepository.save(PointLog.builder().inquiry(createPointLogForOrderRequest.getPointOrderInquiry()).createdAt(LocalDateTime.now())
+			.delta(point+benefit).balance(balance+point+benefit).user(user).build());
+
+		return PointLogResponse.from(pointLog);
+	}
+
+	@Transactional
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
-		List<OrderDetail> updatedOrderDetails = orderDetails.stream().map(orderDetail -> {
-			return OrderDetail.builder()
-				.id(orderDetail.getId())
-				.orderStatus(orderStatus)
-				.wrap(orderDetail.isWrap())
-				.createAt(orderDetail.getCreateAt())
-				.price(orderDetail.getPrice())
-				.quantity(orderDetail.getQuantity())
-				.order(orderDetail.getOrder())
-				.wrapping(orderDetail.getWrapping())
-				.product(orderDetail.getProduct())
-				.updateAt(LocalDateTime.now())
-				.build();
-		}).toList();
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.changeOrderStatus(orderStatus);
+			entityManager.flush();
+		}
 
-		orderDetailRepository.saveAll(updatedOrderDetails);
+		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
-		for (OrderDetail orderDetail : updatedOrderDetails) {
+		for (OrderDetail orderDetail : newOrderDetails) {
+
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
 				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
 
-		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
+		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
 
 
 	@Transactional
 	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
+
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
 			order.getId(), loginId);
+
+		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (!orderDetail.getOrderStatus().equals(PAID)) {
+					throw new NotPaidException("The order is not paid");
+				}
+			}
+		}
+
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
+		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetailRepository.save(OrderDetail.builder()
-				.orderStatus(orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName()))
-				.id(orderDetail.getId())
-				.wrap(orderDetail.isWrap())
-				.createAt(orderDetail.getCreateAt())
-				.price(orderDetail.getPrice())
-				.quantity(orderDetail.getQuantity())
-				.order(orderDetail.getOrder())
-				.wrapping(orderDetail.getWrapping())
-				.product(orderDetail.getProduct())
-				.build());
+			orderDetail.changeOrderStatus(orderStatus);
+			entityManager.flush();
+		}
+
+		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
+			order.getId(), loginId);
+
+		for (OrderDetail orderDetail : newOrderDetails) {
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
 				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-
 			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
-		return OrderMapper.toDto(order, readOrderDetailResponse, loginId);
+
+		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
+	}
+
+	private static boolean isCreatedBeforeTenDays(LocalDateTime createAt, int sub) {
+		LocalDateTime tenDaysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
+		return createAt.isBefore(tenDaysAgo);
 	}
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
@@ -507,8 +564,8 @@ public class OrderService {
 		Product product = productRepository.findById(orderDetail.getProduct().getId())
 			.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-		if (request.getOrderStatusName().equals("CANCELED") || request.getOrderStatusName().equals("PARTIAL_CANCELED")
-			|| request.getOrderStatusName().equals("REFUND") || request.getOrderStatusName().equals("PARTIAL_REFUND")) {
+		if (request.getOrderStatusName().equals(CANCELED) || request.getOrderStatusName().equals(PARTIAL_CANCELED)
+			|| request.getOrderStatusName().equals(REFUND) || request.getOrderStatusName().equals(PARTIAL_REFUND)) {
 			product.increaseStock(orderDetail.getQuantity());
 		}
 

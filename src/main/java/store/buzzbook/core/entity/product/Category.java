@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -35,11 +38,12 @@ public class Category {
 	@Column(nullable = false, length = 20)
 	private String name; //카테고리명
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "parent_id")
 	private Category parentCategory;
 
 	@OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	private List<Category> subCategories = new ArrayList<>();
 
 	public Category(String name, Category parentCategory, List<Category> subCategories) {
