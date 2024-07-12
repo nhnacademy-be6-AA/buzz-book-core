@@ -87,6 +87,7 @@ public class OrderService {
 	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
 	private static final int REFUND_PERIOD = 10;
 	private static final int BREAKAGE_REFUND_PERIOD = 30;
+	private static final String SHIPPED = "SHIPPED";
 
 	private final OrderRepository orderRepository;
 	private final OrderDetailRepository orderDetailRepository;
@@ -353,7 +354,7 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (isCreatedBeforeTenDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -361,7 +362,7 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (isCreatedBeforeTenDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
