@@ -84,7 +84,7 @@ public class LogBackConfig {
 		createLogger("jdbc", INFO, false);
 		createLogger("jdbc.sqlonly", INFO, false);
 		createLogger("jdbc.sqltiming", INFO, false);
-		createLogger("store.buzzbook.coupon.*", DEBUG, false);
+		createLogger("store.buzzbook.core.*", DEBUG, false);
 	}
 
 	// 어펜더 추가 시 로거 등록 필요
