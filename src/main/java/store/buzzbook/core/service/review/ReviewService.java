@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.product.DataAlreadyException;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.review.ReviewCreateRequest;
@@ -47,9 +48,15 @@ public class ReviewService {
 
 	@Transactional
 	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, MultipartFile imageFile) {
+
 		// 상품상세조회확인
 		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId())
 			.orElseThrow(() -> new DataNotFoundException("orderDetail", reviewReq.getOrderDetailId()));
+
+		// already review인지 확인
+		if(reviewRepository.existsByOrderDetailId(reviewReq.getOrderDetailId())){
+			throw new DataAlreadyException("이미 리뷰를 작성했습니다.");
+		}
 
 		// 리뷰저장
 		String url = (imageFile == null) ? null : imageClient.reviewImageUpload(imageFile);
@@ -65,7 +72,6 @@ public class ReviewService {
 		Order order = orderDetail.getOrder();
 		User user = order.getUser();
 		pointService.createPointLogWithDelta(user, pp.getName(), pp.getPoint());
-
 
 		return constructorReviewResponse(review);
 	}

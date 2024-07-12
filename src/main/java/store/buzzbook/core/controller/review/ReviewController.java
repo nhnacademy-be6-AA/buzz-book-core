@@ -1,7 +1,9 @@
 package store.buzzbook.core.controller.review;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,22 +31,31 @@ import store.buzzbook.core.dto.review.ReviewUpdateRequest;
 import store.buzzbook.core.service.review.ReviewService;
 
 @Slf4j
-@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")
 @Tag(name = "리뷰 관리", description = "리뷰 CRU_")
 public class ReviewController {
 
 	private final ReviewService reviewService;
+	private final ObjectMapper objectMapper;
 
-	@PostMapping
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "리뷰 추가", description = "새로운 리뷰 등록")
 	@ApiResponse(responseCode = "200", description = "리뷰 등록 성공시 등록된 리뷰의 ReviewResponse 반환")
 
-	public ResponseEntity<ReviewResponse> saveReview(@RequestPart ReviewCreateRequest reviewReq,
-		@RequestPart(value = "file", required = false) MultipartFile file) {
-		return ResponseEntity.ok(reviewService.saveReview(reviewReq, file));
+	public ResponseEntity<ReviewResponse> saveReview(
+		@RequestPart String stringType,
+		@RequestPart(required = false) MultipartFile file) throws JsonProcessingException {
+
+		ReviewCreateRequest rcr = objectMapper.readValue(stringType, ReviewCreateRequest.class);
+
+		return ResponseEntity.ok(reviewService.saveReview(rcr, file));
+
+		// return ResponseEntity.ok(reviewService.saveReview(reviewCreateRequest, file));
 	}
+
+
 
 	@GetMapping("/{reviewId}")
 	@Operation(summary = "리뷰 1건 조회")
