@@ -169,4 +169,20 @@ public class BookSearchService {
 		}
 	}
 
+	private void indexProductToElasticsearch(Product product) {
+		ProductDocument productDocument = new ProductDocument();
+		productDocument.setId(product.getId());
+		productDocument.setStock(product.getStock());
+		productDocument.setProductName(product.getProductName());
+		productDocument.setDescription(product.getDescription());
+		productDocument.setPrice(product.getPrice());
+		productDocument.setForwardDate(product.getForwardDate());
+		productDocument.setScore(product.getScore());
+		productDocument.setThumbnailPath(product.getThumbnailPath());
+		productDocument.setStockStatus(product.getStockStatus());
+		productDocument.setCategoryName(product.getCategory().getName());
+
+		productDocumentRepository.save(productDocument);
+	}
+
 }
