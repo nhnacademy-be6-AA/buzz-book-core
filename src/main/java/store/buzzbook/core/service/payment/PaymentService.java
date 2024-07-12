@@ -86,8 +86,8 @@ public class PaymentService {
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
 	private static final String POINT_REFUND_POINT_INQUIRY = "반품에 의한 포인트 적립 취소";
-	private static final int ORDER_STATUS_PAID = 4;
-	private static final int ORDER_STATUS_CANCELED = 2;
+	private static final int ORDER_STATUS_PAID = 4;	// 고치기
+	private static final int ORDER_STATUS_CANCELED = 2;	// 고치기
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 
@@ -101,7 +101,6 @@ public class PaymentService {
 	private final PointLogRepository pointLogRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
-	private final UserCouponRepository userCouponRepository;
 
 	@Transactional
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
