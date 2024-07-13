@@ -10,7 +10,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.order.JSONParsingException;
+import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -102,21 +105,16 @@ public class PaymentService {
 	private final UserService userService;
 
 	@Transactional(rollbackFor = Exception.class)
-	public ReadBillLogResponse createBillLog(String billLogRequestObject) {
+	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
-			readPaymentResponse = objectMapper.readValue(billLogRequestObject,
+			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
 		} catch (JSONParsingException e) {
 			log.warn("Invalid JSON format: " + e.getMessage());
-		} catch (JsonMappingException e) {
-			log.warn("Error mapping JSON to Java object: " + e.getMessage());
-		} catch (IOException e) {
-			log.warn("I/O error: " + e.getMessage());
 		} catch (Exception e) {
 			log.warn("Unexpected error: " + e.getMessage());
 		}
-
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
@@ -164,18 +162,14 @@ public class PaymentService {
 	}
 
 	@Transactional(rollbackFor = Exception.class)
-	public ReadBillLogResponse createCancelBillLog(String billLogRequestObject) {
+	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
-			readPaymentResponse = objectMapper.readValue(billLogRequestObject,
+			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
 		} catch (JSONParsingException e) {
 			log.warn("Invalid JSON format: " + e.getMessage());
-		} catch (JsonMappingException e) {
-			log.warn("Error mapping JSON to Java object: " + e.getMessage());
-		} catch (IOException e) {
-			log.warn("I/O error: " + e.getMessage());
 		} catch (Exception e) {
 			log.warn("Unexpected error: " + e.getMessage());
 		}

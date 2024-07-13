@@ -1,6 +1,7 @@
 package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,8 @@ public class ProductService {
 	private final TagRepository tagRepository;
 	private final ProductTagRepository productTagRepository;
 	private final ProductSpecification productSpecification;
+
+	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	// // // Elasticsearch 용 리포지토리
 	// private final ProductDocumentRepository productDocumentRepository;

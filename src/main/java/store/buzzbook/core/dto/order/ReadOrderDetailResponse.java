@@ -22,9 +22,9 @@ public class ReadOrderDetailResponse {
 	private int price;
 	private int quantity;
 	private boolean wrap;
-	private LocalDateTime createdAt;
+	private String createdAt;
 	private ReadOrderStatusResponse readOrderStatusResponse;
 	private ReadWrappingResponse readWrappingResponse;
 	private ProductResponse productResponse;
-	private LocalDateTime updateAt;
+	private String updateAt;
 }

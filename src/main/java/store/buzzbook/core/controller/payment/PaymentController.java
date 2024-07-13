@@ -3,6 +3,7 @@ package store.buzzbook.core.controller.payment;
 import java.util.List;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -75,13 +76,13 @@ public class PaymentController {
 
 	@Operation(summary = "결제 내역 추가", description = "결제 내역 추가")
 	@PostMapping("/bill-log")
-	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody String createBillLogRequest) {
+	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody JSONObject createBillLogRequest) {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
 	}
 
 	@Operation(summary = "취소 내역 추가", description = "취소 내역 추가")
 	@PostMapping("/bill-log/cancel")
-	public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody String createBillLogRequest) {
+	public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody JSONObject createBillLogRequest) {
 		return ResponseEntity.ok(paymentService.createCancelBillLog(createBillLogRequest));
 	}
 
