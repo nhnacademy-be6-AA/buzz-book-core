@@ -1,5 +1,6 @@
 package store.buzzbook.core.service.payment;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,10 +24,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -99,9 +103,19 @@ public class PaymentService {
 
 	@Transactional
 	public ReadBillLogResponse createBillLog(String billLogRequestObject) {
-
-		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
-			ReadPaymentResponse.class);
+		ReadPaymentResponse readPaymentResponse = null;
+		try {
+			readPaymentResponse = objectMapper.readValue(billLogRequestObject,
+				ReadPaymentResponse.class);
+		} catch (JSONParsingException e) {
+			log.warn("Invalid JSON format: " + e.getMessage());
+		} catch (JsonMappingException e) {
+			log.warn("Error mapping JSON to Java object: " + e.getMessage());
+		} catch (IOException e) {
+			log.warn("I/O error: " + e.getMessage());
+		} catch (Exception e) {
+			log.warn("Unexpected error: " + e.getMessage());
+		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -146,16 +160,25 @@ public class PaymentService {
 				.build();
 		}
 
-
-
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
 	@Transactional
 	public ReadBillLogResponse createCancelBillLog(String billLogRequestObject) {
 
-		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
-			ReadPaymentResponse.class);
+		ReadPaymentResponse readPaymentResponse = null;
+		try {
+			readPaymentResponse = objectMapper.readValue(billLogRequestObject,
+				ReadPaymentResponse.class);
+		} catch (JSONParsingException e) {
+			log.warn("Invalid JSON format: " + e.getMessage());
+		} catch (JsonMappingException e) {
+			log.warn("Error mapping JSON to Java object: " + e.getMessage());
+		} catch (IOException e) {
+			log.warn("I/O error: " + e.getMessage());
+		} catch (Exception e) {
+			log.warn("Unexpected error: " + e.getMessage());
+		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -333,7 +356,7 @@ public class PaymentService {
 		User user = userRepository.findByLoginId(userInfo.loginId())
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
-			.stream().filter(b->!(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
+			.stream().filter(b -> !(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
 
 		for (BillLog billLog : billLogs) {
 			billLogRepository.save(BillLog.builder()
@@ -357,13 +380,15 @@ public class PaymentService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
+					CouponStatus.AVAILABLE);
 
 				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
 					headers);
 
 				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
+					updateCouponRequestHttpEntity,
 					CouponResponse.class);
 			}
 		}
@@ -393,8 +418,14 @@ public class PaymentService {
 			if (billLog.getPayment().equals(SIMPLE_PAYMENT)) {
 				int deliveryRate = billLog.getOrder().getDeliveryRate();
 				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice()-deliveryRate)
-					.user(user).balance(balance + billLog.getPrice()-deliveryRate).inquiry(POINT_REFUND_INQUIRY).build());
+				pointLogRepository.save(
+					PointLog.builder()
+						.createdAt(LocalDateTime.now())
+						.delta(billLog.getPrice() - deliveryRate)
+						.user(user)
+						.balance(balance + billLog.getPrice() - deliveryRate)
+						.inquiry(POINT_REFUND_INQUIRY)
+						.build());
 			}
 
 			if (billLog.getPayment().equals(POINT)) {
@@ -408,13 +439,15 @@ public class PaymentService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
+					CouponStatus.AVAILABLE);
 
 				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
 					headers);
 
 				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
+					updateCouponRequestHttpEntity,
 					CouponResponse.class);
 
 			}
