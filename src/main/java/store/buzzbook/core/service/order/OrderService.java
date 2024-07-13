@@ -22,6 +22,7 @@ import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
+import store.buzzbook.core.common.exception.order.NotShippedException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
@@ -353,6 +354,9 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
+				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+					throw new NotShippedException("Not shipped");
+				}
 				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
@@ -361,6 +365,9 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
+				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+					throw new NotShippedException("Not shipped");
+				}
 				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
