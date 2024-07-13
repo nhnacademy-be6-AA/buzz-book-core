@@ -15,16 +15,19 @@ import store.buzzbook.core.common.exception.review.IllegalRequestException;
 public class CustomExceptionHandler {
 	@ExceptionHandler(DataAlreadyException.class)
 	public ResponseEntity<String> handleDataAlreadyException(DataAlreadyException ex) {
+		log.debug("Handling data already exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 	}
 
 	@ExceptionHandler(DataNotFoundException.class)
 	public ResponseEntity<String> handleDataNotFoundException(DataNotFoundException ex) {
+		log.debug("Handling data not found exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
 	}
 
 	@ExceptionHandler(IllegalRequestException.class)
 	public ResponseEntity<String> handleIllegalRequestException(IllegalRequestException ex) {
+		log.debug("Handling illegal request exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(ex.getMessage());
 	}
 }

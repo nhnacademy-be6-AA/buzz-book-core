@@ -92,11 +92,12 @@ management:
 logncrash:
   config:
     file-path: logs
-    file-name: core-log
+    file-name: core-api-log
   app-key: Xyx7DoyszcG66ULx
   url: https://api-logncrash.cloud.toast.com
   version: 1.0.0
   host: aa-core-api
+  platform: aa-core-api
   log:
     version: v2
     source: aa

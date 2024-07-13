@@ -11,6 +11,7 @@ public class LogNCrashAppender extends AppenderBase<ILoggingEvent> {
 
 	private String version;
 	private String host;
+	private String platform;
 	private String logVersion;
 	private String logSource;
 	private String logType;
@@ -31,7 +32,9 @@ public class LogNCrashAppender extends AppenderBase<ILoggingEvent> {
 			.body(iLoggingEvent.getFormattedMessage())
 			.logSource(logSource)
 			.logType(logType)
+			.logLevel(iLoggingEvent.getLevel().toString())
 			.host(host)
+			.Platform(platform)
 			.build();
 	}
 }
