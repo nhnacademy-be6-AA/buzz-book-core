@@ -41,6 +41,9 @@ spring:
     openfeign:
       enabled: true
 
+  cache:
+    jcache:
+      config: classpath:cache/ehcache.xml
 aladin:
   api:
     key: ttbheej19982032001

@@ -11,9 +11,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -109,16 +114,25 @@ public class OrderService {
 	private final AddressRepository addressRepository;
 	private final PointLogRepository pointLogRepository;
 	private final PointPolicyRepository pointPolicyRepository;
+	private final ApplicationContext applicationContext;
+	private OrderService getSpringProxy() {
+		return applicationContext.getBean(OrderService.class);
+	}
 
 	@PersistenceContext
 	private EntityManager entityManager;
+
+	@Cacheable(value = "getOrders", key = "#request.page")
+	public List<ReadOrderProjectionResponse> getOrders(ReadOrdersRequest request) {
+		return orderRepository.findAll(request);
+	}
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		int page = request.getPage() - 1;
 		int size = request.getSize();
 
-		List<ReadOrderProjectionResponse> orders = orderRepository.findAll(request);
+		List<ReadOrderProjectionResponse> orders = this.getSpringProxy().getOrders(request);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
 		Set<String> orderStrs = orders.stream()
@@ -244,6 +258,7 @@ public class OrderService {
 		return data;
 	}
 
+	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();

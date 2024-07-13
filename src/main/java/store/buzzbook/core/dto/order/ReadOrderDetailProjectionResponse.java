@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.order;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.springframework.lang.Nullable;
@@ -15,7 +16,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @Setter
-public class ReadOrderDetailProjectionResponse {
+public class ReadOrderDetailProjectionResponse implements Serializable {
 	private long orderDetailId;
 	private int orderDetailPrice;
 	private int orderDetailQuantity;

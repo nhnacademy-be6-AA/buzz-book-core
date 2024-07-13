@@ -3,6 +3,7 @@ package store.buzzbook.core.controller.order;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,7 +54,7 @@ import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.user.UserService;
 
-@Tag(name = "Orders API", description = "주문 관련 API")
+@Tag(name = "주문", description = "주문 관련 api")
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
