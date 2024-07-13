@@ -19,6 +19,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
+import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
@@ -354,6 +355,9 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
 				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
 					throw new NotShippedException("Not shipped");
 				}
@@ -365,6 +369,9 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
 				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
 					throw new NotShippedException("Not shipped");
 				}
