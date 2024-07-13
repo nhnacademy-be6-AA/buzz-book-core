@@ -329,11 +329,6 @@ public class OrderService {
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.changeOrderStatus(orderStatus);
 			entityManager.flush();
-		}
-
-		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		for (OrderDetail orderDetail : newOrderDetails) {
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -386,12 +381,6 @@ public class OrderService {
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.changeOrderStatus(orderStatus);
 			entityManager.flush();
-		}
-
-		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
-			order.getId(), loginId);
-
-		for (OrderDetail orderDetail : newOrderDetails) {
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
