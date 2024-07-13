@@ -115,6 +115,7 @@ public class OrderService {
 	private final PointLogRepository pointLogRepository;
 	private final PointPolicyRepository pointPolicyRepository;
 	private final ApplicationContext applicationContext;
+
 	private OrderService getSpringProxy() {
 		return applicationContext.getBean(OrderService.class);
 	}
@@ -122,7 +123,7 @@ public class OrderService {
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	@Cacheable(value = "getOrders", key = "#request.page")
+	@Cacheable(value = "getOrders", key = "#request.size")
 	public List<ReadOrderProjectionResponse> getOrders(ReadOrdersRequest request) {
 		return orderRepository.findAll(request);
 	}
