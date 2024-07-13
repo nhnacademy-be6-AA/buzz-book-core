@@ -9,9 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -55,7 +52,6 @@ import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.WrappingMapper;
@@ -67,7 +63,6 @@ import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
-import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.user.UserService;
@@ -103,7 +98,7 @@ public class PaymentService {
 	private final UserService userService;
 
 	@Transactional
-	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
+	public ReadBillLogResponse createBillLog(String billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 			ReadPaymentResponse.class);
@@ -157,7 +152,7 @@ public class PaymentService {
 	}
 
 	@Transactional
-	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
+	public ReadBillLogResponse createCancelBillLog(String billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 			ReadPaymentResponse.class);
