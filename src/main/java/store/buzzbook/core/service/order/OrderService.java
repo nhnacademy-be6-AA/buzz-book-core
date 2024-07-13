@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
 import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
+import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
@@ -93,6 +94,7 @@ public class OrderService {
 	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
 	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
 	private static final String PAID = "PAID";
+	private static final String SHIPPING_OUT = "SHIPPING_OUT";
 	private static final int REFUND_PERIOD = 10;
 	private static final int BREAKAGE_REFUND_PERIOD = 30;
 
@@ -326,6 +328,14 @@ public class OrderService {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
+
+		if (updateOrderRequest.getOrderStatusName().equals(SHIPPING_OUT)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(SHIPPING_OUT)) {
+					throw new AlreadyShippingOutException("Order already shipped out");
+				}
+			}
+		}
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
