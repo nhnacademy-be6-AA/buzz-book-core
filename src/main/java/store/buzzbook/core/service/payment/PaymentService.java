@@ -101,7 +101,7 @@ public class PaymentService {
 	private final UserRepository userRepository;
 	private final UserService userService;
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLog(String billLogRequestObject) {
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
@@ -163,7 +163,7 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createCancelBillLog(String billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = null;
@@ -230,7 +230,7 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLogWithDifferentPayment(CreateBillLogRequest createBillLogRequest,
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
@@ -394,7 +394,7 @@ public class PaymentService {
 		}
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void createRefundBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
 		HttpServletRequest request) {
 
