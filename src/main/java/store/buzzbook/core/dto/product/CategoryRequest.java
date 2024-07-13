@@ -6,17 +6,14 @@ import java.util.List;
 import org.springframework.lang.Nullable;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
-
-@NoArgsConstructor
-@Getter
+@Data
 public class CategoryRequest {
 	@NotBlank
 	private String name;
 	@Nullable
-	private Integer parentCategory;
+	private Integer parentCategoryId;
 	@Nullable
-	private List<Integer> subCategories = new ArrayList<>();
+	private List<Integer> subCategoryIds = new ArrayList<>();
 }

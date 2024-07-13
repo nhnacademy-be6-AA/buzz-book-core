@@ -30,7 +30,7 @@ public class CategoryService {
 	private final ProductRepository productRepository;
 
 	public CategoryResponse createCategory(CategoryRequest categoryRequest) {
-		Integer parentId = categoryRequest.getParentCategory();
+		Integer parentId = categoryRequest.getParentCategoryId();
 		Category parentCategory = null;
 
 		if (parentId != null) {
@@ -52,7 +52,7 @@ public class CategoryService {
 			() -> new DataNotFoundException("Category", categoryId));
 
 		// 서브 카테고리 처리
-		List<Integer> subCategoryIds = categoryRequest.getSubCategories();
+		List<Integer> subCategoryIds = categoryRequest.getSubCategoryIds();
 		List<Category> subCategories = new ArrayList<>();
 		if (subCategoryIds != null && !subCategoryIds.isEmpty()) {
 			subCategories = categoryRepository.findAllByIdIn(subCategoryIds);
@@ -62,7 +62,7 @@ public class CategoryService {
 		}
 
 		// 부모 카테고리 처리
-		Integer parentId = categoryRequest.getParentCategory();
+		Integer parentId = categoryRequest.getParentCategoryId();
 		Category parentCategory = null;
 
 		if (parentId != null) {
@@ -91,7 +91,7 @@ public class CategoryService {
 		if (!products.isEmpty()) {
 			throw new IllegalRequestException("해당 카테고리로 분류된 상품이 있어 카테고리를 삭제할 수 없습니다.");
 		}
-		//TODO 해당카테고리의 하위카테고리를 참조하고있는 product를 조회해서 예외 처리 해야함
+		//해당카테고리의 하위카테고리를 참조하고있는 product를 조회해봐야함
 		categoryRepository.deleteById(categoryId);
 	}
 
