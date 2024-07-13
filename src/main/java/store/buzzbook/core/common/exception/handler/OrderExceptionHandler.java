@@ -25,7 +25,7 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(value = {DeliveryPolicyNotFoundException.class, OrderStatusNotFoundException.class,
 		ProductNotFoundException.class, WrappingNotFoundException.class, AddressNotFoundException.class,
 		OrderNotFoundException.class, AddressNotFoundException.class, ExpiredToRefundException.class,
-		NotPaidException.class, OrderDetailNotFoundException.class})
+		OrderDetailNotFoundException.class})
 	public ResponseEntity<String> handleOrderNotFound(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
