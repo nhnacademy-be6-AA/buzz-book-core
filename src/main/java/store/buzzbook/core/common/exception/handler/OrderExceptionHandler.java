@@ -25,9 +25,21 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(value = {DeliveryPolicyNotFoundException.class, OrderStatusNotFoundException.class,
 		ProductNotFoundException.class, WrappingNotFoundException.class, AddressNotFoundException.class,
 		OrderNotFoundException.class, AddressNotFoundException.class, ExpiredToRefundException.class,
-		NotPaidException.class, OrderDetailNotFoundException.class, AlreadyRefundedException.class})
+		NotPaidException.class, OrderDetailNotFoundException.class})
 	public ResponseEntity<String> handleOrderNotFound(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+	}
+
+	@ExceptionHandler(value = {AlreadyRefundedException.class})
+	public ResponseEntity<String> handleOrderAlreadyExists(Exception ex, WebRequest request) {
+		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+	}
+
+	@ExceptionHandler(value = {NotPaidException.class})
+	public ResponseEntity<String> handleOrderIllegalRequest(Exception ex, WebRequest request) {
+		log.debug("Handling order exception : {}", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(ex.getMessage());
 	}
 }

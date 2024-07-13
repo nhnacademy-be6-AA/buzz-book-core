@@ -326,6 +326,43 @@ public class OrderService {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
+
+		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
+				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+					throw new NotShippedException("Not shipped");
+				}
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
+				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+					throw new NotShippedException("Not shipped");
+				}
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (!orderDetail.getOrderStatus().equals(PAID)) {
+					throw new NotPaidException("The order is not paid");
+				}
+			}
+		}
+
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
 		for (OrderDetail orderDetail : orderDetails) {
