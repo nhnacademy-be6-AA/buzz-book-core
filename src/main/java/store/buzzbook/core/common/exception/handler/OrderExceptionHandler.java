@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
+import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
@@ -24,7 +25,7 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(value = {DeliveryPolicyNotFoundException.class, OrderStatusNotFoundException.class,
 		ProductNotFoundException.class, WrappingNotFoundException.class, AddressNotFoundException.class,
 		OrderNotFoundException.class, AddressNotFoundException.class, ExpiredToRefundException.class,
-		NotPaidException.class, OrderDetailNotFoundException.class})
+		NotPaidException.class, OrderDetailNotFoundException.class, AlreadyRefundedException.class})
 	public ResponseEntity<String> handleOrderNotFound(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
