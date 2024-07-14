@@ -1,7 +1,9 @@
 package store.buzzbook.core.service.user;
 
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import store.buzzbook.core.common.exception.user.DeactivatedUserException;
+import store.buzzbook.core.common.exception.user.DormantUserException;
 import store.buzzbook.core.common.exception.user.GradeNotFoundException;
 import store.buzzbook.core.common.exception.user.PasswordIncorrectException;
 import store.buzzbook.core.common.exception.user.UnEncryptedPasswordException;
@@ -31,6 +34,11 @@ import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.dto.user.UserRealBill;
+import store.buzzbook.core.dto.user.UserRealBillInfo;
+import store.buzzbook.core.dto.user.UserRealBillInfoDetail;
+import store.buzzbook.core.entity.payment.BillStatus;
+import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
@@ -59,6 +67,10 @@ class UserServiceTest {
 	@Spy
 	private User user;
 
+	private PasswordEncoder passwordEncoder;
+
+	private Method isPasswordEncryptedMethod;
+
 	@InjectMocks
 	private UserServiceImpl userService;
 
@@ -66,7 +78,8 @@ class UserServiceTest {
 	private Grade grade;
 
 	@BeforeEach
-	void setUp() {
+	void setUp() throws NoSuchMethodException {
+		passwordEncoder = new BCryptPasswordEncoder();
 		grade = Grade.builder()
 			.benefit(2.5)
 			.name(GradeName.NORMAL)
@@ -83,6 +96,9 @@ class UserServiceTest {
 			.build();
 
 		user = convertToUser(registerUserRequest);
+
+		isPasswordEncryptedMethod = UserServiceImpl.class.getDeclaredMethod("isPasswordEncrypted", String.class);
+		isPasswordEncryptedMethod.setAccessible(true);
 
 		Mockito.lenient().when(gradeRepository.findByName(Mockito.any())).thenReturn(Optional.of(grade));
 
@@ -249,6 +265,81 @@ class UserServiceTest {
 	}
 
 	@Test
+	@DisplayName("로그인 성공 처리 중 휴면회원 처리")
+	void testSuccessLoginShouldThrowDormantUserException() {
+		User dormantUser = User.builder()
+			.name("test")
+			.email("asd123@nhn.com")
+			.contactNumber("010-0000-1111")
+			.loginId("ijodfs328")
+			.birthday(LocalDate.now())
+			.password("328u1u90uiodhiosdafhioufo82^&%6712jbsja")
+			.status(UserStatus.DORMANT)
+			.createAt(LocalDateTime.now())
+			.isAdmin(false)
+			.build();
+
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(dormantUser.getLoginId())) {
+					return Optional.of(dormantUser);
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		Assertions.assertThrowsExactly(DormantUserException.class,
+			() -> userService.successLogin(registerUserRequest.loginId()));
+
+	}
+
+	@Test
+	@DisplayName("로그인 성공 처리 중 포인트로그 추가")
+	void testSuccessLoginWithPointLog() {
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(registerUserRequest.loginId())) {
+					return Optional.of(convertToUser(registerUserRequest));
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		Mockito.when(userRepository.findGradeByLoginId(Mockito.any())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(registerUserRequest.loginId())) {
+					return Optional.of(grade);
+				}
+				return Optional.empty();
+			});
+
+		Mockito.when(userRepository.save(Mockito.any())).thenReturn(user);
+
+		PointLog pointLog = PointLog.builder()
+			.user(convertToUser(registerUserRequest))
+			.delta(100)
+			.createdAt(LocalDateTime.now())
+			.inquiry("출석")
+			.balance(100).build();
+
+		Mockito.when(pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(Mockito.anyLong())).thenReturn(pointLog);
+
+		UserInfo result = userService.successLogin(user.getLoginId());
+
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(pointLog.getBalance(), result.point());
+
+	}
+
+	@Test
 	@DisplayName("로그인 성공 처리 중 등급 찾기 실패")
 	void testSuccessLoginShouldThrowGradeNotFoundException() {
 		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(
@@ -381,6 +472,34 @@ class UserServiceTest {
 	}
 
 	@Test
+	@DisplayName("휴면 계정 활성화 중 탈퇴상태의 유저 요청")
+	void testActivateUserShouldThrowDeactivatedUserException() {
+		user = User.builder().name("test")
+			.email("asd123@nhn.com")
+			.contactNumber("010-0000-1111")
+			.loginId("ijodfs328")
+			.birthday(LocalDate.now())
+			.isAdmin(false)
+			.createAt(LocalDateTime.now())
+			.status(UserStatus.WITHDRAW)
+			.password("328u1u90uiodhiosdafhioufo82^&%6712jbsja")
+			.build();
+		Mockito.when(userRepository.findByLoginId(Mockito.anyString())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(user.getLoginId())) {
+					return Optional.of(user);
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		Assertions.assertThrowsExactly(DeactivatedUserException.class, () -> userService.activate(user.getLoginId()));
+	}
+
+	@Test
 	@DisplayName("계정 수정 성공")
 	void testUpdateUserInfo() {
 		UpdateUserRequest updateUserRequest = new UpdateUserRequest(
@@ -453,6 +572,15 @@ class UserServiceTest {
 			}
 		);
 
+		PointLog pointLog = PointLog.builder()
+			.user(convertToUser(registerUserRequest))
+			.delta(100)
+			.createdAt(LocalDateTime.now())
+			.inquiry("출석")
+			.balance(100).build();
+
+		Mockito.when(pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(Mockito.anyLong())).thenReturn(pointLog);
+
 		UserInfo result = userService.getUserInfoByUserId(user.getId());
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(grade.getName().name(), result.grade().name());
@@ -464,12 +592,13 @@ class UserServiceTest {
 		Assertions.assertEquals(user.getContactNumber(), result.contactNumber());
 		Assertions.assertEquals(user.getEmail(), result.email());
 		Assertions.assertEquals(user.getBirthday(), result.birthday());
+		Assertions.assertEquals(pointLog.getBalance(), result.point());
 
 	}
 
 	@Test
-	@DisplayName("유저 아이디로 유저 정보 얻는 중 유저 발견 실패")
-	void testGetUserInfoByUserIdShouldThrowUserNotFoundException() {
+	@DisplayName("유저 아이디로 유저 정보 얻기 중 포인트 로그 없음")
+	void testGetUserInfoByUserIdWithoutPointLog() {
 
 		Mockito.when(userRepository.findById(Mockito.any())).thenAnswer(
 			invocation -> {
@@ -487,7 +616,7 @@ class UserServiceTest {
 			invocation -> {
 				String loginId = (String)invocation.getArguments()[0];
 
-				if (loginId.equals("user.getLoginId()")) {
+				if (loginId.equals(user.getLoginId())) {
 					return Optional.of(grade);
 				}
 
@@ -495,7 +624,40 @@ class UserServiceTest {
 			}
 		);
 
-		Assertions.assertThrowsExactly(GradeNotFoundException.class,
+		Mockito.when(pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(Mockito.anyLong())).thenReturn(null);
+
+		UserInfo result = userService.getUserInfoByUserId(user.getId());
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(grade.getName().name(), result.grade().name());
+		Assertions.assertEquals(grade.getBenefit(), result.grade().benefit());
+		Assertions.assertEquals(grade.getStandard(), result.grade().standard());
+		Assertions.assertEquals(user.getId(), result.id());
+		Assertions.assertEquals(user.getName(), result.name());
+		Assertions.assertEquals(user.getLoginId(), result.loginId());
+		Assertions.assertEquals(user.getContactNumber(), result.contactNumber());
+		Assertions.assertEquals(user.getEmail(), result.email());
+		Assertions.assertEquals(user.getBirthday(), result.birthday());
+		Assertions.assertEquals(0, result.point());
+
+	}
+
+	@Test
+	@DisplayName("유저 아이디로 유저 정보 얻는 중 유저 발견 실패")
+	void testGetUserInfoByUserIdShouldThrowUserNotFoundException() {
+
+		Mockito.when(userRepository.findById(Mockito.any())).thenAnswer(
+			invocation -> {
+				Long userId = (Long)invocation.getArguments()[0];
+
+				if (userId.equals(-1L)) {
+					return Optional.of(user);
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		Assertions.assertThrowsExactly(UserNotFoundException.class,
 			() -> userService.getUserInfoByUserId(user.getId()));
 	}
 
@@ -547,6 +709,15 @@ class UserServiceTest {
 			}
 		);
 
+		PointLog pointLog = PointLog.builder()
+			.user(convertToUser(registerUserRequest))
+			.delta(100)
+			.createdAt(LocalDateTime.now())
+			.inquiry("출석")
+			.balance(100).build();
+
+		Mockito.when(pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(Mockito.anyLong())).thenReturn(pointLog);
+
 		UserInfo result = userService.getUserInfoByLoginId(user.getLoginId());
 		Assertions.assertNotNull(result);
 		Assertions.assertEquals(grade.getName().name(), result.grade().name());
@@ -558,6 +729,52 @@ class UserServiceTest {
 		Assertions.assertEquals(user.getContactNumber(), result.contactNumber());
 		Assertions.assertEquals(user.getEmail(), result.email());
 		Assertions.assertEquals(user.getBirthday(), result.birthday());
+		Assertions.assertEquals(pointLog.getBalance(), result.point());
+
+	}
+
+	@Test
+	@DisplayName("로그인 아이디로 유저 정보 얻기 중 포인트로그 없음")
+	void testGetUserInfoByLoginIdWithoutPoingLog() {
+
+		Mockito.when(userRepository.findByLoginId(Mockito.any())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(user.getLoginId())) {
+					return Optional.of(user);
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		Mockito.when(userRepository.findGradeByLoginId(Mockito.any())).thenAnswer(
+			invocation -> {
+				String loginId = (String)invocation.getArguments()[0];
+
+				if (loginId.equals(user.getLoginId())) {
+					return Optional.of(grade);
+				}
+
+				return Optional.empty();
+			}
+		);
+
+		Mockito.when(pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(Mockito.anyLong())).thenReturn(null);
+
+		UserInfo result = userService.getUserInfoByLoginId(user.getLoginId());
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(grade.getName().name(), result.grade().name());
+		Assertions.assertEquals(grade.getBenefit(), result.grade().benefit());
+		Assertions.assertEquals(grade.getStandard(), result.grade().standard());
+		Assertions.assertEquals(user.getId(), result.id());
+		Assertions.assertEquals(user.getName(), result.name());
+		Assertions.assertEquals(user.getLoginId(), result.loginId());
+		Assertions.assertEquals(user.getContactNumber(), result.contactNumber());
+		Assertions.assertEquals(user.getEmail(), result.email());
+		Assertions.assertEquals(user.getBirthday(), result.birthday());
+		Assertions.assertEquals(0, result.point());
 
 	}
 
@@ -747,8 +964,61 @@ class UserServiceTest {
 			PasswordIncorrectException.class, () -> userService.updatePassword(user.getId(), changePasswordRequest));
 	}
 
+	@Test
+	void testGetUserRealBills_Success() {
+		UserRealBillInfoDetail detail = UserRealBillInfoDetail.builder()
+			.price(1000)
+			.status(BillStatus.DONE).build();
+		UserRealBillInfo userRealBillInfo = UserRealBillInfo.builder()
+			.deliveryRate(100)
+			.detailList(List.of(detail)).build();
+		UserRealBill bill = UserRealBill.builder()
+			.userId(user.getId())
+			.userRealBillInfoList(List.of(userRealBillInfo)).build();
+
+		Mockito.when(userRepository.findUserRealBillsIn3Month()).thenReturn(List.of(bill));
+
+		List<UserRealBill> result = userService.getUserRealBills();
+
+		Assertions.assertNotNull(result);
+		Assertions.assertEquals(1, result.size());
+		Assertions.assertEquals(bill.getUserId(), result.getFirst().getUserId());
+		Assertions.assertEquals(userRealBillInfo.getDeliveryRate(),
+			bill.getUserRealBillInfoList().getFirst().getDeliveryRate());
+		Assertions.assertEquals(detail.getStatus(),
+			bill.getUserRealBillInfoList().getFirst().getDetailList().getFirst().getStatus());
+		Assertions.assertEquals(detail.getPrice(),
+			bill.getUserRealBillInfoList().getFirst().getDetailList().getFirst().getPrice());
+
+	}
+
+	@Test
+	void testGetUserRealBills_EmptyList() {
+
+		Mockito.when(userRepository.findUserRealBillsIn3Month()).thenReturn(List.of());
+
+		List<UserRealBill> result = userService.getUserRealBills();
+		Assertions.assertNotNull(result);
+		Assertions.assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void testIsPasswordEncryptedShouldTrue() throws Exception {
+		String encryptedPassword = user.getPassword();
+		boolean result = (boolean)isPasswordEncryptedMethod.invoke(userService, encryptedPassword);
+
+		Assertions.assertTrue(result);
+	}
+
+	@Test
+	void testIsPasswordEncryptedShouldFalse() throws Exception {
+		String nonEncryptedPassword = registerUserRequest.password();
+		boolean result = (boolean)isPasswordEncryptedMethod.invoke(userService, nonEncryptedPassword);
+
+		Assertions.assertFalse(result);
+	}
+
 	private User convertToUser(RegisterUserRequest request) {
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		String password = passwordEncoder.encode(request.password());
 
 		return User.builder()
