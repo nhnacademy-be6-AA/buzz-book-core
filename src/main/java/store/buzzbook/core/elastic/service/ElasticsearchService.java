@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.elastic.client.ElasticSearchClient;
 import store.buzzbook.core.elastic.document.ProductDocument;
@@ -47,6 +49,20 @@ public class ElasticsearchService {
 			products.add(product);
 		}
 
-		return products;
+		return products.stream()
+			.map(product -> new ProductDocument(
+				product.getId(),
+				product.getStock(),
+				product.getProductName(),
+				product.getDescription(),
+				product.getPrice(),
+				product.getForwardDate(),
+				product.getScore(),
+				product.getThumbnailPath(),
+				product.getStockStatus(),
+				product.getCategory_id(),
+				product.getTags()
+			))
+			.collect(Collectors.toList());
 	}
 }
