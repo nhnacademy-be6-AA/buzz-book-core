@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -193,13 +194,12 @@ public class OrderController {
 
 	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
-	@DeleteMapping("/status")
-	public ResponseEntity<String> deleteOrderStatus(@RequestBody DeleteOrderStatusRequest deleteOrderStatusRequest,
-		HttpServletRequest request) {
+	@DeleteMapping("/status/{id}")
+	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id, HttpServletRequest request) {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			orderService.deleteOrderStatus(deleteOrderStatusRequest.getId());
+			orderService.deleteOrderStatus(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
 
@@ -247,12 +247,11 @@ public class OrderController {
 
 	@JwtOrderAdminValidate
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
-	@DeleteMapping("/delivery-policy")
-	public ResponseEntity<String> deleteDeliveryPolicy(
-		@RequestBody DeleteDeliveryPolicyRequest deleteDeliveryPolicyRequest, HttpServletRequest request) {
+	@DeleteMapping("/delivery-policy/{id}")
+	public ResponseEntity<String> deleteDeliveryPolicy(@PathVariable int id, HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			orderService.deleteDeliveryPolicy(deleteDeliveryPolicyRequest.getId());
+			orderService.deleteDeliveryPolicy(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
 
@@ -299,12 +298,11 @@ public class OrderController {
 
 	@JwtOrderAdminValidate
 	@Operation(summary = "포장 삭제", description = "포장 삭제")
-	@DeleteMapping("/wrapping")
-	public ResponseEntity<String> deleteWrapping(@RequestBody DeleteWrappingRequest deleteWrappingRequest,
-		HttpServletRequest request) {
+	@DeleteMapping("/wrapping/{id}")
+	public ResponseEntity<String> deleteWrapping(@PathVariable int id, HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			orderService.deleteWrapping(deleteWrappingRequest.getId());
+			orderService.deleteWrapping(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
 		return ResponseEntity.ok(FAILURE);
