@@ -166,10 +166,8 @@ public class PaymentService {
 		try {
 			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
-		} catch (JSONParsingException e) {
-			log.warn("Invalid JSON format: " + e.getMessage());
 		} catch (Exception e) {
-			log.warn("Unexpected error: " + e.getMessage());
+			throw new JSONParsingException("readPaymentResponse is Not Json");
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
