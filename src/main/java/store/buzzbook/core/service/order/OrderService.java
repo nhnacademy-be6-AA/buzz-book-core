@@ -13,12 +13,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -116,7 +114,7 @@ public class OrderService {
 	private final PointPolicyRepository pointPolicyRepository;
 	private final ApplicationContext applicationContext;
 
-	private OrderService getSpringProxy() {
+	private OrderService getOrderServiceProxy() {
 		return applicationContext.getBean(OrderService.class);
 	}
 
@@ -133,7 +131,7 @@ public class OrderService {
 		int page = request.getPage() - 1;
 		int size = request.getSize();
 
-		List<ReadOrderProjectionResponse> orders = this.getSpringProxy().getOrders(request);
+		List<ReadOrderProjectionResponse> orders = this.getOrderServiceProxy().getOrders(request);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
 		Set<String> orderStrs = orders.stream()
