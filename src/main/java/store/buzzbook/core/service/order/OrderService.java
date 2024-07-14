@@ -533,7 +533,7 @@ public class OrderService {
 				LocalDateTime.now()).build()));
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	@Transactional
 	public ReadOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
 
 		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder()
@@ -560,7 +560,7 @@ public class OrderService {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	@Transactional
 	public ReadDeliveryPolicyResponse createDeliveryPolicy(CreateDeliveryPolicyRequest createDeliveryPolicyRequest) {
 		return DeliveryPolicyMapper.toDto(
 			deliveryPolicyRepository.save(DeliveryPolicy.builder()
@@ -570,7 +570,7 @@ public class OrderService {
 				.build()));
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	@Transactional
 	public ReadDeliveryPolicyResponse updateDeliveryPolicy(UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest) {
 		return DeliveryPolicyMapper.toDto(
 			deliveryPolicyRepository.save(DeliveryPolicy.builder().id(updateDeliveryPolicyRequest.getId())
@@ -591,13 +591,13 @@ public class OrderService {
 		return deliveryPolicyRepository.findAll().stream().map(DeliveryPolicyMapper::toDto).toList();
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	@Transactional
 	public ReadWrappingResponse createWrapping(CreateWrappingRequest createWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().paper(createWrappingRequest.getPaper())
 			.price(createWrappingRequest.getPrice()).build()));
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	@Transactional
 	public ReadWrappingResponse updateWrapping(UpdateWrappingRequest updateWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().id(updateWrappingRequest.getId())
 			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).build()));
@@ -616,7 +616,7 @@ public class OrderService {
 		return wrappingRepository.findAll().stream().map(WrappingMapper::toDto).toList();
 	}
 
-	@Transactional(rollbackFor = Exception.class)
+	@Transactional
 	public ReadOrderDetailResponse updateOrderDetail(UpdateOrderDetailRequest request, String loginId) {
 		OrderDetail orderDetail = orderDetailRepository.findByIdAndOrder_User_LoginId(request.getId(), loginId);
 		orderDetailRepository.save(OrderDetail.builder()

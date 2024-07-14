@@ -13,6 +13,7 @@ import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
+import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
@@ -46,6 +47,12 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(value = {NotPaidException.class})
 	public ResponseEntity<String> handleOrderIllegalRequest(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
-		return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(ex.getMessage());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+	}
+
+	@ExceptionHandler(value = {JSONParsingException.class})
+	public ResponseEntity<String> handleOrderParsingError(Exception ex, WebRequest request) {
+		log.debug("Handling order exception : {}", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 	}
 }
