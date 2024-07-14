@@ -24,7 +24,6 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
-    open-in-view: true
 
 api:
   gateway:
