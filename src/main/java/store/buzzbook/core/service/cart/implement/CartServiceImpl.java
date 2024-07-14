@@ -97,7 +97,8 @@ public class CartServiceImpl implements CartService {
 			cart.get().getId());
 
 		if (existDetailOptional.isPresent()) {
-			existDetailOptional.get().changeQuantity(createCartDetailRequest.quantity());
+			existDetailOptional.get()
+				.changeQuantity(existDetailOptional.get().getQuantity() + createCartDetailRequest.quantity());
 			cartDetailRepository.save(existDetailOptional.get());
 		} else {
 			cartDetailRepository.save(createCartDetailRequest.toCartDetail(cart.get(), product));
@@ -145,6 +146,10 @@ public class CartServiceImpl implements CartService {
 		}
 
 		cartDetailOptional.get().changeQuantity(quantity);
+
+		if (cartDetailOptional.get().getProduct().getStock() < cartDetailOptional.get().getQuantity()) {
+			throw new NotEnoughProductStockException();
+		}
 
 		cartDetailRepository.save(cartDetailOptional.get());
 	}
@@ -199,28 +204,6 @@ public class CartServiceImpl implements CartService {
 		} else {
 			return UuidUtil.uuidByteToString(cart.get().getUuid());
 		}
-	}
-
-	private boolean isValidUuid(String uuid, Long userId) {
-		Optional<Cart> cart = cartRepository.findCartByUuid(UuidUtil.stringToByte(uuid));
-
-		if (cart.isEmpty() || !cart.get().getUser().getId().equals(userId)) {
-			log.debug("유효하지 않은 uuid입니다.");
-			return false;
-		}
-
-		return true;
-	}
-
-	private boolean isValidUuid(String uuid) {
-		Optional<Cart> cart = cartRepository.findCartByUuid(UuidUtil.stringToByte(uuid));
-
-		if (cart.isEmpty()) {
-			log.debug("유효하지 않은 uuid입니다.");
-			return false;
-		}
-
-		return true;
 	}
 
 	private void orderByPrice(List<CartDetailResponse> cartList) {
