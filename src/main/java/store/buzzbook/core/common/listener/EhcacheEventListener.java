@@ -1,6 +1,5 @@
 package store.buzzbook.core.common.listener;
 
-import org.ehcache.CacheManager;
 import org.ehcache.event.CacheEvent;
 import org.ehcache.event.CacheEventListener;
 import org.ehcache.event.EventType;
