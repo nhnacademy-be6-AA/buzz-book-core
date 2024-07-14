@@ -15,7 +15,7 @@ public class CreateOrderDetailRequest {
 	private int price;
 	private int quantity;
 	private boolean wrap;
-	private LocalDateTime createDate;
+	private LocalDateTime createAt;
 	private int orderStatusId;
 	private Integer wrappingId;
 	@Setter
