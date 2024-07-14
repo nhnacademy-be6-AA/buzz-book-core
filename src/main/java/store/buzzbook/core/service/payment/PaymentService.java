@@ -73,6 +73,7 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class PaymentService {
 	private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
 	@Value("${api.gateway.host}")
 	private String host;
 
@@ -82,7 +83,7 @@ public class PaymentService {
 	private static final String POINT_PAYMENT_INQUIRY = "주문 시 포인트 결제";
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
-	private static final String POINT_REFUND_POINT_INQUIRY = "반품에 의한 포인트 적립 취소";
+	private static final String CANCEL_POINT_REFUND_INQUIRY = "반품에 의한 포인트 적립 취소";
 	private static final String PAID = "PAID";
 	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
@@ -416,7 +417,7 @@ public class PaymentService {
 			if (billLog.getPayment().equals(POINT)) {
 				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
 				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(-billLog.getPrice())
-					.user(user).balance(balance - billLog.getPrice()).inquiry(POINT_REFUND_POINT_INQUIRY).build());
+					.user(user).balance(balance - billLog.getPrice()).inquiry(CANCEL_POINT_REFUND_INQUIRY).build());
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
