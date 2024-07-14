@@ -1,41 +1,40 @@
 package store.buzzbook.core.util;
 
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.util.UuidUtil;
+
+@Slf4j
 public class UUIDTest {
-
-	private static final Logger log = LoggerFactory.getLogger(UUIDTest.class);
-
-	private byte[] createUUIDtoByte() {
-		UUID uuid = UUID.randomUUID();
-		log.info("Created UUID: {}", uuid);
-
-		ByteBuffer buffer = ByteBuffer.allocate(16);
-		buffer.putLong(uuid.getMostSignificantBits());
-		buffer.putLong(uuid.getLeastSignificantBits());
-
-		return buffer.array();
-	}
-
-	private String uuidByteToString(byte[] bytes) {
-		StringBuilder sb = new StringBuilder();
-		for (byte b : bytes) {
-			sb.append(String.format("%02x", b));
-		}
-
-		return sb.toString();
-	}
 
 	@Test
 	void testUUIDToByte() {
-		byte[] uuidByte = createUUIDtoByte();
+		byte[] uuidByte = UuidUtil.createUuidToByte();
+		String uuidString = UuidUtil.uuidByteToString(uuidByte);
+		byte[] uuidByte2 = UuidUtil.stringToByte(uuidString);
 
-		log.info("uuid byte to string : {}", uuidByteToString(uuidByte));
+		Assertions.assertAll(() -> {
+			for (int i = 0; i < uuidByte.length; i++) {
+				Assertions.assertEquals(uuidByte[i], uuidByte2[i]);
+			}
 
+			Assertions.assertEquals(uuidByte.length, uuidByte2.length);
+		});
+
+	}
+
+	@Test
+	void testConvertToByteAndFormatString() {
+		UUID uuid = UUID.randomUUID();
+		byte[] uuidByte = UuidUtil.convertToByte(uuid);
+		String uuidString = uuid.toString();
+		String uuidString2 = UuidUtil.uuidByteToString(uuidByte);
+		String formatedString = UuidUtil.formatUuid(uuidString2);
+
+		Assertions.assertEquals(uuidString, formatedString);
 	}
 }
