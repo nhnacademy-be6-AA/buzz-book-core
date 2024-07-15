@@ -1,5 +1,7 @@
 package store.buzzbook.core.controller.review;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,15 +48,10 @@ public class ReviewController {
 	@ApiResponse(responseCode = "200", description = "리뷰 등록 성공시 등록된 리뷰의 ReviewResponse 반환")
 
 	public ResponseEntity<ReviewResponse> saveReview(
-		// @RequestBody ReviewCreateRequest reviewCreateRequest
-		@RequestPart("reviewCreateRequest") ReviewCreateRequest reviewCreateRequest
-		, @RequestPart(value = "file", required = false) MultipartFile file
-	) {
-
-		log.warn("{}", reviewCreateRequest);
+		@RequestPart("reviewCreateRequest") ReviewCreateRequest reviewCreateRequest,
+		@RequestPart(value = "file", required = false) MultipartFile file) {
 
 		return ResponseEntity.ok(reviewService.saveReview(reviewCreateRequest, file));
-
 	}
 
 

@@ -27,6 +27,9 @@ public class SignController {
 	@PostMapping("/login")
 	@Operation(summary = "로그인 요청", description = "유저의 로그인 id를 이용해 login id와 encoded password를 준다. ")
 	public ResponseEntity<LoginUserResponse> login(@RequestBody String loginId) {
+
+		log.warn("{}", loginId);
+
 		LoginUserResponse loginUserResponse = null;
 
 		loginUserResponse = userService.requestLogin(loginId);

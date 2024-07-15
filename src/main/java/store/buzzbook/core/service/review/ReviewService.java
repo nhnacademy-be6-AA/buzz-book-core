@@ -107,7 +107,7 @@ public class ReviewService {
 		Review newReview = new Review(
 			reviewReq.getId(),
 			reviewReq.getContent() + "\n(수정됨:" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ")",
-			reviewReq.getPicturePath(),
+			review.getPicturePath(),
 			reviewReq.getReviewScore(),
 			review.getReviewCreatedAt(),
 			review.getOrderDetail());
