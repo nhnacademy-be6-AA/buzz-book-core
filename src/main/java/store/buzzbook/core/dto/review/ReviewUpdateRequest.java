@@ -1,7 +1,5 @@
 package store.buzzbook.core.dto.review;
 
-import org.springframework.lang.Nullable;
-
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -16,9 +14,6 @@ public class ReviewUpdateRequest {
 
 	@NotBlank(message = "내용을 입력하세요.")
 	private String content;
-
-	@Nullable
-	private String picturePath;
 
 	@NotNull(message = "점수는 1점에서 10점 자연수값만 입력가능합니다.")
 	@Min(value = 1, message = "점수는 최소 1점이어야 합니다.")
