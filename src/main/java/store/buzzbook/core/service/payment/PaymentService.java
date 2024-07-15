@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
+import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -55,7 +54,6 @@ import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
 import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.WrappingMapper;
@@ -67,7 +65,6 @@ import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
-import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.user.UserService;
@@ -76,6 +73,7 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class PaymentService {
 	private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+
 	@Value("${api.gateway.host}")
 	private String host;
 
@@ -85,9 +83,9 @@ public class PaymentService {
 	private static final String POINT_PAYMENT_INQUIRY = "주문 시 포인트 결제";
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
-	private static final String POINT_REFUND_POINT_INQUIRY = "반품에 의한 포인트 적립 취소";
-	private static final int ORDER_STATUS_PAID = 4;
-	private static final int ORDER_STATUS_CANCELED = 2;
+	private static final String CANCEL_POINT_REFUND_INQUIRY = "반품에 의한 포인트 적립 취소";
+	private static final String PAID = "PAID";
+	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 
@@ -101,22 +99,23 @@ public class PaymentService {
 	private final PointLogRepository pointLogRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
-	private final UserCouponRepository userCouponRepository;
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
-
-		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
-			ReadPaymentResponse.class);
-
+		ReadPaymentResponse readPaymentResponse = null;
+		try {
+			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
+				ReadPaymentResponse.class);
+		} catch (Exception e) {
+			throw new JSONParsingException("readPaymentResponse is Not Json");
+		}
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
@@ -153,24 +152,26 @@ public class PaymentService {
 				.build();
 		}
 
-
-
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
 
-		ReadPaymentResponse readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
-			ReadPaymentResponse.class);
+		ReadPaymentResponse readPaymentResponse = null;
+		try {
+			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
+				ReadPaymentResponse.class);
+		} catch (Exception e) {
+			throw new JSONParsingException("readPaymentResponse is Not Json");
+		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_CANCELED)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(CANCELED));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
@@ -215,7 +216,7 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLogWithDifferentPayment(CreateBillLogRequest createBillLogRequest,
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
@@ -225,8 +226,7 @@ public class PaymentService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findById(ORDER_STATUS_PAID)
-				.orElseThrow(() -> new OrderStatusNotFoundException("Order status not found")));
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
@@ -342,7 +342,7 @@ public class PaymentService {
 		User user = userRepository.findByLoginId(userInfo.loginId())
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
-			.stream().filter(b->!(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
+			.stream().filter(b -> !(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
 
 		for (BillLog billLog : billLogs) {
 			billLogRepository.save(BillLog.builder()
@@ -366,19 +366,21 @@ public class PaymentService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
+					CouponStatus.AVAILABLE);
 
 				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
 					headers);
 
 				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
+					updateCouponRequestHttpEntity,
 					CouponResponse.class);
 			}
 		}
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void createRefundBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
 		HttpServletRequest request) {
 
@@ -402,14 +404,20 @@ public class PaymentService {
 			if (billLog.getPayment().equals(SIMPLE_PAYMENT)) {
 				int deliveryRate = billLog.getOrder().getDeliveryRate();
 				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice()-deliveryRate)
-					.user(user).balance(balance + billLog.getPrice()-deliveryRate).inquiry(POINT_REFUND_INQUIRY).build());
+				pointLogRepository.save(
+					PointLog.builder()
+						.createdAt(LocalDateTime.now())
+						.delta(billLog.getPrice() - deliveryRate)
+						.user(user)
+						.balance(balance + billLog.getPrice() - deliveryRate)
+						.inquiry(POINT_REFUND_INQUIRY)
+						.build());
 			}
 
 			if (billLog.getPayment().equals(POINT)) {
 				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
 				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(-billLog.getPrice())
-					.user(user).balance(balance - billLog.getPrice()).inquiry(POINT_REFUND_POINT_INQUIRY).build());
+					.user(user).balance(balance - billLog.getPrice()).inquiry(CANCEL_POINT_REFUND_INQUIRY).build());
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
@@ -417,13 +425,15 @@ public class PaymentService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.AVAILABLE);
+				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
+					CouponStatus.AVAILABLE);
 
 				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
 					headers);
 
 				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
+					updateCouponRequestHttpEntity,
 					CouponResponse.class);
 
 			}

@@ -34,6 +34,7 @@ public class CreateOrderRequest {
 	private String receiverContactNumber;
 	private String orderEmail;
 	private Integer myPoint;
+	@Nullable
 	private String couponCode;
 	private int deliveryRate;
 }

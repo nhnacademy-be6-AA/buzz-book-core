@@ -11,6 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +22,12 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
+import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
+import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
 import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
+import store.buzzbook.core.common.exception.order.NotShippedException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
@@ -91,6 +97,7 @@ public class OrderService {
 	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
 	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
 	private static final String PAID = "PAID";
+	private static final String SHIPPING_OUT = "SHIPPING_OUT";
 	private static final int REFUND_PERIOD = 10;
 	private static final int BREAKAGE_REFUND_PERIOD = 30;
 
@@ -105,16 +112,26 @@ public class OrderService {
 	private final AddressRepository addressRepository;
 	private final PointLogRepository pointLogRepository;
 	private final PointPolicyRepository pointPolicyRepository;
+	private final ApplicationContext applicationContext;
+
+	private OrderService getOrderServiceProxy() {
+		return applicationContext.getBean(OrderService.class);
+	}
 
 	@PersistenceContext
 	private EntityManager entityManager;
+
+	@Cacheable(value = "getOrders", key = "#request.size")
+	public List<ReadOrderProjectionResponse> getOrders(ReadOrdersRequest request) {
+		return orderRepository.findAll(request);
+	}
 
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		int page = request.getPage() - 1;
 		int size = request.getSize();
 
-		List<ReadOrderProjectionResponse> orders = orderRepository.findAll(request);
+		List<ReadOrderProjectionResponse> orders = this.getOrderServiceProxy().getOrders(request);
 		List<ReadOrdersResponse> responses = new ArrayList<>();
 
 		Set<String> orderStrs = orders.stream()
@@ -240,7 +257,8 @@ public class OrderService {
 		return data;
 	}
 
-	@Transactional
+	@CacheEvict(value = "getOrders", allEntries = true)
+	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
 		User user = null;
@@ -306,7 +324,7 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
 		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
@@ -319,46 +337,30 @@ public class OrderService {
 		return PointLogResponse.from(pointLog);
 	}
 
-	@Transactional
+	@CacheEvict(value = "getOrders", allEntries = true)
+	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
-		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.changeOrderStatus(orderStatus);
-			entityManager.flush();
+		if (updateOrderRequest.getOrderStatusName().equals(SHIPPING_OUT)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(SHIPPING_OUT)) {
+					throw new AlreadyShippingOutException("Order already shipped out");
+				}
+			}
 		}
-
-		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		for (OrderDetail orderDetail : newOrderDetails) {
-
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
-
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
-		}
-
-		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
-	}
-
-	@Transactional
-	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
-		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
-
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
-			order.getId(), loginId);
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
+				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+					throw new NotShippedException("Not shipped");
+				}
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -366,7 +368,13 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeTenDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
+				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+					throw new NotShippedException("Not shipped");
+				}
+				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -380,18 +388,11 @@ public class OrderService {
 			}
 		}
 
-		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
 
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.changeOrderStatus(orderStatus);
 			entityManager.flush();
-		}
-
-		List<OrderDetail> newOrderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
-			order.getId(), loginId);
-
-		for (OrderDetail orderDetail : newOrderDetails) {
 
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
@@ -407,9 +408,78 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
 
-	private static boolean isCreatedBeforeTenDays(LocalDateTime createAt, int sub) {
-		LocalDateTime tenDaysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
-		return createAt.isBefore(tenDaysAgo);
+	@CacheEvict(value = "getOrders", allEntries = true)
+	@Transactional(rollbackFor = Exception.class)
+	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
+		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
+
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
+			order.getId(), loginId);
+
+		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
+					|| orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
+				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+					throw new NotShippedException("Not shipped");
+				}
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))
+					&& isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
+					|| orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
+				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+					throw new NotShippedException("Not shipped");
+				}
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))
+					&& isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+					throw new ExpiredToRefundException("The order has expired");
+				}
+			}
+		}
+
+		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
+			for (OrderDetail orderDetail : orderDetails) {
+				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
+					throw new NotPaidException("The order is not paid");
+				}
+			}
+		}
+
+		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
+		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
+
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.changeOrderStatus(orderStatus);
+			entityManager.flush();
+
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
+			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
+		}
+
+		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
+	}
+
+	private static boolean isCreatedBeforeDays(LocalDateTime createAt, int sub) {
+		LocalDateTime daysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
+		return createAt.isBefore(daysAgo);
 	}
 
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
@@ -453,7 +523,7 @@ public class OrderService {
 		return OrderMapper.toDto(order, details, null);
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
 
 		return OrderStatusMapper.toDto(
@@ -577,7 +647,7 @@ public class OrderService {
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderDetailResponse updateOrderDetailWithAdmin(UpdateOrderDetailRequest request) {
 		OrderDetail orderDetail = orderDetailRepository.findById(request.getId())
 			.orElseThrow(() -> new OrderDetailNotFoundException("Order Detail not found"));

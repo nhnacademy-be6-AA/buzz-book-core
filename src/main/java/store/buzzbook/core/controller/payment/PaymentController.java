@@ -32,7 +32,7 @@ import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
 @Slf4j
-@Tag(name = "Payments API", description = "결제 관련 API")
+@Tag(name = "결제", description = "결제 관련 api")
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor

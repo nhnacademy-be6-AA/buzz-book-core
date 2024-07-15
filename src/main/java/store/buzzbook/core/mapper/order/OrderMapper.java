@@ -22,7 +22,7 @@ public class OrderMapper {
 			.price(order.getPrice())
 			.address(order.getAddress())
 			.addressDetail(order.getAddressDetail())
-			.desiredDeliveryDate(order.getDesiredDeliveryDate())
+			.desiredDeliveryDate(order.getDesiredDeliveryDate().format(formatter))
 			.receiver(order.getReceiver())
 			.request(order.getRequest())
 			.zipcode(order.getZipcode())

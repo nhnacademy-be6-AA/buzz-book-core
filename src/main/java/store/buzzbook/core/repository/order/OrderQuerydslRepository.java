@@ -10,6 +10,5 @@ import store.buzzbook.core.dto.order.ReadOrdersRequest;
 
 public interface OrderQuerydslRepository {
 	List<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, String loginId);
-	List<ReadOrderProjectionResponse> findByUser_LoginIdAndOrderStr(String loginId, String orderStr);
 	List<ReadOrderProjectionResponse> findAll(ReadOrdersRequest request);
 }

@@ -1,6 +1,7 @@
 package store.buzzbook.core.mapper.order;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -13,18 +14,19 @@ import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.product.Product;
 
 public class OrderDetailMapper {
+	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	public static ReadOrderDetailResponse toDto(OrderDetail orderDetail, ProductResponse productResponse, ReadWrappingResponse readWrappingResponse) {
 		return ReadOrderDetailResponse.builder()
 			.id(orderDetail.getId())
 			.price(orderDetail.getPrice())
 			.wrap(orderDetail.isWrap())
-			.createdAt(orderDetail.getCreateAt())
+			.createdAt(orderDetail.getCreateAt().format(formatter))
 			.readOrderStatusResponse(OrderStatusMapper.toDto(orderDetail.getOrderStatus()))
 			.quantity(orderDetail.getQuantity())
 			.productResponse(productResponse)
 			.readWrappingResponse(readWrappingResponse)
-			.updateAt(orderDetail.getUpdateAt())
+			.updateAt(orderDetail.getUpdateAt().format(formatter))
 			.build();
 	}
 
