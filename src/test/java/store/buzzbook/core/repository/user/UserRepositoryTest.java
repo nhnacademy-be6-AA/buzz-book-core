@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.config.QuerydslConfig;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
-import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 
@@ -43,11 +42,6 @@ class UserRepositoryTest {
 
 	@BeforeEach
 	public void setUp() {
-		grade = Grade.builder()
-			.benefit(2.5)
-			.name(GradeName.NORMAL)
-			.standard(200000)
-			.build();
 
 		gradeRepository.save(grade);
 
