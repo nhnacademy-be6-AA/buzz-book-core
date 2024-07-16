@@ -86,7 +86,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 			.on(billLog.order.id.eq(order.id)
 				.and(order.isNotNull()
 					.and(billLog.status.in(BillStatus.DONE, BillStatus.CANCELED, BillStatus.REFUND,
-						BillStatus.CANCELED))))
+						BillStatus.CANCELED).and(billLog.payment.in("POINT", "간편결제")))))
 			.innerJoin(user)
 			.on(user.id.eq(order.user.id))
 			.where(billLog.payAt.after(threeMonthsAgo))

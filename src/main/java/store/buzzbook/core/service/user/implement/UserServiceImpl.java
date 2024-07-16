@@ -183,7 +183,7 @@ public class UserServiceImpl implements UserService {
 			log.debug("탈퇴한 계정의 활성화 요청입니다. : {}", loginId);
 			throw new DeactivatedUserException(loginId);
 		} else if (userOptional.get().getStatus().equals(UserStatus.ACTIVE)) {
-			log.debug("탈퇴한 계정의 활성화 요청입니다. : {}", loginId);
+			log.debug("이미 활성화된 계정의 활성화 요청입니다. : {}", loginId);
 			throw new UserAlreadyExistsException(loginId);
 		}
 
