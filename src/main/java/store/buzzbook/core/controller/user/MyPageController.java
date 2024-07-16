@@ -76,6 +76,7 @@ public class MyPageController {
 
 	@JwtValidate
 	@GetMapping
+	@Operation(summary = "유저 정보 요청", description = "유저정보를 넘겨주는 컨트롤러. 인증 인가된 토큰만 가능")
 	ResponseEntity<UserInfo> getUserInfo(HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 		UserInfo userInfo = userService.getUserInfoByUserId(userId);

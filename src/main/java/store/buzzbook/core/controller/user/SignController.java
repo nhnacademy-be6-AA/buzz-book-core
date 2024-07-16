@@ -1,8 +1,5 @@
 package store.buzzbook.core.controller.user;
 
-import java.util.Objects;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -52,11 +49,6 @@ public class SignController {
 	@Operation(summary = "로그인 성공 처리", description = "로그인 성공시 해당 회원 정보 리턴")
 	public ResponseEntity<UserInfo> successLogin(@RequestBody String loginId) {
 		UserInfo userInfo = userService.successLogin(loginId);
-
-		if (Objects.isNull(userInfo)) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
-
 		return ResponseEntity.ok(userInfo);
 	}
 
