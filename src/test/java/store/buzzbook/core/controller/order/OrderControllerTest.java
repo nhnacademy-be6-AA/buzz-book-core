@@ -102,6 +102,7 @@
 // 		testUserInfo = new UserInfo(504L, "parkseol", "01011111111", "parkseol",
 // 			"parkseol.dev@gmail.com", LocalDate.parse("2024-06-28"), GradeInfoResponse.builder().benefit(0.03)
 // 			.name("PLATINUM").standard(300000).build(), true, 5000);
+//
 // 		createOrderDetailRequest1 = new CreateOrderDetailRequest(
 // 			5000,                          // price
 // 			2,                           // quantity
@@ -231,20 +232,13 @@
 // 			"01011111111", "parkseol", "parkseol.dev@gmail.com", "asdi2u34911!oj$@eI723",
 // 			LocalDate.parse("2024-06-28"), LocalDateTime.now(), LocalDateTime.now(), UserStatus.ACTIVE, LocalDateTime.now(),
 // 			true);
-//
-// 		Mockito.when(userRepository.save(new User(504L, null, "parkseol",
-// 			"01011111111", "parkseol", "parkseol.dev@gmail.com", "asdi2u34911!oj$@eI723",
-// 			LocalDate.parse("2024-06-28"), LocalDateTime.now(), LocalDateTime.now(), UserStatus.ACTIVE, LocalDateTime.now(),
-// 			true))).thenReturn(user);
-// 		Mockito.doNothing().when(userService).requestRegister(registerUserRequest);
-// 		Mockito.when(userService.getUserInfoByUserId(504L)).thenReturn(user.toUserInfo(Grade.builder().id(93).standard(300000)
-// 			.benefit(0.03).name(GradeName.PLATINUM).build(), 5000));
-// 		when(userService.getUserInfoByLoginId("parkseol")).thenReturn(testUserInfo);
 // 	}
 //
 // 	@Test
 // 	@DisplayName("주문 리스트 조회 - 관리자")
 // 	void getOrders_isAdmin() throws Exception {
+// 		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+//
 // 		Map<String, Object> data = new HashMap<>();
 // 		data.put("responseData", List.of(readOrdersResponse));
 // 		data.put("total", 1);
