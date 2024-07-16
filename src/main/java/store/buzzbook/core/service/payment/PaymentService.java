@@ -33,6 +33,7 @@ import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
+import store.buzzbook.core.common.util.RetryUtil;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -264,24 +265,44 @@ public class PaymentService {
 
 		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment()
 			.equals(POINT)) {
-			RestTemplate restTemplate = new RestTemplate();
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-			UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), CouponStatus.USED);
-
-			HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
-				headers);
-
-			ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-				String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
-				CouponResponse.class);
+			// 쿠폰 상태 업데이트 (재시도 포함)
+			try {
+				updateCouponStatusWithRetry(billLog, CouponStatus.USED, headers, 3, 2000);
+			} catch (Exception e) {
+				throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+			}
 		}
 
 		return BillLogMapper.toDto(billLog,
 			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
+	}
+
+	public void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
+		RetryUtil.executeWithRetry(() -> {
+			updateCouponStatus(billLog, headers, couponStatus);
+			return null;
+		}, maxRetries, retryDelayMs);
+	}
+
+	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) throws Exception {
+		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
+		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
+
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
+			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+			CouponResponse.class);
+
+		CouponResponse couponResponse = couponResponseResponseEntity.getBody();
+
+		if (couponResponse == null || couponResponse.status() != couponStatus) {
+			throw new RuntimeException("쿠폰 상태 변경 실패");
+		}
 	}
 
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
@@ -369,20 +390,14 @@ public class PaymentService {
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
-				RestTemplate restTemplate = new RestTemplate();
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
-					CouponStatus.AVAILABLE);
-
-				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
-					headers);
-
-				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
-					updateCouponRequestHttpEntity,
-					CouponResponse.class);
+				try {
+					updateCouponStatusWithRetry(billLog, CouponStatus.AVAILABLE, headers, 3, 2000);
+				} catch (Exception e) {
+					throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+				}
 			}
 		}
 	}
@@ -428,20 +443,14 @@ public class PaymentService {
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
-				RestTemplate restTemplate = new RestTemplate();
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 
-				UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(),
-					CouponStatus.AVAILABLE);
-
-				HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest,
-					headers);
-
-				ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-					String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT,
-					updateCouponRequestHttpEntity,
-					CouponResponse.class);
+				try {
+					updateCouponStatusWithRetry(billLog, CouponStatus.AVAILABLE, headers, 3, 2000);
+				} catch (Exception e) {
+					throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+				}
 
 			}
 		}
