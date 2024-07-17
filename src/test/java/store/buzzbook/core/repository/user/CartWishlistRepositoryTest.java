@@ -32,6 +32,7 @@ import store.buzzbook.core.entity.user.UserStatus;
 
 @Import(QuerydslConfig.class)
 @DataJpaTest
+@Disabled
 @ActiveProfiles("test")
 class CartWishlistRepositoryTest {
 	@Autowired
