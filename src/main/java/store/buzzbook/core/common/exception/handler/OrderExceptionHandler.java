@@ -39,8 +39,7 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 	}
 
-	@ExceptionHandler(value = {AlreadyRefundedException.class, AlreadyShippingOutException.class,
-	DuplicateBillLogException.class})
+	@ExceptionHandler(value = {AlreadyRefundedException.class, AlreadyShippingOutException.class})
 	public ResponseEntity<String> handleOrderAlreadyExists(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
@@ -56,5 +55,11 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<String> handleOrderParsingError(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+	}
+
+	@ExceptionHandler(value = DuplicateBillLogException.class)
+	public ResponseEntity<String> handleDuplicateBillLogException(Exception ex, WebRequest request) {
+		log.debug("Handling order exception : {}", ex.getMessage());
+		return ResponseEntity.ok().build();
 	}
 }
