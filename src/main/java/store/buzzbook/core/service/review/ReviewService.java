@@ -41,7 +41,7 @@ import store.buzzbook.core.service.point.PointService;
 @RequiredArgsConstructor
 public class ReviewService {
 
-	private static final String DELIMITER = " de|im ";
+	private static final String DELIMITER = " </> ";
 	private static final String CLOUD_IMAGE_FILE_DEFAULT_PATH = "http://image.toast.com/aaaacuf/aa-image/review";
 
 	private final UserRepository userRepository;
