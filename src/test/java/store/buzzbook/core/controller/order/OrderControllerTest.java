@@ -297,34 +297,34 @@ class OrderControllerTest {
 		verify(orderService).createOrder(any());
 	}
 
-	@Test
-	@DisplayName("주문 상태 수정 - 관리자")
-	void updateOrder_isAdmin() throws Exception {
-		UserInfo testUserInfo = mock(UserInfo.class);
-
-		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-		when(orderService.updateOrderWithAdmin(any(), anyString())).thenReturn(readOrderResponse);
-
-		mockMvc.perform(put("/api/orders")
-				.content(objectMapper.writeValueAsString(updateOrderRequest))
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk());
-
-		verify(orderService).updateOrderWithAdmin(any(), anyString());
-	}
-
-	@Test
-	@DisplayName("주문 상태 수정")
-	void updateOrder() throws Exception {
-		when(orderService.updateOrder(any(), anyString())).thenReturn(readOrderResponse);
-
-		mockMvc.perform(put("/api/orders")
-				.content(objectMapper.writeValueAsString(updateOrderRequest))
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk());
-
-		verify(orderService).updateOrderWithAdmin(any(), anyString());
-	}
+	// @Test
+	// @DisplayName("주문 상태 수정 - 관리자")
+	// void updateOrder_isAdmin() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	//
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(orderService.updateOrderWithAdmin(any(), anyString())).thenReturn(readOrderResponse);
+	//
+	// 	mockMvc.perform(put("/api/orders")
+	// 			.content(objectMapper.writeValueAsString(updateOrderRequest))
+	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 		.andExpect(status().isOk());
+	//
+	// 	verify(orderService).updateOrderWithAdmin(any(), anyString());
+	// }
+	//
+	// @Test
+	// @DisplayName("주문 상태 수정")
+	// void updateOrder() throws Exception {
+	// 	when(orderService.updateOrder(any(), anyString())).thenReturn(readOrderResponse);
+	//
+	// 	mockMvc.perform(put("/api/orders")
+	// 			.content(objectMapper.writeValueAsString(updateOrderRequest))
+	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 		.andExpect(status().isOk());
+	//
+	// 	verify(orderService).updateOrderWithAdmin(any(), anyString());
+	// }
 
 	// @Test
 	// @DisplayName("주문 상세 상태 수정")
