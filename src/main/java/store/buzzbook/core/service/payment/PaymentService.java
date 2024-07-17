@@ -289,7 +289,7 @@ public class PaymentService {
 		maxAttempts = 3,
 		backoff = @Backoff(delay = 2000)
 	)
-	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
+	protected void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
 		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
 		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
 
