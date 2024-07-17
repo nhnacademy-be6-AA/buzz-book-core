@@ -44,5 +44,8 @@ nhncloud:
       url: c7d282283c5c4ddcae6072324adfe3c3
       username: 0f85ac52219545d382eab76db989e848
       password: 54e01f8caa504a6ca5e69d30e66bf348
+  image:
+    appkey: vyiy4M85i8mJ5mgP
+    secretkey: fBlt6m4cSRJs07X05mhPBfmofWoBlcSU
 
 
