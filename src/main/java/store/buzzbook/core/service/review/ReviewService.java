@@ -19,9 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.product.DataAlreadyException;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.dto.review.ReviewCreateRequest;
+import store.buzzbook.core.dto.review.ReviewRequest;
 import store.buzzbook.core.dto.review.ReviewResponse;
-import store.buzzbook.core.dto.review.ReviewUpdateRequest;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.point.PointPolicy;
@@ -53,7 +52,7 @@ public class ReviewService {
 	private final ImageService imageClient;
 
 	@Transactional
-	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, List<MultipartFile> imageFiles) {
+	public ReviewResponse saveReview(ReviewRequest reviewReq, List<MultipartFile> imageFiles) {
 
 		// 상품상세조회확인
 		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId())
@@ -113,13 +112,13 @@ public class ReviewService {
 	}
 
 	@Transactional
-	public ReviewResponse updateReview(ReviewUpdateRequest reviewReq) {
-		Review review = reviewRepository.findById(reviewReq.getId()).orElse(null);
+	public ReviewResponse updateReview(int reviewId, ReviewRequest reviewReq) {
+		Review review = reviewRepository.findById(reviewId).orElse(null);
 		if (review == null) {
-			throw new DataNotFoundException("review", reviewReq.getId());
+			throw new DataNotFoundException("review", reviewId);
 		}
 		Review newReview = new Review(
-			reviewReq.getId(),
+			reviewId,
 			reviewReq.getContent() + "\n(수정됨:" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ")",
 			review.getPicturePath(),
 			reviewReq.getReviewScore(),
