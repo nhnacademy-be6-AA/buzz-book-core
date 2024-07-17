@@ -1,16 +1,22 @@
 package store.buzzbook.core.service.review;
 
+import static store.buzzbook.core.common.listener.PointPolicyListener.*;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.common.exception.product.DataAlreadyException;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.review.ReviewCreateRequest;
@@ -27,6 +33,7 @@ import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.review.ReviewRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.image.ImageService;
 import store.buzzbook.core.service.point.PointService;
 
 @Slf4j
@@ -34,41 +41,47 @@ import store.buzzbook.core.service.point.PointService;
 @RequiredArgsConstructor
 public class ReviewService {
 
+	private static final String DELIMITER = " </> ";
+	private static final String CLOUD_IMAGE_FILE_DEFAULT_PATH = "http://image.toast.com/aaaacuf/aa-image/review";
+
 	private final UserRepository userRepository;
 	private final PointPolicyRepository pointPolicyRepository;
 	private final ReviewRepository reviewRepository;
 	private final OrderDetailRepository orderDetailRepository;
 	private final ProductRepository productRepository;
 	private final PointService pointService;
+	private final ImageService imageClient;
 
-	public ReviewResponse saveReview(ReviewCreateRequest reviewReq) {
+	@Transactional
+	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, List<MultipartFile> imageFiles) {
 
-		//리뷰
-		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId()).orElse(null);
-		if (orderDetail == null) {
-			throw new DataNotFoundException("orderDetail", reviewReq.getOrderDetailId());
+		// 상품상세조회확인
+		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId())
+			.orElseThrow(() -> new DataNotFoundException("orderDetail", reviewReq.getOrderDetailId()));
+
+		// already review인지 확인
+		if(reviewRepository.existsByOrderDetailId(reviewReq.getOrderDetailId())){
+			throw new DataAlreadyException("이미 리뷰를 작성했습니다.");
 		}
-		Review review = new Review(reviewReq.getContent(), reviewReq.getPicturePath(), reviewReq.getReviewScore(),
-			orderDetail);
 
+		// 리뷰저장
+		String url = imageFiles.isEmpty() ? null : buildPathString(imageClient.multiImageUpload(imageFiles));
+		Review review = new Review(reviewReq.getContent(), url, reviewReq.getReviewScore(), orderDetail);
 		reviewRepository.save(review);
 
-		//리뷰 점수로 상품 점수 수정
-		updateProductScore(review.getOrderDetail().getProduct().getId());
+		// 상품점수에 리뷰반영
+		updateProductScore(orderDetail.getProduct().getId());
 
-		//리뷰단 고객 포인트 부여
-		Order order = review.getOrderDetail().getOrder();
+		// 고객에 포인트 부여
+		PointPolicy pp = imageFiles.isEmpty() ? pointPolicyRepository.findByName(REVIEW) :
+			pointPolicyRepository.findByName(REVIEW_PHOTO);
+		Order order = orderDetail.getOrder();
 		User user = order.getUser();
-		PointPolicy pp;
-		if (review.getPicturePath() == null) {
-			pp = pointPolicyRepository.findByName("리뷰 작성");
-		} else {
-			pp = pointPolicyRepository.findByName("사진 리뷰 작성");
-		}
 		pointService.createPointLogWithDelta(user, pp.getName(), pp.getPoint());
 
 		return constructorReviewResponse(review);
 	}
+
 
 	public ReviewResponse getReview(int reviewId) {
 		Review review = reviewRepository.findById(reviewId).orElse(null);
@@ -84,13 +97,14 @@ public class ReviewService {
 		return reviews.map(this::constructorReviewResponse);
 	}
 
-	public Page<ReviewResponse> findAllReviewByUserId(Long userId, int page, int size) {
+	public Page<ReviewResponse> findAllReviewByUserId(long userId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Review> reviews = reviewRepository.findAllByOrderDetail_Order_User_IdOrderByReviewCreatedAtDesc(userId,
 			pageable);
 		return reviews.map(this::constructorReviewResponse);
 	}
 
+	@Transactional
 	public ReviewResponse updateReview(ReviewUpdateRequest reviewReq) {
 		Review review = reviewRepository.findById(reviewReq.getId()).orElse(null);
 		if (review == null) {
@@ -99,7 +113,7 @@ public class ReviewService {
 		Review newReview = new Review(
 			reviewReq.getId(),
 			reviewReq.getContent() + "\n(수정됨:" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ")",
-			reviewReq.getPicturePath(),
+			review.getPicturePath(),
 			reviewReq.getReviewScore(),
 			review.getReviewCreatedAt(),
 			review.getOrderDetail());
@@ -125,15 +139,19 @@ public class ReviewService {
 	}
 
 	public ReviewResponse constructorReviewResponse(User user, Review review) {
+
+		List<String> picturePath = review.getPicturePath() == null ? List.of() : splitPathString(review.getPicturePath());
+
 		return ReviewResponse.builder()
 			.id(review.getId())
 			.content(review.getContent())
-			.picturePath(review.getPicturePath())
+			.picturePath(picturePath)
 			.reviewScore(review.getReviewScore())
 			.reviewCreatedAt(review.getReviewCreatedAt())
 			.userId(user.getId())
-			.orderDetail(review.getOrderDetail().getId())
+			.orderDetailId(review.getOrderDetail().getId())
 			.userName(user.getName())
+			.productId(review.getOrderDetail().getProduct().getId())
 			.build();
 	}
 
@@ -141,5 +159,31 @@ public class ReviewService {
 		User user = userRepository.findById(review.getOrderDetail().getOrder().getUser().getId()).orElseThrow(
 			UserNotFoundException::new);
 		return constructorReviewResponse(user, review);
+	}
+
+	private String buildPathString(List<String> paths) {
+		StringBuilder mergedPath = new StringBuilder();
+		for (String path : paths) {
+			if (path.startsWith(CLOUD_IMAGE_FILE_DEFAULT_PATH)) {
+				mergedPath.append(path.substring(CLOUD_IMAGE_FILE_DEFAULT_PATH.length()));
+			} else {
+				mergedPath.append(path);
+			}
+			mergedPath.append(DELIMITER);
+		}
+		return mergedPath.toString();
+	}
+
+	private List<String> splitPathString(String pathString) {
+		List<String> paths = new ArrayList<>();
+		String[] parts = pathString.split(DELIMITER);
+
+		for (String part : parts) {
+			String trimmedPart = part.trim();
+			if (!trimmedPart.isEmpty()) {
+				paths.add(CLOUD_IMAGE_FILE_DEFAULT_PATH + trimmedPart);
+			}
+		}
+		return paths;
 	}
 }
