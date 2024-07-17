@@ -282,14 +282,14 @@ public class PaymentService {
 			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
-	public void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
+	private void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
 		RetryUtil.executeWithRetry(() -> {
 			updateCouponStatus(billLog, headers, couponStatus);
 			return null;
 		}, maxRetries, retryDelayMs);
 	}
 
-	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) throws Exception {
+	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
 		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
 		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
 
