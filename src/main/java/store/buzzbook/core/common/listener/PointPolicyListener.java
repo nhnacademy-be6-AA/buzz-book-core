@@ -14,10 +14,10 @@ import store.buzzbook.core.repository.point.PointPolicyRepository;
 @RequiredArgsConstructor
 public class PointPolicyListener implements ApplicationListener<ApplicationReadyEvent> {
 
-	private static final String SIGN_UP = "회원가입";
-	private static final String REVIEW = "리뷰작성";
-	private static final String REVIEW_PHOTO = "사진리뷰작성";
-	private static final String BOOK = "전체도서";
+	public static final String SIGN_UP = "회원가입";
+	public static final String REVIEW = "리뷰작성";
+	public static final String REVIEW_PHOTO = "사진리뷰작성";
+	public static final String BOOK = "전체도서";
 
 	private final PointPolicyRepository pointPolicyRepository;
 

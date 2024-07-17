@@ -29,7 +29,7 @@ public class Review {
 	@Column(nullable = false)
 	private String content;
 
-	@Column
+	@Column(columnDefinition = "text")
 	private String picturePath;
 
 	@Column(nullable = false)
