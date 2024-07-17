@@ -113,7 +113,7 @@ public class PaymentService {
 		}
 
 		// 중복 체크
-		if (!billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
+		if (billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
 			throw new DuplicateBillLogException("중복된 결제 로그가 이미 존재합니다.");
 		}
 
