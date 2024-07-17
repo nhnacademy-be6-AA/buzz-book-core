@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ReviewCreateRequest {
+public class ReviewRequest {
 
 	@NotBlank
 	private String content;

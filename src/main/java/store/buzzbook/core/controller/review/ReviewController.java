@@ -2,7 +2,6 @@ package store.buzzbook.core.controller.review;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +21,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import store.buzzbook.core.common.exception.review.IllegalRequestException;
-import store.buzzbook.core.dto.review.ReviewCreateRequest;
+import store.buzzbook.core.dto.review.ReviewRequest;
 import store.buzzbook.core.dto.review.ReviewResponse;
-import store.buzzbook.core.dto.review.ReviewUpdateRequest;
 import store.buzzbook.core.service.review.ReviewService;
 
 @Slf4j
@@ -48,9 +45,9 @@ public class ReviewController {
 		@RequestParam long orderDetailId,
 		@RequestPart(value = "files", required = false) List<MultipartFile> files) {
 
-		ReviewCreateRequest reviewCreateRequest = new ReviewCreateRequest(content, reviewScore, orderDetailId);
+		ReviewRequest reviewRequest = new ReviewRequest(content, reviewScore, orderDetailId);
 
-		return ResponseEntity.ok(reviewService.saveReview(reviewCreateRequest, files));
+		return ResponseEntity.ok(reviewService.saveReview(reviewRequest, files));
 	}
 
 	@GetMapping("/{reviewId}")
@@ -90,13 +87,9 @@ public class ReviewController {
 	@Operation(summary = "리뷰 수정", description = "리뷰 수정")
 	@ApiResponse(responseCode = "200", description = "리뷰 수정 성공시 수정된 리뷰의 ReviewResponse 반환")
 
-	public ResponseEntity<?> updateReview(@Validated @RequestBody ReviewUpdateRequest reviewReq,
-		@PathVariable Long reviewId) {
-
-		if (reviewReq.getId() != reviewId) {
-			return ResponseEntity.badRequest().body("id가 일치하는 리뷰를 수정 요청하세요.");
-		}
-		return ResponseEntity.ok(reviewService.updateReview(reviewReq));
+	public ResponseEntity<ReviewResponse> updateReview(@PathVariable int reviewId,
+		@Validated @RequestBody ReviewRequest reviewReq) {
+		return ResponseEntity.ok(reviewService.updateReview(reviewId, reviewReq));
 	}
 
 }
