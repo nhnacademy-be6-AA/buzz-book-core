@@ -4,16 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import feign.FeignException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.client.auth.CouponClient;
 import store.buzzbook.core.common.exception.coupon.UserCouponAlreadyExistsException;
@@ -25,18 +19,14 @@ import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CreateCouponRequest;
 import store.buzzbook.core.dto.coupon.CreateCouponResponse;
 import store.buzzbook.core.dto.coupon.CreateUserCouponRequest;
-import store.buzzbook.core.dto.coupon.DeleteUserCouponRequest;
 import store.buzzbook.core.dto.coupon.DownloadCouponRequest;
 import store.buzzbook.core.dto.coupon.OrderCouponDetailResponse;
 import store.buzzbook.core.dto.coupon.OrderCouponResponse;
-import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.UserInfo;
-import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.user.UserCouponRepository;
 import store.buzzbook.core.repository.user.UserRepository;
-import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.coupon.CouponService;
 
 @Service
@@ -115,7 +105,7 @@ public class CouponServiceImpl implements CouponService {
 
 		List<OrderCouponResponse> coupons = couponClient.getUserCoupons(request);
 
- 		return coupons.stream()
+		return coupons.stream()
 			.filter(coupon -> coupon.targetId() == 0 || targetIds.contains(coupon.targetId()))
 			.map(coupon -> OrderCouponDetailResponse.builder()
 				.couponCode(coupon.code())
@@ -153,29 +143,6 @@ public class CouponServiceImpl implements CouponService {
 				throw e;
 			}
 		}
-	}
-
-	@Transactional
-	@Override
-	public void deleteUserCoupon(Long userId, String couponCode, HttpServletRequest request) {
-		if (Boolean.FALSE.equals(
-			userCouponRepository.existsByUser_IdAndCouponCode(userId, couponCode))) {
-			throw new UserCouponNotFoundException();
-		}
-
-		RestTemplate restTemplate = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Content-Type", "application/json");
-		headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
-		headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
-
-		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(couponCode, CouponStatus.USED);
-
-		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
-
-		ResponseEntity<CouponResponse> billLogResponseResponseEntity = restTemplate.exchange(
-			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
-			CouponResponse.class);
 	}
 
 	@Transactional(readOnly = true)
