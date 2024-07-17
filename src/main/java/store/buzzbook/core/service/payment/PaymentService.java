@@ -282,7 +282,7 @@ public class PaymentService {
 			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
-	public void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
+	private void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
 		RetryUtil.executeWithRetry(() -> {
 			updateCouponStatus(billLog, headers, couponStatus);
 			return null;
