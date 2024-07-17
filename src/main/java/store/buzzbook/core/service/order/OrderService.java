@@ -346,7 +346,7 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(SHIPPING_OUT)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(SHIPPING_OUT)) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPING_OUT))) {
 					throw new AlreadyShippingOutException("Order already shipped out");
 				}
 			}
@@ -354,13 +354,13 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException("This order is already refunded");
 				}
-				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
 					throw new NotShippedException("Not shipped");
 				}
-				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED)) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -368,13 +368,13 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(REFUND) || orderDetail.getOrderStatus().equals(BREAKAGE_REFUND)) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException("This order is already refunded");
 				}
-				if (!orderDetail.getOrderStatus().equals(SHIPPED)) {
+				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
 					throw new NotShippedException("Not shipped");
 				}
-				if (orderDetail.getOrderStatus().equals(SHIPPED) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED)) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
 					throw new ExpiredToRefundException("The order has expired");
 				}
 			}
@@ -382,7 +382,7 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (!orderDetail.getOrderStatus().equals(PAID)) {
+				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
 					throw new NotPaidException("The order is not paid");
 				}
 			}
