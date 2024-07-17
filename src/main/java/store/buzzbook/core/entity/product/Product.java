@@ -38,7 +38,7 @@ public class Product {
 	@Column(nullable = false)
 	private String productName;
 
-	@Column
+	@Column(columnDefinition = "text")
 	private String description;
 
 	@Column(nullable = false)
