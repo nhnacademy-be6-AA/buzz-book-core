@@ -27,7 +27,7 @@ import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(value = {DeliveryPolicyNotFoundException.class, OrderStatusNotFoundException.class,
 		ProductNotFoundException.class, WrappingNotFoundException.class, AddressNotFoundException.class,
-		OrderNotFoundException.class, AddressNotFoundException.class, OrderDetailNotFoundException.class})
+		OrderNotFoundException.class, OrderDetailNotFoundException.class})
 	public ResponseEntity<String> handleOrderNotFound(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
