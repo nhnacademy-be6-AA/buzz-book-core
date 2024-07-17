@@ -1,7 +1,10 @@
 package store.buzzbook.core.service.review;
 
+import static store.buzzbook.core.common.listener.PointPolicyListener.*;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -38,6 +41,9 @@ import store.buzzbook.core.service.point.PointService;
 @RequiredArgsConstructor
 public class ReviewService {
 
+	private static final String DELIMITER = " de|im ";
+	private static final String CLOUD_IMAGE_FILE_DEFAULT_PATH = "http://image.toast.com/aaaacuf/aa-image/review";
+
 	private final UserRepository userRepository;
 	private final PointPolicyRepository pointPolicyRepository;
 	private final ReviewRepository reviewRepository;
@@ -47,7 +53,7 @@ public class ReviewService {
 	private final ImageService imageClient;
 
 	@Transactional
-	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, MultipartFile imageFile) {
+	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, List<MultipartFile> imageFiles) {
 
 		// 상품상세조회확인
 		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId())
@@ -59,7 +65,7 @@ public class ReviewService {
 		}
 
 		// 리뷰저장
-		String url = (imageFile == null) ? null : imageClient.reviewImageUpload(imageFile);
+		String url = imageFiles.isEmpty() ? null : buildPathString(imageClient.multiImageUpload(imageFiles));
 		Review review = new Review(reviewReq.getContent(), url, reviewReq.getReviewScore(), orderDetail);
 		reviewRepository.save(review);
 
@@ -67,8 +73,8 @@ public class ReviewService {
 		updateProductScore(orderDetail.getProduct().getId());
 
 		// 고객에 포인트 부여
-		PointPolicy pp = (imageFile == null) ? pointPolicyRepository.findByName("리뷰 작성") :
-			pointPolicyRepository.findByName("사진 리뷰 작성");
+		PointPolicy pp = imageFiles.isEmpty() ? pointPolicyRepository.findByName(REVIEW) :
+			pointPolicyRepository.findByName(REVIEW_PHOTO);
 		Order order = orderDetail.getOrder();
 		User user = order.getUser();
 		pointService.createPointLogWithDelta(user, pp.getName(), pp.getPoint());
@@ -91,7 +97,7 @@ public class ReviewService {
 		return reviews.map(this::constructorReviewResponse);
 	}
 
-	public Page<ReviewResponse> findAllReviewByUserId(Long userId, int page, int size) {
+	public Page<ReviewResponse> findAllReviewByUserId(long userId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Review> reviews = reviewRepository.findAllByOrderDetail_Order_User_IdOrderByReviewCreatedAtDesc(userId,
 			pageable);
@@ -133,15 +139,19 @@ public class ReviewService {
 	}
 
 	public ReviewResponse constructorReviewResponse(User user, Review review) {
+
+		List<String> picturePath = review.getPicturePath() == null ? List.of() : splitPathString(review.getPicturePath());
+
 		return ReviewResponse.builder()
 			.id(review.getId())
 			.content(review.getContent())
-			.picturePath(review.getPicturePath())
+			.picturePath(picturePath)
 			.reviewScore(review.getReviewScore())
 			.reviewCreatedAt(review.getReviewCreatedAt())
 			.userId(user.getId())
-			.orderDetail(review.getOrderDetail().getId())
+			.orderDetailId(review.getOrderDetail().getId())
 			.userName(user.getName())
+			.productId(review.getOrderDetail().getProduct().getId())
 			.build();
 	}
 
@@ -149,5 +159,31 @@ public class ReviewService {
 		User user = userRepository.findById(review.getOrderDetail().getOrder().getUser().getId()).orElseThrow(
 			UserNotFoundException::new);
 		return constructorReviewResponse(user, review);
+	}
+
+	private String buildPathString(List<String> paths) {
+		StringBuilder mergedPath = new StringBuilder();
+		for (String path : paths) {
+			if (path.startsWith(CLOUD_IMAGE_FILE_DEFAULT_PATH)) {
+				mergedPath.append(path.substring(CLOUD_IMAGE_FILE_DEFAULT_PATH.length()));
+			} else {
+				mergedPath.append(path);
+			}
+			mergedPath.append(DELIMITER);
+		}
+		return mergedPath.toString();
+	}
+
+	private List<String> splitPathString(String pathString) {
+		List<String> paths = new ArrayList<>();
+		String[] parts = pathString.split(DELIMITER);
+
+		for (String part : parts) {
+			String trimmedPart = part.trim();
+			if (!trimmedPart.isEmpty()) {
+				paths.add(CLOUD_IMAGE_FILE_DEFAULT_PATH + trimmedPart);
+			}
+		}
+		return paths;
 	}
 }
