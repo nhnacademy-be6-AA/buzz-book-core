@@ -20,6 +20,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -28,12 +30,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.order.CouponStatusNotUpdated;
 import store.buzzbook.core.common.exception.order.DuplicateBillLogException;
 import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.common.util.RetryUtil;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -272,9 +274,9 @@ public class PaymentService {
 
 			// 쿠폰 상태 업데이트 (재시도 포함)
 			try {
-				updateCouponStatusWithRetry(billLog, CouponStatus.USED, headers, 3, 2000);
+				updateCouponStatus(billLog, headers, CouponStatus.USED);
 			} catch (Exception e) {
-				throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+				throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
 			}
 		}
 
@@ -282,13 +284,11 @@ public class PaymentService {
 			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
-	private void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
-		RetryUtil.executeWithRetry(() -> {
-			updateCouponStatus(billLog, headers, couponStatus);
-			return null;
-		}, maxRetries, retryDelayMs);
-	}
-
+	@Retryable(
+		retryFor = { CouponStatusNotUpdated.class },
+		maxAttempts = 3,
+		backoff = @Backoff(delay = 2000)
+	)
 	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
 		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
 		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
@@ -301,7 +301,7 @@ public class PaymentService {
 		CouponResponse couponResponse = couponResponseResponseEntity.getBody();
 
 		if (couponResponse == null || couponResponse.status() != couponStatus) {
-			throw new RuntimeException("쿠폰 상태 변경 실패");
+			throw new CouponStatusNotUpdated("쿠폰 상태 변경 실패");
 		}
 	}
 
@@ -394,9 +394,9 @@ public class PaymentService {
 				headers.set("Content-Type", "application/json");
 
 				try {
-					updateCouponStatusWithRetry(billLog, CouponStatus.AVAILABLE, headers, 3, 2000);
+					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
 				}
 			}
 		}
@@ -447,9 +447,9 @@ public class PaymentService {
 				headers.set("Content-Type", "application/json");
 
 				try {
-					updateCouponStatusWithRetry(billLog, CouponStatus.AVAILABLE, headers, 3, 2000);
+					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
 				}
 
 			}
