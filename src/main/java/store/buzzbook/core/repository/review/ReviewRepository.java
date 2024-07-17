@@ -16,6 +16,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
 	List<Review> findAllByOrderDetail_ProductId(long orderDetailId);
 
+	Review findByOrderDetailId(long orderDetailId);
+
 	Page<Review> findAllByOrderDetail_ProductIdOrderByReviewCreatedAtDesc(long orderDetailId, Pageable pageable);
 
 	//사용자가 가장 최근 작성한 리뷰부터 조회

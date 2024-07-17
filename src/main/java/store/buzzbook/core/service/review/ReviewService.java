@@ -65,7 +65,7 @@ public class ReviewService {
 		}
 
 		// 리뷰저장
-		String url = imageFiles.isEmpty() ? null : buildPathString(imageClient.multiImageUpload(imageFiles));
+		String url = (imageFiles == null || imageFiles.isEmpty()) ? null : buildPathString(imageClient.multiImageUpload(imageFiles));
 		Review review = new Review(reviewReq.getContent(), url, reviewReq.getReviewScore(), orderDetail);
 		reviewRepository.save(review);
 
@@ -73,7 +73,7 @@ public class ReviewService {
 		updateProductScore(orderDetail.getProduct().getId());
 
 		// 고객에 포인트 부여
-		PointPolicy pp = imageFiles.isEmpty() ? pointPolicyRepository.findByName(REVIEW) :
+		PointPolicy pp = (imageFiles == null || imageFiles.isEmpty()) ? pointPolicyRepository.findByName(REVIEW) :
 			pointPolicyRepository.findByName(REVIEW_PHOTO);
 		Order order = orderDetail.getOrder();
 		User user = order.getUser();
@@ -87,6 +87,14 @@ public class ReviewService {
 		Review review = reviewRepository.findById(reviewId).orElse(null);
 		if (review == null) {
 			throw new DataNotFoundException("review", reviewId);
+		}
+		return constructorReviewResponse(review);
+	}
+
+	public ReviewResponse getReviewByOrderDetailId(long orderDetailId) {
+		Review review = reviewRepository.findByOrderDetailId(orderDetailId);
+		if (review == null) {
+			return null;
 		}
 		return constructorReviewResponse(review);
 	}
