@@ -289,7 +289,7 @@ public class PaymentService {
 		}, maxRetries, retryDelayMs);
 	}
 
-	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) throws Exception {
+	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
 		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
 		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
 
