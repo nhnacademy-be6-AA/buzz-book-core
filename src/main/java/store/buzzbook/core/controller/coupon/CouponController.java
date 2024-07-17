@@ -1,4 +1,4 @@
-package store.buzzbook.core.controller.user;
+package store.buzzbook.core.controller.coupon;
 
 import java.util.List;
 
