@@ -1,4 +1,4 @@
-package store.buzzbook.core.repository.user;
+package store.buzzbook.core.repository.point;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +21,12 @@ import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
-import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.user.GradeRepository;
+import store.buzzbook.core.repository.user.UserRepository;
 
 @DataJpaTest
 @Import(QuerydslConfig.class)
 @ActiveProfiles("test")
-@Disabled
 class PointLogRepositoryTest {
 
 	@Autowired
