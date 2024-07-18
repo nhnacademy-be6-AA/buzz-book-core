@@ -1,14 +1,12 @@
-package store.buzzbook.core.controller.user;
+package store.buzzbook.core.controller.coupon;
 
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,15 +61,5 @@ public class CouponController {
 		HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
 		return ResponseEntity.ok(couponService.getOrderCoupons(userId, responses));
-	}
-
-	@JwtOrderValidate
-	@DeleteMapping("/order")
-	@Operation(summary = "유저 주문 쿠폰 삭제 요청", description = "주문 시 적용한 쿠폰을 삭제합니다.")
-	public ResponseEntity<Void> deleteUserCoupon(@RequestParam("couponCode") String couponCode,
-		HttpServletRequest httpServletRequest) {
-		Long userId = (Long)httpServletRequest.getAttribute(AuthService.USER_ID);
-		couponService.deleteUserCoupon(userId, couponCode, httpServletRequest);
-		return ResponseEntity.ok().build();
 	}
 }
