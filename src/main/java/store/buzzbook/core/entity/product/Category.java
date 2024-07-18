@@ -8,6 +8,7 @@ import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,13 +18,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@EqualsAndHashCode(of = {"id", "name"})
 @Entity
 @Builder
 @NoArgsConstructor
@@ -38,11 +42,11 @@ public class Category {
 	@Column(nullable = false, length = 20)
 	private String name; //카테고리명
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parent_id")
 	private Category parentCategory;
 
-	@OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@Fetch(FetchMode.SUBSELECT)
 	private List<Category> subCategories = new ArrayList<>();
 

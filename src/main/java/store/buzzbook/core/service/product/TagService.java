@@ -10,7 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.TagResponse;
+import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.product.ProductTag;
 import store.buzzbook.core.entity.product.Tag;
+import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
 
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ import store.buzzbook.core.repository.product.TagRepository;
 public class TagService {
 
 	private final TagRepository tagRepository;
+	private final ProductTagRepository productTagRepository;
 
 	@Transactional
 	public TagResponse saveTag(String tagName) {
@@ -62,6 +66,9 @@ public class TagService {
 
 	@Transactional
 	public void deleteTag(int tagId) {
+
+		productTagRepository.deleteAllByTagId(tagId);
+
 		Tag tag = tagRepository.findById(tagId)
 			.orElseThrow(() -> new DataNotFoundException("tag", tagId));
 		tagRepository.delete(tag);

@@ -46,7 +46,7 @@ public class PointPolicyListener implements ApplicationListener<ApplicationReady
 
 		if (Boolean.FALSE.equals(pointPolicyRepository.existsByName(REVIEW_PHOTO))) {
 			PointPolicy pointPolicy = PointPolicy.builder()
-				.name(REVIEW)
+				.name(REVIEW_PHOTO)
 				.rate(0)
 				.point(500)
 				.deleted(false)
