@@ -25,6 +25,7 @@ import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyWithOrderDetailRequest;
+import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
@@ -38,6 +39,7 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class PaymentController {
 	private static final String CANCELED = "Canceled";
+	private static final String SUCCESS = "Rollback Successful";
 
 	private final PaymentService paymentService;
 	private final UserService userService;
@@ -78,6 +80,13 @@ public class PaymentController {
 	@PostMapping("/bill-log")
 	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody JSONObject createBillLogRequest) {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
+	}
+
+	@Operation(summary = "결제 내역 추가 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
+	@PostMapping("/bill-log/rollback")
+	public ResponseEntity<String> rollbackBillLog(@RequestBody ReadPaymentResponse readPaymentResponse) {
+		paymentService.rollbackBillLog(readPaymentResponse);
+		return ResponseEntity.ok(SUCCESS);
 	}
 
 	@Operation(summary = "취소 내역 추가", description = "취소 내역 추가")

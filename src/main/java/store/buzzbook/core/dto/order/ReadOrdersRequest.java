@@ -1,9 +1,8 @@
 package store.buzzbook.core.dto.order;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import store.buzzbook.core.common.util.PageRequestInfo;
+import store.buzzbook.core.common.dto.PageRequestInfo;
 
 @Getter
 @NoArgsConstructor
