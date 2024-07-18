@@ -196,7 +196,6 @@ public class OrderController {
 	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
 	@DeleteMapping("/status/{id}")
 	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id, HttpServletRequest request) {
-		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			orderService.deleteOrderStatus(id);
