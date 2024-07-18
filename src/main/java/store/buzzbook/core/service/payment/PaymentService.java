@@ -92,6 +92,8 @@ public class PaymentService {
 	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
+	private static final String PAYMENT_ERROR = "결제 오류";
+	private static final String CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY = "결제 오류로 인한 포인트 적립 취소";
 
 	private final BillLogRepository billLogRepository;
 	private final OrderRepository orderRepository;
@@ -454,5 +456,19 @@ public class PaymentService {
 
 			}
 		}
+	}
+
+	@Transactional
+	public void rollbackBillLog(ReadPaymentResponse readPaymentResponse) {
+		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(readPaymentResponse.getPaymentKey());
+		for (BillLog billLog : billLogs) {
+			billLogRepository.save(BillLog.builder().payment(billLog.getPayment()).price(billLog.getPrice())
+				.payAt(LocalDateTime.now()).status(BillStatus.CANCELED).paymentKey(billLog.getPaymentKey()).order(billLog.getOrder()).cancelReason(PAYMENT_ERROR).build());
+		}
+
+		User user = billLogs.getFirst().getOrder().getUser();
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
+		pointLogRepository.save(PointLog.builder().user(user).delta(-pointLog.getDelta())
+			.balance(pointLog.getBalance()-pointLog.getDelta()).inquiry(CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY).build());
 	}
 }
