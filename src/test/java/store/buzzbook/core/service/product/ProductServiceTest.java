@@ -12,11 +12,11 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.product.ProductRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.product.ProductUpdateRequest;
@@ -29,36 +29,28 @@ import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
 
-@SpringBootTest
-@RequiredArgsConstructor
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
-	@MockBean
+	@Mock
 	private ProductRepository productRepository;
 
-	@MockBean
+	@Mock
 	private CategoryRepository categoryRepository;
 
-	@MockBean
+	@Mock
 	private TagRepository tagRepository;
 
-	@MockBean
-	ProductTagRepository productTagRepository;
+	@Mock
+	private ProductTagRepository productTagRepository;
 
-	@Autowired
+	@InjectMocks
 	private ProductService productService;
-
-	@BeforeEach
-	void setUp() {
-		//임시
-	}
 
 	@Test
 	@DisplayName("상품 저장 테스트")
 	void testSaveProduct() {
-		//given
-
-
+		// given
 		Category category = new Category();
 		when(categoryRepository.findById(1)).thenReturn(Optional.of(category));
 
@@ -71,11 +63,8 @@ class ProductServiceTest {
 			.thumbnailPath("path/to/thumbnail")
 			.stockStatus(Product.StockStatus.SALE)
 			.categoryId(1)
-			.tags(List.of("새벽배송","공식인증"))
+			.tags(List.of("새벽배송", "공식인증"))
 			.build();
-
-		Category category1 = new Category();
-		when(categoryRepository.findById(1)).thenReturn(Optional.of(category));
 
 		Product product = Product.builder()
 			.stock(request.getStock())
@@ -90,10 +79,10 @@ class ProductServiceTest {
 
 		when(productRepository.save(any(Product.class))).thenReturn(product);
 
-		//when
+		// when
 		ProductResponse productResponse = productService.saveProduct(request);
 
-		//then
+		// then
 		assertNotNull(productResponse);
 		assertEquals(request.getProductName(), productResponse.getProductName());
 		verify(productRepository, times(1)).save(any(Product.class));

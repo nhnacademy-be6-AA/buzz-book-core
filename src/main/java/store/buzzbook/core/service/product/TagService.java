@@ -51,14 +51,7 @@ public class TagService {
 			.orElseThrow(() -> new DataNotFoundException("tag", tagId));
 		return TagResponse.convertToTagResponse(tag);
 	}
-	@Transactional(readOnly = true)
-	public TagResponse getTagByName(String tagName) {
-		Tag tag = tagRepository.findByName(tagName).orElse(null);
-		if (tag == null) {
-			throw new DataNotFoundException("tag", tagName);
-		}
-		return TagResponse.convertToTagResponse(tag);
-	}
+
 
 	@Transactional
 	public void deleteTag(int tagId) {
