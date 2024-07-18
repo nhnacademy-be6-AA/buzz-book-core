@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.dto.product.TagResponse;
-import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.entity.product.ProductTag;
 import store.buzzbook.core.entity.product.Tag;
 import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
