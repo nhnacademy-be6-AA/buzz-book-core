@@ -89,7 +89,7 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
-	private static final int UNPACKAGED = 1;
+	private static final String UNPACKAGED = "없음";
 	private static final String REFUND = "REFUND";
 	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
 	private static final String SHIPPED = "SHIPPED";
@@ -294,8 +294,7 @@ public class OrderService {
 				wrapping = wrappingRepository.findById(detail.getWrappingId())
 					.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 			} else {
-				wrapping = wrappingRepository.findById(UNPACKAGED)
-					.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+				wrapping = wrappingRepository.findByPaper(UNPACKAGED);
 			}
 
 			Product product = productRepository.findById(detail.getProductId())
