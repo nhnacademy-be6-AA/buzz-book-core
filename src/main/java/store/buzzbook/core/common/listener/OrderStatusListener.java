@@ -30,7 +30,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
-		if (!orderStatusRepository.existsByName(READY)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(READY))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(READY)
 				.updateAt(LocalDateTime.now())
@@ -38,7 +38,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(CANCELED)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(CANCELED))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(CANCELED)
 				.updateAt(LocalDateTime.now())
@@ -46,7 +46,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(PARTIAL_CANCELED)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(PARTIAL_CANCELED))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(PARTIAL_CANCELED)
 				.updateAt(LocalDateTime.now())
@@ -54,7 +54,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(WAITING_FOR_DEPOSIT)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(WAITING_FOR_DEPOSIT))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(WAITING_FOR_DEPOSIT)
 				.updateAt(LocalDateTime.now())
@@ -62,7 +62,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(REFUND)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(REFUND))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(REFUND)
 				.updateAt(LocalDateTime.now())
@@ -70,7 +70,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(PARTIAL_REFUND)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(PARTIAL_REFUND))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(PARTIAL_REFUND)
 				.updateAt(LocalDateTime.now())
@@ -78,7 +78,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(SHIPPING_OUT)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(SHIPPING_OUT))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(SHIPPING_OUT)
 				.updateAt(LocalDateTime.now())
@@ -86,7 +86,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(SHIPPED)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(SHIPPED))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(SHIPPED)
 				.updateAt(LocalDateTime.now())
@@ -94,7 +94,7 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 			orderStatusRepository.save(orderStatus);
 		}
 
-		if (!orderStatusRepository.existsByName(BREAKAGE_REFUND)) {
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(BREAKAGE_REFUND))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(BREAKAGE_REFUND)
 				.updateAt(LocalDateTime.now())
