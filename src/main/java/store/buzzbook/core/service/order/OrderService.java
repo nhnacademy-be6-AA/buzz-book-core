@@ -22,7 +22,6 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
-import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
 import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
@@ -339,7 +338,7 @@ public class OrderService {
 
 	@CacheEvict(value = "getOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
-	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
+	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest, String loginId) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
@@ -354,9 +353,6 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException("This order is already canceled");
-				}
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException("This order is already refunded");
 				}
@@ -371,9 +367,6 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException("This order is already canceled");
-				}
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException("This order is already refunded");
 				}
@@ -388,9 +381,6 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException("This order is already refunded");
-				}
 				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
 					throw new NotPaidException("The order is not paid");
 				}
@@ -427,9 +417,6 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException("This order is already canceled");
-				}
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
 					|| orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException("This order is already refunded");
@@ -446,9 +433,6 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException("This order is already canceled");
-				}
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
 					|| orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException("This order is already refunded");
@@ -465,9 +449,6 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
 			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException("This order is already refunded");
-				}
 				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
 					throw new NotPaidException("The order is not paid");
 				}

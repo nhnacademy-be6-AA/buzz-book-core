@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import jakarta.ws.rs.NotAuthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
-import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
 import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
@@ -41,7 +39,7 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 	}
 
-	@ExceptionHandler(value = {AlreadyRefundedException.class, AlreadyShippingOutException.class, AlreadyCanceledException.class})
+	@ExceptionHandler(value = {AlreadyRefundedException.class, AlreadyShippingOutException.class})
 	public ResponseEntity<String> handleOrderAlreadyExists(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
@@ -63,11 +61,5 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 	public ResponseEntity<String> handleDuplicateBillLogException(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.ok().build();
-	}
-
-	@ExceptionHandler(value = NotAuthorizedException.class)
-	public ResponseEntity<String> handleNotAuthorizedException(Exception ex, WebRequest request) {
-		log.debug("Handling order exception : {}", ex.getMessage());
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
 	}
 }

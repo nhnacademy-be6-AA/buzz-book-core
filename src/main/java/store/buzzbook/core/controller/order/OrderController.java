@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.NotAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
@@ -92,7 +91,8 @@ public class OrderController {
 		}
 		UserInfo userInfo = userService.getUserInfoByLoginId(loginId);
 		createOrderRequest.setLoginId(userInfo.loginId());
-		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
+		ReadOrderResponse response = orderService.createOrder(createOrderRequest);
+		return ResponseEntity.ok(response);
 	}
 
 	@JwtOrderValidate
@@ -102,7 +102,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
+			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest, userInfo.loginId()));
 		}
 		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
 	}
@@ -133,7 +133,8 @@ public class OrderController {
 	@PostMapping("/non-member")
 	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(
 		@RequestBody ReadOrderWithoutLoginRequest readOrderWithoutLoginRequest) {
-		return ResponseEntity.ok(orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest));
+		ReadOrderResponse response = orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest);
+		return ResponseEntity.ok(response);
 	}
 
 	@JwtOrderValidate
@@ -141,7 +142,8 @@ public class OrderController {
 	@PostMapping("/point")
 	public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		return ResponseEntity.ok(orderService.updatePointLog(createPointLogForOrderRequest, userInfo));
+		PointLogResponse response = orderService.updatePointLog(createPointLogForOrderRequest, userInfo);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
@@ -167,25 +169,27 @@ public class OrderController {
 	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
 	@PostMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest createOrderStatusRequest,
+	public ResponseEntity<?> createOrderStatus(@RequestBody CreateOrderStatusRequest createOrderStatusRequest,
 		HttpServletRequest request) {
+		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.createOrderStatus(createOrderStatusRequest));
+			data.put("responseData", ResponseEntity.ok(orderService.createOrderStatus(createOrderStatusRequest)));
 		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
+		return ResponseEntity.ok(data);
 	}
 
 	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
 	@PutMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
+	public ResponseEntity<?> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
 		HttpServletRequest request) {
+		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest));
+			data.put("responseData", ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest)));
 		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
+		return ResponseEntity.ok(data);
 	}
 
 	@JwtOrderAdminValidate
@@ -217,25 +221,27 @@ public class OrderController {
 	@JwtOrderAdminValidate
 	@Operation(summary = "운임비 정책 등록", description = "운임비 정책 등록")
 	@PostMapping("/delivery-policy")
-	public ResponseEntity<ReadDeliveryPolicyResponse> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest createDeliveryPolicyRequest,
+	public ResponseEntity<?> createDeliveryPolicy(@RequestBody CreateDeliveryPolicyRequest createDeliveryPolicyRequest,
 		HttpServletRequest request) {
+		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest));
+			data.put("responseData", ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest)));
 		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
+		return ResponseEntity.ok(data);
 	}
 
 	@JwtOrderAdminValidate
 	@Operation(summary = "운임비 정책 수정", description = "운임비 정책 수정")
 	@PutMapping("/delivery-policy")
-	public ResponseEntity<ReadDeliveryPolicyResponse> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest,
+	public ResponseEntity<?> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest,
 		HttpServletRequest request) {
+		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest));
+			data.put("responseData", ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest)));
 		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
+		return ResponseEntity.ok(data);
 	}
 
 	@JwtOrderAdminValidate
@@ -266,25 +272,27 @@ public class OrderController {
 	@JwtOrderAdminValidate
 	@Operation(summary = "포장 등록", description = "포장 등록")
 	@PostMapping("/wrapping")
-	public ResponseEntity<ReadWrappingResponse> createWrapping(@RequestBody CreateWrappingRequest createWrappingRequest,
+	public ResponseEntity<?> createWrapping(@RequestBody CreateWrappingRequest createWrappingRequest,
 		HttpServletRequest request) {
+		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.createWrapping(createWrappingRequest));
+			data.put("responseData", ResponseEntity.ok(orderService.createWrapping(createWrappingRequest)));
 		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
+		return ResponseEntity.ok(data);
 	}
 
 	@JwtOrderAdminValidate
 	@Operation(summary = "포장 수정", description = "포장 수정")
 	@PutMapping("/wrapping")
-	public ResponseEntity<ReadWrappingResponse> updateWrapping(@RequestBody UpdateWrappingRequest updateWrappingRequest,
+	public ResponseEntity<?> updateWrapping(@RequestBody UpdateWrappingRequest updateWrappingRequest,
 		HttpServletRequest request) {
+		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest));
+			data.put("responseData", ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest)));
 		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
+		return ResponseEntity.ok(data);
 	}
 
 	@JwtOrderAdminValidate
