@@ -339,7 +339,7 @@ public class OrderService {
 
 	@CacheEvict(value = "getOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
-	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest, String loginId) {
+	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,8 +18,6 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import store.buzzbook.core.dto.order.*;
+import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.CategoryResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.product.TagResponse;
@@ -36,8 +36,6 @@ import store.buzzbook.core.dto.user.GradeInfoResponse;
 import store.buzzbook.core.dto.user.RegisterUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.entity.user.Grade;
-import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.user.UserRepository;
@@ -64,6 +62,7 @@ class OrderControllerTest {
 	private UserRepository userRepository;
 
 	private UserInfo testUserInfo;
+	private UserInfo testUserInfo2;
 	private ReadOrdersRequest readOrdersRequest;
 	private CreateOrderRequest createOrderRequest;
 	private UpdateOrderRequest updateOrderRequest;
@@ -89,6 +88,8 @@ class OrderControllerTest {
 	private List<ReadOrderDetailProjectionResponse> readOrderDetailProjectionResponses;
 	private RegisterUserRequest registerUserRequest;
 	private User user;
+	private PointLogResponse pointLogResponse;
+	private List<ReadOrderStatusResponse> readOrderStatusResponses = new ArrayList<>();
 
 	@BeforeEach
 	void setUp() {
@@ -104,6 +105,10 @@ class OrderControllerTest {
 		testUserInfo = new UserInfo(504L, "parkseol", "01011111111", "parkseol",
 			"parkseol.dev@gmail.com", LocalDate.parse("2024-06-28"), GradeInfoResponse.builder().benefit(0.03)
 			.name("PLATINUM").standard(300000).build(), true, 5000);
+
+		testUserInfo2 = new UserInfo(503L, "park", "01011111111", "park",
+			"parkseol.dev@gmail.com", LocalDate.parse("2024-06-28"), GradeInfoResponse.builder().benefit(0.03)
+			.name("PLATINUM").standard(300000).build(), false, 5000);
 
 		createOrderDetailRequest1 = new CreateOrderDetailRequest(
 			5000,                          // price
@@ -234,6 +239,10 @@ class OrderControllerTest {
 			"01011111111", "parkseol", "parkseol.dev@gmail.com", "asdi2u34911!oj$@eI723",
 			LocalDate.parse("2024-06-28"), LocalDateTime.now(), LocalDateTime.now(), UserStatus.ACTIVE, LocalDateTime.now(),
 			true);
+
+		pointLogResponse = new PointLogResponse(LocalDateTime.now(), "주문 시 포인트 적립", 30, 60446);
+
+		readOrderStatusResponses.add(readOrderStatusResponse);
 	}
 
 	@Test
@@ -297,134 +306,330 @@ class OrderControllerTest {
 		verify(orderService).createOrder(any());
 	}
 
-	// @Test
-	// @DisplayName("주문 상태 수정 - 관리자")
-	// void updateOrder_isAdmin() throws Exception {
-	// 	UserInfo testUserInfo = mock(UserInfo.class);
-	//
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	when(orderService.updateOrderWithAdmin(any(), anyString())).thenReturn(readOrderResponse);
-	//
-	// 	mockMvc.perform(put("/api/orders")
-	// 			.content(objectMapper.writeValueAsString(updateOrderRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).updateOrderWithAdmin(any(), anyString());
-	// }
-	//
-	// @Test
-	// @DisplayName("주문 상태 수정")
-	// void updateOrder() throws Exception {
-	// 	when(orderService.updateOrder(any(), anyString())).thenReturn(readOrderResponse);
-	//
-	// 	mockMvc.perform(put("/api/orders")
-	// 			.content(objectMapper.writeValueAsString(updateOrderRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).updateOrderWithAdmin(any(), anyString());
-	// }
+	@Test
+	@DisplayName("주문 상태 수정 - 관리자")
+	void updateOrder_isAdmin() throws Exception {
+		UserInfo testUserInfo = mock(UserInfo.class);
+
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		when(testUserInfo.isAdmin()).thenReturn(true);
+		when(orderService.updateOrderWithAdmin(any())).thenReturn(readOrderResponse);
+
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+
+		mockMvc.perform(put("/api/orders")
+				.content(objectMapper.writeValueAsString(updateOrderRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.requestAttr(AuthService.LOGIN_ID, "testLoginId"))
+			.andExpect(status().isOk());
+
+		verify(orderService).updateOrderWithAdmin(any());
+	}
+
+	@Test
+	@DisplayName("주문 상태 수정")
+	void updateOrder() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo2);
+		when(orderService.updateOrder(any(), anyString())).thenReturn(readOrderResponse);
+
+		mockMvc.perform(put("/api/orders")
+				.content(objectMapper.writeValueAsString(updateOrderRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(request -> {
+					request.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+					return request;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).updateOrder(any(), anyString());
+	}
+
+	@Test
+	@DisplayName("주문 상세 상태 수정- 관리자")
+	void updateOrderDetail_isAdmin() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		when(orderService.updateOrderDetailWithAdmin(any())).thenReturn(readOrderDetailResponse1);
+
+		mockMvc.perform(put("/api/orders/detail")
+				.content(objectMapper.writeValueAsString(updateOrderRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(request -> {
+					request.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+					return request;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).updateOrderDetailWithAdmin(any());
+	}
+
+	@Test
+	@DisplayName("주문 상세 상태 수정")
+	void updateOrderDetail() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo2);
+		when(orderService.updateOrderDetail(any(), anyString())).thenReturn(readOrderDetailResponse1);
+
+		mockMvc.perform(put("/api/orders/detail")
+				.content(objectMapper.writeValueAsString(updateOrderRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(request -> {
+					request.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+					return request;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).updateOrderDetail(any(), anyString());
+	}
+
+	@Test
+	@DisplayName("주문 조회")
+	void getOrder() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo2);
+		when(orderService.readOrder(any(), anyString())).thenReturn(readOrderResponse);
+
+		mockMvc.perform(post("/api/orders/id")
+				.content(objectMapper.writeValueAsString(readOrdersRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(request -> {
+					request.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+					return request;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).readOrder(any(), anyString());
+	}
+
+	@Test
+	@DisplayName("비회원 주문 조회")
+	void getOrderWithoutLogin() throws Exception {
+		when(orderService.readOrderWithoutLogin(any())).thenReturn(readOrderResponse);
+
+		mockMvc.perform(post("/api/orders/non-member")
+				.content(objectMapper.writeValueAsString(new ReadOrderWithoutLoginRequest()))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+
+		verify(orderService).readOrderWithoutLogin(any());
+	}
+
+	@Test
+	@DisplayName("주문 및 취소 시 포인트 변경")
+	void updatePointLog() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo2);
+		when(orderService.updatePointLog(any(), any())).thenReturn(pointLogResponse);
+
+		mockMvc.perform(post("/api/orders/point")
+				.content(objectMapper.writeValueAsString(readOrdersRequest))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+
+		verify(orderService).updatePointLog(any(), any());
+	}
+
+	@Test
+	@DisplayName("주문 상태 이름으로 조회")
+	void getOrderStatusByName() throws Exception {
+		when(orderService.readOrderStatusByName(anyString())).thenReturn(new ReadOrderStatusResponse());
+
+		mockMvc.perform(post("/api/orders/status/name")
+				.content(objectMapper.writeValueAsString(new ReadOrderStatusByNameRequest(anyString())))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+
+		verify(orderService).readOrderStatusByName(anyString());
+	}
+
+	@Test
+	@DisplayName("주문 상태 아이디로 조회")
+	void getOrderStatusById() throws Exception {
+		when(orderService.readOrderStatusById(anyInt())).thenReturn(new ReadOrderStatusResponse());
+
+		mockMvc.perform(post("/api/orders/status/id")
+				.content(objectMapper.writeValueAsString(new ReadOrderStatusByIdRequest(anyInt())))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+
+		verify(orderService).readOrderStatusById(anyInt());
+	}
+
+	@Test
+	@DisplayName("주문 상태 모두 조회")
+	void getAllOrderStatus() throws Exception {
+		when(orderService.readAllOrderStatus()).thenReturn(readOrderStatusResponses);
+
+		mockMvc.perform(get("/api/orders/status/all")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
+
+		verify(orderService).readAllOrderStatus();
+	}
+
+	@Test
+	@DisplayName("주문 상태 등록")
+	void testCreateOrderStatus() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		when(orderService.createOrderStatus(any(CreateOrderStatusRequest.class))).thenReturn(readOrderStatusResponse);
+
+		CreateOrderStatusRequest request = new CreateOrderStatusRequest();
+		mockMvc.perform(post("/api/orders/status")
+				.content(objectMapper.writeValueAsString(request))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(req -> {
+					req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+					return req;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).createOrderStatus(any());
+	}
 
 	// @Test
-	// @DisplayName("주문 상세 상태 수정")
-	// void updateOrderDetail() throws Exception {
-	// 	when(orderService.updateOrderDetailWithAdmin(any())).thenReturn(readOrderDetailResponse);
+	// @DisplayName("주문 상태 수정")
+	// void testUpdateOrderStatus() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
+	// 	when(orderService.updateOrderStatus(any())).thenReturn(new Object());
 	//
-	// 	mockMvc.perform(put("/api/orders/detail")
-	// 			.content(objectMapper.writeValueAsString(updateOrderRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
+	// 	mockMvc.perform(put("/status")
+	// 			.content(objectMapper.writeValueAsString(request))
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).updateOrderDetailWithAdmin(any());
+	// 	verify(orderService).updateOrderStatus(any());
 	// }
 	//
 	// @Test
-	// @DisplayName("주문 조회")
-	// void getOrder() throws Exception {
-	// 	when(orderService.readOrder(any(), anyString())).thenReturn(readOrderResponse);
+	// @DisplayName("주문 상태 삭제")
+	// void testDeleteOrderStatus() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
 	//
-	// 	mockMvc.perform(post("/api/orders/id")
-	// 			.content(objectMapper.writeValueAsString(readOrdersRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	mockMvc.perform(delete("/status/{id}", 1)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readOrder(any(), anyString());
+	// 	verify(orderService).deleteOrderStatus(1);
 	// }
 	//
 	// @Test
-	// @DisplayName("비회원 주문 조회")
-	// void getOrderWithoutLogin() throws Exception {
-	// 	when(orderService.readOrderWithoutLogin(any())).thenReturn(readOrderResponse);
+	// void testCreateDeliveryPolicy() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
+	// 	when(orderService.createDeliveryPolicy(any())).thenReturn(new Object()); // Mock the return value as needed
 	//
-	// 	mockMvc.perform(post("/api/orders/non-member")
-	// 			.content(objectMapper.writeValueAsString(new ReadOrderWithoutLoginRequest()))
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	CreateDeliveryPolicyRequest request = new CreateDeliveryPolicyRequest();
+	// 	mockMvc.perform(post("/delivery-policy")
+	// 			.content(objectMapper.writeValueAsString(request))
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readOrderWithoutLogin(any());
+	// 	verify(orderService).createDeliveryPolicy(any());
 	// }
 	//
 	// @Test
-	// @DisplayName("주문 상태 이름으로 조회")
-	// void getOrderStatusByName() throws Exception {
-	// 	when(orderService.readOrderStatusByName(anyString())).thenReturn(new ReadOrderStatusResponse());
+	// void testUpdateDeliveryPolicy() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
+	// 	when(orderService.updateDeliveryPolicy(any())).thenReturn(new Object()); // Mock the return value as needed
 	//
-	// 	mockMvc.perform(post("/api/orders/status/name")
-	// 			.content(objectMapper.writeValueAsString(new ReadOrderStatusByNameRequest("ORDERED")))
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	UpdateDeliveryPolicyRequest request = new UpdateDeliveryPolicyRequest();
+	// 	mockMvc.perform(put("/delivery-policy")
+	// 			.content(objectMapper.writeValueAsString(request))
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readOrderStatusByName(anyString());
+	// 	verify(orderService).updateDeliveryPolicy(any());
 	// }
 	//
 	// @Test
-	// @DisplayName("주문 상태 아이디로 조회")
-	// void getOrderStatusById() throws Exception {
-	// 	when(orderService.readOrderStatusById(anyInt())).thenReturn(new ReadOrderStatusResponse());
+	// void testDeleteDeliveryPolicy() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
 	//
-	// 	mockMvc.perform(post("/api/orders/status/id")
-	// 			.content(objectMapper.writeValueAsString(new ReadOrderStatusByIdRequest(1)))
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	mockMvc.perform(delete("/delivery-policy/{id}", 1)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readOrderStatusById(anyInt());
+	// 	verify(orderService).deleteDeliveryPolicy(1);
 	// }
 	//
 	// @Test
-	// @DisplayName("주문 상태 모두 조회")
-	// void getAllOrderStatus() throws Exception {
-	// 	when(orderService.readAllOrderStatus()).thenReturn(Collections.emptyList());
+	// void testCreateWrapping() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
+	// 	when(orderService.createWrapping(any())).thenReturn(new Object()); // Mock the return value as needed
 	//
-	// 	mockMvc.perform(get("/api/orders/status/all")
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	CreateWrappingRequest request = new CreateWrappingRequest();
+	// 	mockMvc.perform(post("/wrapping")
+	// 			.content(objectMapper.writeValueAsString(request))
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readAllOrderStatus();
+	// 	verify(orderService).createWrapping(any());
 	// }
 	//
 	// @Test
-	// @DisplayName("운임비 정책 조회")
-	// void getDeliveryPolicy() throws Exception {
-	// 	when(orderService.readDeliveryPolicyById(anyInt())).thenReturn(new ReadDeliveryPolicyResponse());
+	// void testUpdateWrapping() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
+	// 	when(orderService.updateWrapping(any())).thenReturn(); // Mock the return value as needed
 	//
-	// 	mockMvc.perform(post("/api/orders/delivery-policy/id")
-	// 			.content(objectMapper.writeValueAsString(new ReadDeliveryPolicyRequest(1)))
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	UpdateWrappingRequest request = new UpdateWrappingRequest();
+	// 	mockMvc.perform(put("/wrapping")
+	// 			.content(objectMapper.writeValueAsString(request))
+	// 			.contentType(MediaType.APPLICATION_JSON)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readDeliveryPolicyById(anyInt());
+	// 	verify(orderService).updateWrapping(any());
 	// }
 	//
 	// @Test
-	// @DisplayName("운임비 정책 모두 조회")
-	// void getAllDeliveryPolicy() throws Exception {
-	// 	when(orderService.readAllDeliveryPolicy()).thenReturn(Collections.emptyList());
+	// void testDeleteWrapping() throws Exception {
+	// 	UserInfo testUserInfo = mock(UserInfo.class);
+	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+	// 	when(testUserInfo.isAdmin()).thenReturn(true);
 	//
-	// 	mockMvc.perform(get("/api/orders/delivery-policy/all")
-	// 			.contentType(MediaType.APPLICATION_JSON))
+	// 	mockMvc.perform(delete("/wrapping/{id}", 1)
+	// 			.with(req -> {
+	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				return req;
+	// 			}))
 	// 		.andExpect(status().isOk());
 	//
-	// 	verify(orderService).readAllDeliveryPolicy();
+	// 	verify(orderService).deleteWrapping(1);
 	// }
 }
