@@ -1,0 +1,60 @@
+package store.buzzbook.core.common.listener;
+
+import java.time.LocalDateTime;
+
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import store.buzzbook.core.entity.order.OrderStatus;
+import store.buzzbook.core.entity.order.Wrapping;
+import store.buzzbook.core.repository.order.WrappingRepository;
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class WrappingListener implements ApplicationListener<ApplicationReadyEvent> {
+	private static final String UNPACKAGED = "없음";
+	private static final String GIFT = "선물포장";
+	private static final String NEWSPAPER = "신문지";
+	private static final String PAPERBOX = "종이박스";
+
+	private final WrappingRepository wrappingRepository;
+
+	@Override
+	public void onApplicationEvent(ApplicationReadyEvent event) {
+		if (Boolean.FALSE.equals(wrappingRepository.existsByPaper(UNPACKAGED))) {
+			Wrapping wrapping = Wrapping.builder()
+					.price(0)
+					.paper(UNPACKAGED)
+					.build();
+			wrappingRepository.save(wrapping);
+		}
+
+		if (Boolean.FALSE.equals(wrappingRepository.existsByPaper(GIFT))) {
+			Wrapping wrapping = Wrapping.builder()
+				.price(1000)
+				.paper(GIFT)
+				.build();
+			wrappingRepository.save(wrapping);
+		}
+
+		if (Boolean.FALSE.equals(wrappingRepository.existsByPaper(NEWSPAPER))) {
+			Wrapping wrapping = Wrapping.builder()
+				.price(100)
+				.paper(NEWSPAPER)
+				.build();
+			wrappingRepository.save(wrapping);
+		}
+
+		if (Boolean.FALSE.equals(wrappingRepository.existsByPaper(PAPERBOX))) {
+			Wrapping wrapping = Wrapping.builder()
+				.price(500)
+				.paper(PAPERBOX)
+				.build();
+			wrappingRepository.save(wrapping);
+		}
+	}
+}

@@ -20,6 +20,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -28,12 +30,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.common.exception.order.CouponStatusNotUpdated;
 import store.buzzbook.core.common.exception.order.DuplicateBillLogException;
 import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.common.util.RetryUtil;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -90,6 +92,8 @@ public class PaymentService {
 	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
+	private static final String PAYMENT_ERROR = "결제 오류";
+	private static final String CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY = "결제 오류로 인한 포인트 적립 취소";
 
 	private final BillLogRepository billLogRepository;
 	private final OrderRepository orderRepository;
@@ -113,7 +117,7 @@ public class PaymentService {
 		}
 
 		// 중복 체크
-		if (!billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
+		if (billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
 			throw new DuplicateBillLogException("중복된 결제 로그가 이미 존재합니다.");
 		}
 
@@ -272,9 +276,9 @@ public class PaymentService {
 
 			// 쿠폰 상태 업데이트 (재시도 포함)
 			try {
-				updateCouponStatusWithRetry(billLog, CouponStatus.USED, headers, 3, 2000);
+				updateCouponStatus(billLog, headers, CouponStatus.USED);
 			} catch (Exception e) {
-				throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+				throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
 			}
 		}
 
@@ -282,14 +286,12 @@ public class PaymentService {
 			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
-	private void updateCouponStatusWithRetry(BillLog billLog, CouponStatus couponStatus, HttpHeaders headers, int maxRetries, long retryDelayMs) throws Exception {
-		RetryUtil.executeWithRetry(() -> {
-			updateCouponStatus(billLog, headers, couponStatus);
-			return null;
-		}, maxRetries, retryDelayMs);
-	}
-
-	private void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
+	@Retryable(
+		retryFor = { CouponStatusNotUpdated.class },
+		maxAttempts = 3,
+		backoff = @Backoff(delay = 2000)
+	)
+	protected void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
 		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
 		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
 
@@ -301,7 +303,7 @@ public class PaymentService {
 		CouponResponse couponResponse = couponResponseResponseEntity.getBody();
 
 		if (couponResponse == null || couponResponse.status() != couponStatus) {
-			throw new RuntimeException("쿠폰 상태 변경 실패");
+			throw new CouponStatusNotUpdated("쿠폰 상태 변경 실패");
 		}
 	}
 
@@ -394,9 +396,9 @@ public class PaymentService {
 				headers.set("Content-Type", "application/json");
 
 				try {
-					updateCouponStatusWithRetry(billLog, CouponStatus.AVAILABLE, headers, 3, 2000);
+					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
 				}
 			}
 		}
@@ -447,12 +449,26 @@ public class PaymentService {
 				headers.set("Content-Type", "application/json");
 
 				try {
-					updateCouponStatusWithRetry(billLog, CouponStatus.AVAILABLE, headers, 3, 2000);
+					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new RuntimeException("쿠폰 상태 업데이트 실패", e);
+					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
 				}
 
 			}
 		}
+	}
+
+	@Transactional
+	public void rollbackBillLog(ReadPaymentResponse readPaymentResponse) {
+		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(readPaymentResponse.getPaymentKey());
+		for (BillLog billLog : billLogs) {
+			billLogRepository.save(BillLog.builder().payment(billLog.getPayment()).price(billLog.getPrice())
+				.payAt(LocalDateTime.now()).status(BillStatus.CANCELED).paymentKey(billLog.getPaymentKey()).order(billLog.getOrder()).cancelReason(PAYMENT_ERROR).build());
+		}
+
+		User user = billLogs.getFirst().getOrder().getUser();
+		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
+		pointLogRepository.save(PointLog.builder().user(user).delta(-pointLog.getDelta())
+			.balance(pointLog.getBalance()-pointLog.getDelta()).inquiry(CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY).build());
 	}
 }

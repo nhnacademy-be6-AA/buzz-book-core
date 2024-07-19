@@ -1,4 +1,4 @@
-package store.buzzbook.core.common.util;
+package store.buzzbook.core.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

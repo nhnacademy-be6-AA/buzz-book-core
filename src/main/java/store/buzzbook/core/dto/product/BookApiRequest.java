@@ -2,6 +2,7 @@ package store.buzzbook.core.dto.product;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ public class BookApiRequest {
     @JsonProperty("item")
     private List<Item> items;
 
+    @Builder
     @Getter
     public static class Item
     {

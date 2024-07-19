@@ -19,9 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.product.DataAlreadyException;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.dto.review.ReviewCreateRequest;
+import store.buzzbook.core.dto.review.ReviewRequest;
 import store.buzzbook.core.dto.review.ReviewResponse;
-import store.buzzbook.core.dto.review.ReviewUpdateRequest;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.point.PointPolicy;
@@ -53,7 +52,7 @@ public class ReviewService {
 	private final ImageService imageClient;
 
 	@Transactional
-	public ReviewResponse saveReview(ReviewCreateRequest reviewReq, List<MultipartFile> imageFiles) {
+	public ReviewResponse saveReview(ReviewRequest reviewReq, List<MultipartFile> imageFiles) {
 
 		// 상품상세조회확인
 		OrderDetail orderDetail = orderDetailRepository.findById(reviewReq.getOrderDetailId())
@@ -65,7 +64,7 @@ public class ReviewService {
 		}
 
 		// 리뷰저장
-		String url = imageFiles.isEmpty() ? null : buildPathString(imageClient.multiImageUpload(imageFiles));
+		String url = (imageFiles == null || imageFiles.isEmpty()) ? null : buildPathString(imageClient.multiImageUpload(imageFiles));
 		Review review = new Review(reviewReq.getContent(), url, reviewReq.getReviewScore(), orderDetail);
 		reviewRepository.save(review);
 
@@ -73,7 +72,7 @@ public class ReviewService {
 		updateProductScore(orderDetail.getProduct().getId());
 
 		// 고객에 포인트 부여
-		PointPolicy pp = imageFiles.isEmpty() ? pointPolicyRepository.findByName(REVIEW) :
+		PointPolicy pp = (imageFiles == null || imageFiles.isEmpty()) ? pointPolicyRepository.findByName(REVIEW) :
 			pointPolicyRepository.findByName(REVIEW_PHOTO);
 		Order order = orderDetail.getOrder();
 		User user = order.getUser();
@@ -87,6 +86,14 @@ public class ReviewService {
 		Review review = reviewRepository.findById(reviewId).orElse(null);
 		if (review == null) {
 			throw new DataNotFoundException("review", reviewId);
+		}
+		return constructorReviewResponse(review);
+	}
+
+	public ReviewResponse getReviewByOrderDetailId(long orderDetailId) {
+		Review review = reviewRepository.findByOrderDetailId(orderDetailId);
+		if (review == null) {
+			return null;
 		}
 		return constructorReviewResponse(review);
 	}
@@ -105,13 +112,13 @@ public class ReviewService {
 	}
 
 	@Transactional
-	public ReviewResponse updateReview(ReviewUpdateRequest reviewReq) {
-		Review review = reviewRepository.findById(reviewReq.getId()).orElse(null);
+	public ReviewResponse updateReview(int reviewId, ReviewRequest reviewReq) {
+		Review review = reviewRepository.findById(reviewId).orElse(null);
 		if (review == null) {
-			throw new DataNotFoundException("review", reviewReq.getId());
+			throw new DataNotFoundException("review", reviewId);
 		}
 		Review newReview = new Review(
-			reviewReq.getId(),
+			reviewId,
 			reviewReq.getContent() + "\n(수정됨:" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ")",
 			review.getPicturePath(),
 			reviewReq.getReviewScore(),
