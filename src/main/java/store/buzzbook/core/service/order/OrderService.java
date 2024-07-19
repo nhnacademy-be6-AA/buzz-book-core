@@ -381,6 +381,9 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
 			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
 				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
 					throw new NotPaidException("The order is not paid");
 				}
@@ -449,6 +452,9 @@ public class OrderService {
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
 			for (OrderDetail orderDetail : orderDetails) {
+				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+					throw new AlreadyRefundedException("This order is already refunded");
+				}
 				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
 					throw new NotPaidException("The order is not paid");
 				}
