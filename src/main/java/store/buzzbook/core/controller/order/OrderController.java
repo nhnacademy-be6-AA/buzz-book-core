@@ -91,8 +91,7 @@ public class OrderController {
 		}
 		UserInfo userInfo = userService.getUserInfoByLoginId(loginId);
 		createOrderRequest.setLoginId(userInfo.loginId());
-		ReadOrderResponse response = orderService.createOrder(createOrderRequest);
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 
 	@JwtOrderValidate
@@ -133,8 +132,7 @@ public class OrderController {
 	@PostMapping("/non-member")
 	public ResponseEntity<ReadOrderResponse> getOrderWithoutLogin(
 		@RequestBody ReadOrderWithoutLoginRequest readOrderWithoutLoginRequest) {
-		ReadOrderResponse response = orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest);
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest));
 	}
 
 	@JwtOrderValidate
@@ -142,8 +140,7 @@ public class OrderController {
 	@PostMapping("/point")
 	public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		PointLogResponse response = orderService.updatePointLog(createPointLogForOrderRequest, userInfo);
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(orderService.updatePointLog(createPointLogForOrderRequest, userInfo));
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
