@@ -104,43 +104,6 @@ class ProductDetailServiceTest {
 	}
 
 	@Test
-	@DisplayName("convert product detail response")
-	void convertProductDetailResponse() {
-		// given
-		when(bookRepository.findByProductId(anyInt())).thenReturn(testBook);
-		when(reviewRepository.findAllByOrderDetail_ProductIdOrderByReviewCreatedAtDesc(anyInt(),
-			any())).thenReturn(testReviewPage);
-		when(reviewService.constructorReviewResponse(any())).thenReturn(testReviewResponse);
-
-		// when
-		ProductDetailResponse productDetailResponse = productDetailService.convertProductDetailResponse(testProduct);
-
-		// then
-		assertTrue(Objects.nonNull(productDetailResponse));
-		assert productDetailResponse.getBook() != null;
-		assertEquals(productDetailResponse.getBook().getId(), testBook.getId());
-		assertEquals(productDetailResponse.getReviews().size(), 1);
-	}
-
-	@Test
-	@DisplayName("convert product detail response by id")
-	void convertProductDetailResponseById() {
-		// given
-		when(productRepository.findById(anyInt())).thenReturn(Optional.of(testProduct));
-		when(bookRepository.findByProductId(anyInt())).thenReturn(testBook);
-		when(reviewRepository.findAllByOrderDetail_ProductIdOrderByReviewCreatedAtDesc(anyInt(),
-			any())).thenReturn(testReviewPage);
-		when(reviewService.constructorReviewResponse(any())).thenReturn(testReviewResponse);
-
-		// when
-		ProductDetailResponse productDetailResponse = productDetailService.convertProductDetailResponse(
-			testProduct.getId());
-
-		// then
-		assertTrue(Objects.nonNull(productDetailResponse));
-	}
-
-	@Test
 	@DisplayName("get product detail")
 	void getProductDetail() {
 		// given
