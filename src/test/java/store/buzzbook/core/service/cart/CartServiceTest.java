@@ -125,7 +125,7 @@ public class CartServiceTest {
 			.productName(product.getProductName())
 			.quantity(cartDetail.getQuantity())
 			.thumbnailPath(product.getThumbnailPath()).build();
-		cartDetailList = new LinkedList();
+		cartDetailList = new LinkedList<>();
 		cartDetailList.add(cartDetailResponse);
 	}
 
