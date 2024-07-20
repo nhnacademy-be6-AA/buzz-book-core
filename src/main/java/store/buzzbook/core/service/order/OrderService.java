@@ -1,5 +1,8 @@
 package store.buzzbook.core.service.order;
 
+import static store.buzzbook.core.common.listener.OrderStatusListener.*;
+import static store.buzzbook.core.common.listener.WrappingListener.*;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -77,7 +80,6 @@ import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
-import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.AddressRepository;
@@ -89,15 +91,6 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
-	private static final String UNPACKAGED = "없음";
-	private static final String REFUND = "REFUND";
-	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
-	private static final String SHIPPED = "SHIPPED";
-	private static final String CANCELED = "CANCELED";
-	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
-	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
-	private static final String PAID = "PAID";
-	private static final String SHIPPING_OUT = "SHIPPING_OUT";
 	private static final int REFUND_PERIOD = 10;
 	private static final int BREAKAGE_REFUND_PERIOD = 30;
 

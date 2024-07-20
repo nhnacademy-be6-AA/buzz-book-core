@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.payment;
 
+import static store.buzzbook.core.common.listener.OrderStatusListener.*;
+
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -89,8 +91,6 @@ public class PaymentService {
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
 	private static final String CANCEL_POINT_REFUND_INQUIRY = "반품에 의한 포인트 적립 취소";
-	private static final String PAID = "PAID";
-	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 	private static final String PAYMENT_ERROR = "결제 오류";
