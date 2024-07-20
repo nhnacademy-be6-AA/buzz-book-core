@@ -33,7 +33,7 @@ public class DeliveryPolicyListener implements ApplicationListener<ApplicationRe
 		if (Boolean.FALSE.equals(deliveryPolicyRepository.existsByName(MOUNTAINOUS))) {
 			DeliveryPolicy deliveryPolicy = DeliveryPolicy.builder()
 				.name(MOUNTAINOUS)
-				.standardPrice(50000)
+				.standardPrice(30000)
 				.policyPrice(0)
 				.deleted(false)
 				.build();
