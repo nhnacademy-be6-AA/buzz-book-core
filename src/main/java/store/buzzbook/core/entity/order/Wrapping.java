@@ -31,4 +31,11 @@ public class Wrapping {
 	private String paper;
 	@NotNull
 	private int price;
+
+	@NotNull
+	private boolean deleted;
+
+	public void delete() {
+		this.deleted = true;
+	}
 }

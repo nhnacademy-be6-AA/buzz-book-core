@@ -38,7 +38,6 @@ import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
@@ -55,7 +54,6 @@ import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
@@ -84,6 +82,7 @@ import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.AddressRepository;
 import store.buzzbook.core.repository.user.UserRepository;
+import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
 @Service
@@ -111,9 +110,9 @@ public class OrderService {
 	private final OrderStatusRepository orderStatusRepository;
 	private final UserService userService;
 	private final AddressRepository addressRepository;
-	private final PointLogRepository pointLogRepository;
 	private final PointPolicyRepository pointPolicyRepository;
 	private final ApplicationContext applicationContext;
+	private final PointService pointService;
 
 	private OrderService getOrderServiceProxy() {
 		return applicationContext.getBean(OrderService.class);
@@ -328,11 +327,9 @@ public class OrderService {
 	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
 		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
-		int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
 		int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
 		int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
-		PointLog pointLog = pointLogRepository.save(PointLog.builder().inquiry(createPointLogForOrderRequest.getPointOrderInquiry()).createdAt(LocalDateTime.now())
-			.delta(point+benefit).balance(balance+point+benefit).user(user).build());
+		PointLog pointLog = pointService.createPointLogWithDelta(user, createPointLogForOrderRequest.getPointOrderInquiry(), point+benefit);
 
 		return PointLogResponse.from(pointLog);
 	}
@@ -541,28 +538,6 @@ public class OrderService {
 		return OrderMapper.toDto(order, details, null);
 	}
 
-	@Transactional(rollbackFor = Exception.class)
-	public ReadOrderStatusResponse createOrderStatus(CreateOrderStatusRequest createOrderStatusRequest) {
-
-		return OrderStatusMapper.toDto(
-			orderStatusRepository.save(OrderStatus.builder().name(createOrderStatusRequest.getName()).updateAt(
-				LocalDateTime.now()).build()));
-	}
-
-	@Transactional
-	public ReadOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest updateOrderStatusRequest) {
-
-		return OrderStatusMapper.toDto(orderStatusRepository.save(OrderStatus.builder()
-			.id(updateOrderStatusRequest.getId())
-			.name(updateOrderStatusRequest.getName())
-			.build()));
-	}
-
-	public void deleteOrderStatus(int orderStatusId) {
-		orderStatusRepository.delete(orderStatusRepository.findById(orderStatusId)
-			.orElseThrow(() -> new OrderStatusNotFoundException("Order Status not found")));
-	}
-
 	public ReadOrderStatusResponse readOrderStatusById(int id) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
 			.orElseThrow(() -> new OrderStatusNotFoundException("Order Status not found")));
@@ -594,8 +569,10 @@ public class OrderService {
 				.standardPrice(updateDeliveryPolicyRequest.getStandardPrice()).build()));
 	}
 
+	@Transactional
 	public void deleteDeliveryPolicy(int deliveryPolicyId) {
-		deliveryPolicyRepository.deleteById(deliveryPolicyId);
+		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(deliveryPolicyId).orElseThrow(() -> new DeliveryPolicyNotFoundException("Delivery Policy not found"));
+		deliveryPolicy.delete();
 	}
 
 	public ReadDeliveryPolicyResponse readDeliveryPolicyById(int deliveryPolicyId) {
@@ -619,8 +596,10 @@ public class OrderService {
 			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).build()));
 	}
 
+	@Transactional
 	public void deleteWrapping(int wrappingId) {
-		wrappingRepository.deleteById(wrappingId);
+		Wrapping wrapping = wrappingRepository.findById(wrappingId).orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+		wrapping.delete();
 	}
 
 	public ReadWrappingResponse readWrappingById(int wrappingId) {
@@ -632,7 +611,7 @@ public class OrderService {
 		return wrappingRepository.findAll().stream().map(WrappingMapper::toDto).toList();
 	}
 
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderDetailResponse updateOrderDetail(UpdateOrderDetailRequest request, String loginId) {
 		OrderDetail orderDetail = orderDetailRepository.findByIdAndOrder_User_LoginId(request.getId(), loginId);
 		orderDetailRepository.save(OrderDetail.builder()

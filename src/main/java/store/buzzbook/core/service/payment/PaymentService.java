@@ -71,6 +71,7 @@ import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.auth.AuthService;
+import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
 @Service
@@ -102,9 +103,10 @@ public class PaymentService {
 	private final WrappingRepository wrappingRepository;
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
-	private final PointLogRepository pointLogRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
+	private final PointService pointService;
+	private final PointLogRepository pointLogRepository;
 
 	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
@@ -255,16 +257,7 @@ public class PaymentService {
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 
 		if (createBillLogRequest.getPayment().equals(POINT)) {
-			int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-
-			pointLogRepository.save(
-				PointLog.builder()
-					.createdAt(LocalDateTime.now())
-					.delta(-createBillLogRequest.getPrice())
-					.user(user)
-					.balance(balance - createBillLogRequest.getPrice())
-					.inquiry(POINT_PAYMENT_INQUIRY)
-					.build());
+			pointService.createPointLogWithDelta(user, POINT_PAYMENT_INQUIRY, -createBillLogRequest.getPrice());
 		}
 
 		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment()
@@ -386,9 +379,7 @@ public class PaymentService {
 				.build());
 
 			if (billLog.getPayment().equals(POINT)) {
-				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice())
-					.user(user).balance(balance + billLog.getPrice()).inquiry(POINT_CANCEL_INQUIRY).build());
+				pointService.createPointLogWithDelta(user, POINT_CANCEL_INQUIRY, billLog.getPrice());
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
@@ -427,21 +418,12 @@ public class PaymentService {
 
 			if (billLog.getPayment().equals(SIMPLE_PAYMENT)) {
 				int deliveryRate = billLog.getOrder().getDeliveryRate();
-				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(
-					PointLog.builder()
-						.createdAt(LocalDateTime.now())
-						.delta(billLog.getPrice() - deliveryRate)
-						.user(user)
-						.balance(balance + billLog.getPrice() - deliveryRate)
-						.inquiry(POINT_REFUND_INQUIRY)
-						.build());
+
+				pointService.createPointLogWithDelta(user, POINT_REFUND_INQUIRY, billLog.getPrice() - deliveryRate);
 			}
 
 			if (billLog.getPayment().equals(POINT)) {
-				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(-billLog.getPrice())
-					.user(user).balance(balance - billLog.getPrice()).inquiry(CANCEL_POINT_REFUND_INQUIRY).build());
+				pointService.createPointLogWithDelta(user, CANCEL_POINT_REFUND_INQUIRY, -billLog.getPrice());
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
@@ -468,7 +450,6 @@ public class PaymentService {
 
 		User user = billLogs.getFirst().getOrder().getUser();
 		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
-		pointLogRepository.save(PointLog.builder().user(user).delta(-pointLog.getDelta())
-			.balance(pointLog.getBalance()-pointLog.getDelta()).inquiry(CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY).build());
+		pointService.createPointLogWithDelta(user, CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY, -pointLog.getDelta());
 	}
 }

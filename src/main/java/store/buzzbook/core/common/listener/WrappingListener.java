@@ -29,6 +29,7 @@ public class WrappingListener implements ApplicationListener<ApplicationReadyEve
 			Wrapping wrapping = Wrapping.builder()
 					.price(0)
 					.paper(UNPACKAGED)
+					.deleted(false)
 					.build();
 			wrappingRepository.save(wrapping);
 		}
@@ -37,6 +38,7 @@ public class WrappingListener implements ApplicationListener<ApplicationReadyEve
 			Wrapping wrapping = Wrapping.builder()
 				.price(1000)
 				.paper(GIFT)
+				.deleted(false)
 				.build();
 			wrappingRepository.save(wrapping);
 		}
@@ -45,6 +47,7 @@ public class WrappingListener implements ApplicationListener<ApplicationReadyEve
 			Wrapping wrapping = Wrapping.builder()
 				.price(100)
 				.paper(NEWSPAPER)
+				.deleted(false)
 				.build();
 			wrappingRepository.save(wrapping);
 		}
@@ -53,6 +56,7 @@ public class WrappingListener implements ApplicationListener<ApplicationReadyEve
 			Wrapping wrapping = Wrapping.builder()
 				.price(500)
 				.paper(PAPERBOX)
+				.deleted(false)
 				.build();
 			wrappingRepository.save(wrapping);
 		}

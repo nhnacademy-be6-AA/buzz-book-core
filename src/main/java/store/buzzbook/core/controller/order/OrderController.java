@@ -23,7 +23,6 @@ import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
@@ -41,7 +40,6 @@ import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
 import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -155,43 +153,6 @@ public class OrderController {
 	@GetMapping("/status/all")
 	public ResponseEntity<List<ReadOrderStatusResponse>> getAllOrderStatus() {
 		return ResponseEntity.ok(orderService.readAllOrderStatus());
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
-	@PostMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest createOrderStatusRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.createOrderStatus(createOrderStatusRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
-	@PutMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
-	@DeleteMapping("/status/{id}")
-	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id, HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			orderService.deleteOrderStatus(id);
-			return ResponseEntity.ok(SUCCESS);
-		}
-
-		return ResponseEntity.ok(FAILURE);
 	}
 
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")
