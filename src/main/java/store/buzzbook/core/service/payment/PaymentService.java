@@ -124,21 +124,6 @@ public class PaymentService {
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
 
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
@@ -166,7 +151,24 @@ public class PaymentService {
 				.build();
 		}
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, PAID), userInfo.loginId()));
+	}
+
+	private List<ReadOrderDetailResponse> getReadOrderDetailResponses(Order order, String orderStatus) {
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(orderStatus));
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(
+				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+					readWrappingResponse));
+		}
+		return readOrderDetailResponses;
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -181,20 +183,6 @@ public class PaymentService {
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findByName(CANCELED));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
 
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
@@ -227,7 +215,7 @@ public class PaymentService {
 			.birthday(order.getUser().getBirthday())
 			.build();
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), userInfo.loginId()));
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -335,7 +323,6 @@ public class PaymentService {
 		return responses;
 	}
 
-	// 괜찮은지....
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithoutLogin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
