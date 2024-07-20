@@ -467,25 +467,6 @@ class OrderControllerTest {
 		verify(orderService).readAllOrderStatus();
 	}
 
-	// @Test
-	// @DisplayName("주문 상태 등록")
-	// void testCreateOrderStatus() throws Exception {
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	when(orderService.createOrderStatus(any(CreateOrderStatusRequest.class))).thenReturn(readOrderStatusResponse);
-	//
-	// 	CreateOrderStatusRequest request = new CreateOrderStatusRequest();
-	// 	mockMvc.perform(post("/api/orders/status")
-	// 			.content(objectMapper.writeValueAsString(request))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.with(req -> {
-	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
-	// 				return req;
-	// 			}))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).createOrderStatus(any());
-	// }
-
 	@Test
 	@DisplayName("운임비 정책 조회")
 	void testGetDeliveryPolicy() throws Exception {

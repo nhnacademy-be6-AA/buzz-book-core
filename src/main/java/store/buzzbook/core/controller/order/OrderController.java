@@ -201,8 +201,7 @@ public class OrderController {
 			orderService.deleteDeliveryPolicy(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
-
-		return ResponseEntity.ok(FAILURE);
+		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
 
 	@Operation(summary = "포장 조회", description = "포장 조회")
@@ -250,6 +249,6 @@ public class OrderController {
 			orderService.deleteWrapping(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
-		return ResponseEntity.ok(FAILURE);
+		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
 }

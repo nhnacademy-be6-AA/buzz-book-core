@@ -566,7 +566,7 @@ public class OrderService {
 	}
 
 	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
-		return deliveryPolicyRepository.findAll().stream().map(DeliveryPolicyMapper::toDto).toList();
+		return deliveryPolicyRepository.findAll().stream().filter(deliveryPolicy -> !deliveryPolicy.isDeleted()).map(DeliveryPolicyMapper::toDto).toList();
 	}
 
 	@Transactional
@@ -593,7 +593,7 @@ public class OrderService {
 	}
 
 	public List<ReadWrappingResponse> readAllWrapping() {
-		return wrappingRepository.findAll().stream().map(WrappingMapper::toDto).toList();
+		return wrappingRepository.findAll().stream().filter(wrapping -> !wrapping.isDeleted()).map(WrappingMapper::toDto).toList();
 	}
 
 	@Transactional(rollbackFor = Exception.class)
