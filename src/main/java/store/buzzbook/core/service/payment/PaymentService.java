@@ -83,7 +83,6 @@ public class PaymentService {
 
 	@Value("${api.gateway.host}")
 	private String host;
-
 	@Value("${api.gateway.port}")
 	private int port;
 
