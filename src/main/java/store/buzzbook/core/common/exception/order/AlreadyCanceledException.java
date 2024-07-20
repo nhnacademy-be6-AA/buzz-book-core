@@ -1,7 +1,7 @@
 package store.buzzbook.core.common.exception.order;
 
 public class AlreadyCanceledException extends RuntimeException {
-	public AlreadyCanceledException(String message) {
-		super(message);
+	public AlreadyCanceledException() {
+		super("This order has already been Canceled");
 	}
 }

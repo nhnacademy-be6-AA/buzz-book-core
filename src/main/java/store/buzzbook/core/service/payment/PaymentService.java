@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.order.CouponStatusNotUpdated;
+import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.DuplicateBillLogException;
 import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
@@ -115,12 +115,12 @@ public class PaymentService {
 			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
 		} catch (Exception e) {
-			throw new JSONParsingException("readPaymentResponse is Not Json");
+			throw new JSONParsingException();
 		}
 
 		// 중복 체크
 		if (billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
-			throw new DuplicateBillLogException("중복된 결제 로그가 이미 존재합니다.");
+			throw new DuplicateBillLogException();
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
@@ -160,9 +160,9 @@ public class PaymentService {
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.setOrderStatus(orderStatusRepository.findByName(orderStatus));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+				.orElseThrow(ProductNotFoundException::new);
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+				.orElseThrow(WrappingNotFoundException::new);
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 			readOrderDetailResponses.add(
 				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
@@ -179,7 +179,7 @@ public class PaymentService {
 			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
 		} catch (Exception e) {
-			throw new JSONParsingException("readPaymentResponse is Not Json");
+			throw new JSONParsingException();
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
@@ -230,9 +230,9 @@ public class PaymentService {
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+				.orElseThrow(ProductNotFoundException::new);
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+				.orElseThrow(WrappingNotFoundException::new);
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 			readOrderDetailResponses.add(
 				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
@@ -259,7 +259,7 @@ public class PaymentService {
 			try {
 				updateCouponStatus(billLog, headers, CouponStatus.USED);
 			} catch (Exception e) {
-				throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
+				throw new CouponStatusNotUpdatedException();
 			}
 		}
 
@@ -268,7 +268,7 @@ public class PaymentService {
 	}
 
 	@Retryable(
-		retryFor = { CouponStatusNotUpdated.class },
+		retryFor = { CouponStatusNotUpdatedException.class },
 		maxAttempts = 3,
 		backoff = @Backoff(delay = 2000)
 	)
@@ -284,7 +284,7 @@ public class PaymentService {
 		CouponResponse couponResponse = couponResponseResponseEntity.getBody();
 
 		if (couponResponse == null || couponResponse.status() != couponStatus) {
-			throw new CouponStatusNotUpdated("쿠폰 상태 변경 실패");
+			throw new CouponStatusNotUpdatedException();
 		}
 	}
 
@@ -376,7 +376,7 @@ public class PaymentService {
 				try {
 					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
+					throw new CouponStatusNotUpdatedException();
 				}
 			}
 		}
@@ -420,7 +420,7 @@ public class PaymentService {
 				try {
 					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
+					throw new CouponStatusNotUpdatedException();
 				}
 
 			}
