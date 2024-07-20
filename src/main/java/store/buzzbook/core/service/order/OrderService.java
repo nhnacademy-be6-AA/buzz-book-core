@@ -339,7 +339,6 @@ public class OrderService {
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		if (updateOrderRequest.getOrderStatusName().equals(SHIPPING_OUT)) {
 			for (OrderDetail orderDetail : orderDetails) {
@@ -349,6 +348,7 @@ public class OrderService {
 			}
 		}
 
+		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
@@ -482,7 +482,7 @@ public class OrderService {
 				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
+				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
 
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
@@ -500,27 +500,11 @@ public class OrderService {
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-		List<ReadOrderDetailResponse> details = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new IllegalArgumentException("Wrapping not found"));
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-
-			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
-		}
-
-		return OrderMapper.toDto(order, details, loginId);
+		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), loginId);
 	}
 
-	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
-		Order order = orderRepository.findByOrderStr(request.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderEmail(order.getId(),
-			request.getOrderEmail());
+	private List<ReadOrderDetailResponse> convertOrderDetailsToDto(List<OrderDetail> orderDetails) {
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
 		for (OrderDetail orderDetail : orderDetails) {
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
@@ -535,7 +519,15 @@ public class OrderService {
 			details.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
 		}
 
-		return OrderMapper.toDto(order, details, null);
+		return details;
+	}
+
+	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
+		Order order = orderRepository.findByOrderStr(request.getOrderId());
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderEmail(order.getId(),
+			request.getOrderEmail());
+
+		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), null);
 	}
 
 	public ReadOrderStatusResponse readOrderStatusById(int id) {
