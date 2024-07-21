@@ -15,4 +15,5 @@ public class ReadWrappingResponse {
 	private int id;
 	private String paper;
 	private int price;
+	private boolean deleted;
 }
