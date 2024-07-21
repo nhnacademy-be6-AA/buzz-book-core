@@ -70,7 +70,7 @@ public class OrderJwtAop {
 			throw new AuthorizeFailException("사용자 정보가 null 입니다.");
 		}
 
-		if (!"admin".equals(role)) {
+		if (!"ADMIN".equals(role)) {
 			throw new AuthorizeFailException("접근 권한이 없습니다.");
 		}
 
