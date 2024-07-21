@@ -206,15 +206,11 @@ public class PaymentService {
 					.getCancelReason())
 				.build());
 
-		UserInfo userInfo = UserInfo.builder()
-			.email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId())
-			.isAdmin(order.getUser().isAdmin())
-			.contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday())
-			.build();
+		if (order.getUser() != null) {
+			return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), order.getUser().getLoginId()));
+		}
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), userInfo.loginId()));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), null));
 	}
 
 	@Transactional(rollbackFor = Exception.class)
