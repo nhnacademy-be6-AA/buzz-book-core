@@ -175,7 +175,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest));
+			return ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
@@ -187,7 +187,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest));
+			return ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
@@ -223,7 +223,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.createWrapping(createWrappingRequest));
+			return ResponseEntity.ok(orderService.createWrapping(createWrappingRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
@@ -235,7 +235,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest));
+			return ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}

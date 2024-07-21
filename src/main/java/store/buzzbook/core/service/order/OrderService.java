@@ -543,6 +543,7 @@ public class OrderService {
 				.name(createDeliveryPolicyRequest.getName())
 				.policyPrice(createDeliveryPolicyRequest.getPolicyPrice())
 				.standardPrice(createDeliveryPolicyRequest.getStandardPrice())
+				.deleted(false)
 				.build()));
 	}
 
@@ -551,7 +552,7 @@ public class OrderService {
 		return DeliveryPolicyMapper.toDto(
 			deliveryPolicyRepository.save(DeliveryPolicy.builder().id(updateDeliveryPolicyRequest.getId())
 				.name(updateDeliveryPolicyRequest.getName()).policyPrice(updateDeliveryPolicyRequest.getPolicyPrice())
-				.standardPrice(updateDeliveryPolicyRequest.getStandardPrice()).build()));
+				.standardPrice(updateDeliveryPolicyRequest.getStandardPrice()).deleted(updateDeliveryPolicyRequest.isDeleted()).build()));
 	}
 
 	@Transactional
@@ -573,13 +574,13 @@ public class OrderService {
 	@Transactional
 	public ReadWrappingResponse createWrapping(CreateWrappingRequest createWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().paper(createWrappingRequest.getPaper())
-			.price(createWrappingRequest.getPrice()).build()));
+			.price(createWrappingRequest.getPrice()).deleted(false).build()));
 	}
 
 	@Transactional
 	public ReadWrappingResponse updateWrapping(UpdateWrappingRequest updateWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().id(updateWrappingRequest.getId())
-			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).build()));
+			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).deleted(updateWrappingRequest.isDeleted()).build()));
 	}
 
 	@Transactional

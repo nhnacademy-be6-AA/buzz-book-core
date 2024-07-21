@@ -62,7 +62,7 @@ public class OrderJwtAop {
 
 		Map<String, Object> claims = getInfoMapFromJwtForRestTemplate(request);
 
-		Long userId = (Long) claims.get(AuthService.USER_ID);
+		Long userId = ((Integer)claims.get(AuthService.USER_ID)).longValue();
 		String loginId = (String) claims.get(AuthService.LOGIN_ID);
 		String role = (String) claims.get(AuthService.ROLE);
 

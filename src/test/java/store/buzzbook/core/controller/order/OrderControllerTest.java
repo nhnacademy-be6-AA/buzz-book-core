@@ -58,9 +58,6 @@ class OrderControllerTest {
 	@MockBean
 	private UserService userService;
 
-	@MockBean
-	private UserRepository userRepository;
-
 	private UserInfo testUserInfo;
 	private UserInfo testUserInfo2;
 	private ReadOrdersRequest readOrdersRequest;
@@ -165,8 +162,8 @@ class OrderControllerTest {
 		updateOrderRequest = new UpdateOrderRequest("MC4wOTA4MjAzNjg2OTQy", "REFUND");
 
 		readOrderStatusResponse = new ReadOrderStatusResponse(4, "PAID", "2024-07-15 12:01:11");
-		readWrappingResponse1 = new ReadWrappingResponse(1, "선물포장", 1000);
-		readWrappingResponse2 = new ReadWrappingResponse(2, "신문지", 0);
+		readWrappingResponse1 = new ReadWrappingResponse(1, "선물포장", 1000, false);
+		readWrappingResponse2 = new ReadWrappingResponse(2, "신문지", 0, false);
 
 		parentCategory = new LinkedHashMap<>();
 		parentCategory.put(0, "전체");
@@ -245,7 +242,7 @@ class OrderControllerTest {
 
 		readOrderStatusResponses.add(readOrderStatusResponse);
 
-		readDeliveryPolicyResponse = new ReadDeliveryPolicyResponse(1, "기본", 20000, 0);
+		readDeliveryPolicyResponse = new ReadDeliveryPolicyResponse(1, "기본", 20000, 0, false);
 	}
 
 	@Test
@@ -506,7 +503,7 @@ class OrderControllerTest {
 	// 			.content(objectMapper.writeValueAsString(request))
 	// 			.contentType(MediaType.APPLICATION_JSON)
 	// 			.with(req -> {
-	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+	// 				req.setAttribute(AuthService.LOGIN_ID, "parkseol");
 	// 				return req;
 	// 			}))
 	// 		.andExpect(status().isOk());

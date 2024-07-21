@@ -13,4 +13,5 @@ public class UpdateWrappingRequest {
 	private int id;
 	private String paper;
 	private int price;
+	private boolean deleted;
 }
