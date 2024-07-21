@@ -548,14 +548,6 @@ public class OrderService {
 	}
 
 	@Transactional
-	public ReadDeliveryPolicyResponse updateDeliveryPolicy(UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest) {
-		return DeliveryPolicyMapper.toDto(
-			deliveryPolicyRepository.save(DeliveryPolicy.builder().id(updateDeliveryPolicyRequest.getId())
-				.name(updateDeliveryPolicyRequest.getName()).policyPrice(updateDeliveryPolicyRequest.getPolicyPrice())
-				.standardPrice(updateDeliveryPolicyRequest.getStandardPrice()).deleted(updateDeliveryPolicyRequest.isDeleted()).build()));
-	}
-
-	@Transactional
 	public void deleteDeliveryPolicy(int deliveryPolicyId) {
 		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(deliveryPolicyId).orElseThrow(
 			DeliveryPolicyNotFoundException::new);
@@ -575,12 +567,6 @@ public class OrderService {
 	public ReadWrappingResponse createWrapping(CreateWrappingRequest createWrappingRequest) {
 		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().paper(createWrappingRequest.getPaper())
 			.price(createWrappingRequest.getPrice()).deleted(false).build()));
-	}
-
-	@Transactional
-	public ReadWrappingResponse updateWrapping(UpdateWrappingRequest updateWrappingRequest) {
-		return WrappingMapper.toDto(wrappingRepository.save(Wrapping.builder().id(updateWrappingRequest.getId())
-			.price(updateWrappingRequest.getPrice()).paper(updateWrappingRequest.getPaper()).deleted(updateWrappingRequest.isDeleted()).build()));
 	}
 
 	@Transactional

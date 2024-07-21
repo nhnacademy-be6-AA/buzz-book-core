@@ -491,45 +491,25 @@ class OrderControllerTest {
 		verify(orderService).readAllDeliveryPolicy();
 	}
 
-	// @Test
-	// @DisplayName("운임비 정책 등록")
-	// void testCreateDeliveryPolicy() throws Exception {
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	when(testUserInfo.isAdmin()).thenReturn(true);
-	// 	CreateDeliveryPolicyRequest request = new CreateDeliveryPolicyRequest();
-	// 	when(orderService.createDeliveryPolicy(any(CreateDeliveryPolicyRequest.class))).thenReturn(readDeliveryPolicyResponse);
-	//
-	// 	mockMvc.perform(post("/api/orders/delivery-policy")
-	// 			.content(objectMapper.writeValueAsString(request))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.with(req -> {
-	// 				req.setAttribute(AuthService.LOGIN_ID, "parkseol");
-	// 				return req;
-	// 			}))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).createDeliveryPolicy(any());
-	// }
+	@Test
+	@DisplayName("운임비 정책 등록")
+	void testCreateDeliveryPolicy() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		CreateDeliveryPolicyRequest request = new CreateDeliveryPolicyRequest();
+		ReadDeliveryPolicyResponse response = new ReadDeliveryPolicyResponse();
+		when(orderService.createDeliveryPolicy(any(CreateDeliveryPolicyRequest.class))).thenReturn(response);
 
-	// @Test
-	// @DisplayName("운임비 정책 수정")
-	// void testUpdateDeliveryPolicy() throws Exception {
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	when(testUserInfo.isAdmin()).thenReturn(true);
-	// 	UpdateDeliveryPolicyRequest request = new UpdateDeliveryPolicyRequest();
-	// 	when(orderService.updateDeliveryPolicy(any(UpdateDeliveryPolicyRequest.class))).thenReturn(readDeliveryPolicyResponse);
-	//
-	// 	mockMvc.perform(put("/api/orders/delivery-policy")
-	// 			.content(objectMapper.writeValueAsString(request))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.with(req -> {
-	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
-	// 				return req;
-	// 			}))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).updateDeliveryPolicy(any(UpdateDeliveryPolicyRequest.class));
-	// }
+		mockMvc.perform(post("/api/orders/delivery-policy")
+				.content(objectMapper.writeValueAsString(request))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(req -> {
+					req.setAttribute(AuthService.LOGIN_ID, "parkseol");
+					return req;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).createDeliveryPolicy(any());
+	}
 
 	@Test
 	@DisplayName("운임비 정책 삭제")
@@ -573,45 +553,25 @@ class OrderControllerTest {
 		verify(orderService).readAllWrapping();
 	}
 
-	// @Test
-	// @DisplayName("포장 등록")
-	// void testCreateWrapping() throws Exception {
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	CreateWrappingRequest request = new CreateWrappingRequest();
-	// 	ReadWrappingResponse response = new ReadWrappingResponse();
-	// 	when(orderService.createWrapping(any(CreateWrappingRequest.class))).thenReturn(response);
-	//
-	// 	mockMvc.perform(post("/api/orders/wrapping")
-	// 			.content(objectMapper.writeValueAsString(request))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.with(req -> {
-	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
-	// 				return req;
-	// 			}))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).createWrapping(any(CreateWrappingRequest.class));
-	// }
+	@Test
+	@DisplayName("포장 등록")
+	void testCreateWrapping() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		CreateWrappingRequest request = new CreateWrappingRequest();
+		ReadWrappingResponse response = new ReadWrappingResponse();
+		when(orderService.createWrapping(any(CreateWrappingRequest.class))).thenReturn(response);
 
-	// @Test
-	// @DisplayName("포장 수정")
-	// void testUpdateWrapping() throws Exception {
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	UpdateWrappingRequest request = new UpdateWrappingRequest();
-	// 	ReadWrappingResponse response = new ReadWrappingResponse();
-	// 	when(orderService.updateWrapping(any(UpdateWrappingRequest.class))).thenReturn(response);
-	//
-	// 	mockMvc.perform(put("/api/orders/wrapping")
-	// 			.content(objectMapper.writeValueAsString(request))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.with(req -> {
-	// 				req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
-	// 				return req;
-	// 			}))
-	// 		.andExpect(status().isOk());
-	//
-	// 	verify(orderService).updateWrapping(any(UpdateWrappingRequest.class));
-	// }
+		mockMvc.perform(post("/api/orders/wrapping")
+				.content(objectMapper.writeValueAsString(request))
+				.contentType(MediaType.APPLICATION_JSON)
+				.with(req -> {
+					req.setAttribute(AuthService.LOGIN_ID, "testLoginId");
+					return req;
+				}))
+			.andExpect(status().isOk());
+
+		verify(orderService).createWrapping(any(CreateWrappingRequest.class));
+	}
 
 	@Test
 	@DisplayName("포장 삭제")

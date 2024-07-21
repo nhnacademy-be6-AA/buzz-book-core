@@ -181,18 +181,6 @@ public class OrderController {
 	}
 
 	@JwtOrderAdminValidate
-	@Operation(summary = "운임비 정책 수정", description = "운임비 정책 수정")
-	@PutMapping("/delivery-policy")
-	public ResponseEntity<ReadDeliveryPolicyResponse> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
 	@Operation(summary = "운임비 정책 삭제", description = "운임비 정책 삭제")
 	@DeleteMapping("/delivery-policy/{id}")
 	public ResponseEntity<String> deleteDeliveryPolicy(@PathVariable int id, HttpServletRequest request) {
@@ -224,18 +212,6 @@ public class OrderController {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.createWrapping(createWrappingRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "포장 수정", description = "포장 수정")
-	@PutMapping("/wrapping")
-	public ResponseEntity<ReadWrappingResponse> updateWrapping(@RequestBody UpdateWrappingRequest updateWrappingRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
