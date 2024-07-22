@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductTagController.class)
-public class ProductTagControllerTest {
+class ProductTagControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
