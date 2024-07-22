@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.payment;
 
+import static store.buzzbook.core.common.listener.OrderStatusListener.*;
+
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.common.exception.order.CouponStatusNotUpdated;
+import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.DuplicateBillLogException;
 import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
@@ -71,6 +73,7 @@ import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.auth.AuthService;
+import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
 @Service
@@ -80,7 +83,6 @@ public class PaymentService {
 
 	@Value("${api.gateway.host}")
 	private String host;
-
 	@Value("${api.gateway.port}")
 	private int port;
 
@@ -88,8 +90,6 @@ public class PaymentService {
 	private static final String POINT_CANCEL_INQUIRY = "취소 시 포인트 환불";
 	private static final String POINT_REFUND_INQUIRY = "반품에 의한 포인트 환불";
 	private static final String CANCEL_POINT_REFUND_INQUIRY = "반품에 의한 포인트 적립 취소";
-	private static final String PAID = "PAID";
-	private static final String CANCELED = "CANCELED";
 	private static final String SIMPLE_PAYMENT = "간편결제";
 	private static final String POINT = "POINT";
 	private static final String PAYMENT_ERROR = "결제 오류";
@@ -102,9 +102,10 @@ public class PaymentService {
 	private final WrappingRepository wrappingRepository;
 	private final ProductRepository productRepository;
 	private final OrderStatusRepository orderStatusRepository;
-	private final PointLogRepository pointLogRepository;
 	private final UserRepository userRepository;
 	private final UserService userService;
+	private final PointService pointService;
+	private final PointLogRepository pointLogRepository;
 
 	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
@@ -113,30 +114,15 @@ public class PaymentService {
 			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
 		} catch (Exception e) {
-			throw new JSONParsingException("readPaymentResponse is Not Json");
+			throw new JSONParsingException();
 		}
 
 		// 중복 체크
 		if (billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
-			throw new DuplicateBillLogException("중복된 결제 로그가 이미 존재합니다.");
+			throw new DuplicateBillLogException();
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
 
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
@@ -164,7 +150,24 @@ public class PaymentService {
 				.build();
 		}
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, PAID), userInfo.loginId()));
+	}
+
+	private List<ReadOrderDetailResponse> getReadOrderDetailResponses(Order order, String orderStatus) {
+		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+		for (OrderDetail orderDetail : orderDetails) {
+			orderDetail.setOrderStatus(orderStatusRepository.findByName(orderStatus));
+			Product product = productRepository.findById(orderDetail.getProduct().getId())
+				.orElseThrow(ProductNotFoundException::new);
+			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+				.orElseThrow(WrappingNotFoundException::new);
+			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+			readOrderDetailResponses.add(
+				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+					readWrappingResponse));
+		}
+		return readOrderDetailResponses;
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -175,24 +178,10 @@ public class PaymentService {
 			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
 				ReadPaymentResponse.class);
 		} catch (Exception e) {
-			throw new JSONParsingException("readPaymentResponse is Not Json");
+			throw new JSONParsingException();
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findByName(CANCELED));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
 
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
@@ -217,15 +206,11 @@ public class PaymentService {
 					.getCancelReason())
 				.build());
 
-		UserInfo userInfo = UserInfo.builder()
-			.email(order.getUser().getEmail())
-			.loginId(order.getUser().getLoginId())
-			.isAdmin(order.getUser().isAdmin())
-			.contactNumber(order.getUser().getContactNumber())
-			.birthday(order.getUser().getBirthday())
-			.build();
+		if (order.getUser() != null) {
+			return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), order.getUser().getLoginId()));
+		}
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, readOrderDetailResponses, userInfo.loginId()));
+		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), null));
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -240,9 +225,9 @@ public class PaymentService {
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
 			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(() -> new ProductNotFoundException("Product not found"));
+				.orElseThrow(ProductNotFoundException::new);
 			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(() -> new WrappingNotFoundException("Wrapping not found"));
+				.orElseThrow(WrappingNotFoundException::new);
 			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
 			readOrderDetailResponses.add(
 				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
@@ -255,16 +240,7 @@ public class PaymentService {
 			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 
 		if (createBillLogRequest.getPayment().equals(POINT)) {
-			int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-
-			pointLogRepository.save(
-				PointLog.builder()
-					.createdAt(LocalDateTime.now())
-					.delta(-createBillLogRequest.getPrice())
-					.user(user)
-					.balance(balance - createBillLogRequest.getPrice())
-					.inquiry(POINT_PAYMENT_INQUIRY)
-					.build());
+			pointService.createPointLogWithDelta(user, POINT_PAYMENT_INQUIRY, -createBillLogRequest.getPrice());
 		}
 
 		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment()
@@ -278,7 +254,7 @@ public class PaymentService {
 			try {
 				updateCouponStatus(billLog, headers, CouponStatus.USED);
 			} catch (Exception e) {
-				throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
+				throw new CouponStatusNotUpdatedException();
 			}
 		}
 
@@ -287,7 +263,7 @@ public class PaymentService {
 	}
 
 	@Retryable(
-		retryFor = { CouponStatusNotUpdated.class },
+		retryFor = { CouponStatusNotUpdatedException.class },
 		maxAttempts = 3,
 		backoff = @Backoff(delay = 2000)
 	)
@@ -303,7 +279,7 @@ public class PaymentService {
 		CouponResponse couponResponse = couponResponseResponseEntity.getBody();
 
 		if (couponResponse == null || couponResponse.status() != couponStatus) {
-			throw new CouponStatusNotUpdated("쿠폰 상태 변경 실패");
+			throw new CouponStatusNotUpdatedException();
 		}
 	}
 
@@ -342,7 +318,6 @@ public class PaymentService {
 		return responses;
 	}
 
-	// 괜찮은지....
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithoutLogin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
@@ -386,9 +361,7 @@ public class PaymentService {
 				.build());
 
 			if (billLog.getPayment().equals(POINT)) {
-				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(billLog.getPrice())
-					.user(user).balance(balance + billLog.getPrice()).inquiry(POINT_CANCEL_INQUIRY).build());
+				pointService.createPointLogWithDelta(user, POINT_CANCEL_INQUIRY, billLog.getPrice());
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
@@ -398,7 +371,7 @@ public class PaymentService {
 				try {
 					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
+					throw new CouponStatusNotUpdatedException();
 				}
 			}
 		}
@@ -427,21 +400,12 @@ public class PaymentService {
 
 			if (billLog.getPayment().equals(SIMPLE_PAYMENT)) {
 				int deliveryRate = billLog.getOrder().getDeliveryRate();
-				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(
-					PointLog.builder()
-						.createdAt(LocalDateTime.now())
-						.delta(billLog.getPrice() - deliveryRate)
-						.user(user)
-						.balance(balance + billLog.getPrice() - deliveryRate)
-						.inquiry(POINT_REFUND_INQUIRY)
-						.build());
+
+				pointService.createPointLogWithDelta(user, POINT_REFUND_INQUIRY, billLog.getPrice() - deliveryRate);
 			}
 
 			if (billLog.getPayment().equals(POINT)) {
-				int balance = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId()).getBalance();
-				pointLogRepository.save(PointLog.builder().createdAt(LocalDateTime.now()).delta(-billLog.getPrice())
-					.user(user).balance(balance - billLog.getPrice()).inquiry(CANCEL_POINT_REFUND_INQUIRY).build());
+				pointService.createPointLogWithDelta(user, CANCEL_POINT_REFUND_INQUIRY, -billLog.getPrice());
 			}
 
 			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
@@ -451,7 +415,7 @@ public class PaymentService {
 				try {
 					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
 				} catch (Exception e) {
-					throw new CouponStatusNotUpdated("쿠폰 상태 업데이트 실패");
+					throw new CouponStatusNotUpdatedException();
 				}
 
 			}
@@ -468,7 +432,6 @@ public class PaymentService {
 
 		User user = billLogs.getFirst().getOrder().getUser();
 		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
-		pointLogRepository.save(PointLog.builder().user(user).delta(-pointLog.getDelta())
-			.balance(pointLog.getBalance()-pointLog.getDelta()).inquiry(CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY).build());
+		pointService.createPointLogWithDelta(user, CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY, -pointLog.getDelta());
 	}
 }

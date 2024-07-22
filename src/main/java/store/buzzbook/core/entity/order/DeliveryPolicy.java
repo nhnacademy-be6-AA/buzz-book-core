@@ -28,4 +28,10 @@ public class DeliveryPolicy {
 	private int standardPrice;
 	@NotNull
 	private int policyPrice;
+	@NotNull
+	private boolean deleted;
+
+	public void delete() {
+		this.deleted = true;
+	}
 }

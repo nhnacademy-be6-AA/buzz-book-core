@@ -15,16 +15,16 @@ import store.buzzbook.core.repository.order.OrderStatusRepository;
 @Slf4j
 @RequiredArgsConstructor
 public class OrderStatusListener implements ApplicationListener<ApplicationReadyEvent> {
-	private static final String READY = "READY";
-	private static final String CANCELED = "CANCELED";
-	private static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
-	private static final String WAITING_FOR_DEPOSIT = "WAITING_FOR_DEPOSIT";
-	private static final String REFUND = "REFUND";
-	private static final String PARTIAL_REFUND = "PARTIAL_REFUND";
-	private static final String SHIPPING_OUT = "SHIPPING_OUT";
-	private static final String SHIPPED = "SHIPPED";
-	private static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
-
+	public static final String READY = "READY";
+	public static final String CANCELED = "CANCELED";
+	public static final String PARTIAL_CANCELED = "PARTIAL_CANCELED";
+	public static final String WAITING_FOR_DEPOSIT = "WAITING_FOR_DEPOSIT";
+	public static final String REFUND = "REFUND";
+	public static final String PARTIAL_REFUND = "PARTIAL_REFUND";
+	public static final String SHIPPING_OUT = "SHIPPING_OUT";
+	public static final String SHIPPED = "SHIPPED";
+	public static final String BREAKAGE_REFUND = "BREAKAGE_REFUND";
+	public static final String PAID = "PAID";
 
 	private final OrderStatusRepository orderStatusRepository;
 
@@ -97,6 +97,14 @@ public class OrderStatusListener implements ApplicationListener<ApplicationReady
 		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(BREAKAGE_REFUND))) {
 			OrderStatus orderStatus = OrderStatus.builder()
 				.name(BREAKAGE_REFUND)
+				.updateAt(LocalDateTime.now())
+				.build();
+			orderStatusRepository.save(orderStatus);
+		}
+
+		if (Boolean.FALSE.equals(orderStatusRepository.existsByName(PAID))) {
+			OrderStatus orderStatus = OrderStatus.builder()
+				.name(PAID)
 				.updateAt(LocalDateTime.now())
 				.build();
 			orderStatusRepository.save(orderStatus);
