@@ -48,7 +48,7 @@ public class CartDetail {
 	private Product product;
 
 	public CartDetailResponse toResponse() {
-		String wrapTag = "포장 가능";
+		String wrapTag = "포장가능";
 		boolean canWrap = false;
 
 		for (ProductTag tag : product.getProductTags()) {
