@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.user.implement;
 
+import static store.buzzbook.core.common.listener.PointPolicyListener.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +31,7 @@ import store.buzzbook.core.dto.user.UpdateUserRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.dto.user.UserRealBill;
 import store.buzzbook.core.entity.point.PointLog;
+import store.buzzbook.core.entity.point.PointPolicy;
 import store.buzzbook.core.entity.user.Deactivation;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeLog;
@@ -36,6 +39,7 @@ import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
@@ -57,6 +61,7 @@ public class UserServiceImpl implements UserService {
 	private final UserCouponRepository userCouponRepository;
 	private final CouponClient couponClient;
 	private final ProductService productService;
+	private final PointPolicyRepository pointPolicyRepository;
 
 	@Transactional(readOnly = true)
 	@Override
@@ -129,12 +134,13 @@ public class UserServiceImpl implements UserService {
 
 		gradeLogRepository.save(gradeLog);
 
+		PointPolicy pointPolicy = pointPolicyRepository.findByName(SIGN_UP);
 		PointLog pointLog = PointLog.builder()
 			.user(savedUser)
 			.createdAt(LocalDateTime.now())
-			.delta(5000)
-			.inquiry("회원가입")
-			.balance(5000)
+			.delta(pointPolicy.getPoint())
+			.inquiry(pointPolicy.getName())
+			.balance(pointPolicy.getPoint())
 			.build();
 
 		pointLogRepository.save(pointLog);
