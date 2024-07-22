@@ -16,6 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import store.buzzbook.core.dto.product.ProductRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
@@ -89,32 +93,109 @@ class ProductServiceTest {
 	}
 
 	@Test
-	@DisplayName("상품 조회 테스트")
-	void testGetProductById() {
+	@DisplayName("모든 상품 조회 테스트")
+	void testGetAllProducts() {
 		// given
-		int productId = 1;
 		Category category = new Category();
-		Product product = Product.builder()
-			.stock(10)
+		Product product1 = Product.builder()
+			.stock(5)
 			.productName("갤럭시탭 S8")
 			.description("감성대신 실력을 더했다")
 			.price(87500)
-			.forwardDate(LocalDate.now())
-			.score(5)
+			.forwardDate(LocalDate.parse("2024-07-01"))
 			.thumbnailPath("path/to/thumbnail")
 			.stockStatus(Product.StockStatus.SALE)
 			.category(category)
 			.build();
 
-		when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+		Product product2 = Product.builder()
+			.stock(3)
+			.productName("아이패드 프로")
+			.description("혁신을 더하다")
+			.price(95000)
+			.forwardDate(LocalDate.parse("2024-07-02"))
+			.thumbnailPath("path/to/thumbnail2")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		when(productRepository.findAll()).thenReturn(List.of(product1, product2));
 
 		// when
-		ProductResponse productResponse = productService.getProductById(productId);
+		List<ProductResponse> products = productService.getAllProducts();
+
+		// then
+		assertNotNull(products);
+		assertEquals(2, products.size());
+		verify(productRepository, times(1)).findAll();
+	}
+
+	@Test
+	@DisplayName("페이징된 모든 상품 조회 테스트")
+	void testGetAllProductsPaged() {
+		// given
+		Category category = new Category();
+		Product product1 = Product.builder()
+			.stock(5)
+			.productName("갤럭시탭 S8")
+			.description("감성대신 실력을 더했다")
+			.price(87500)
+			.forwardDate(LocalDate.parse("2024-07-01"))
+			.thumbnailPath("path/to/thumbnail")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		Product product2 = Product.builder()
+			.stock(3)
+			.productName("아이패드 프로")
+			.description("혁신을 더하다")
+			.price(95000)
+			.forwardDate(LocalDate.parse("2024-07-02"))
+			.thumbnailPath("path/to/thumbnail2")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		Page<Product> productPage = new PageImpl<>(List.of(product1, product2));
+		Pageable pageable = PageRequest.of(0, 2);
+
+		when(productRepository.findAll(pageable)).thenReturn(productPage);
+
+		// when
+		Page<ProductResponse> products = productService.getAllProducts(0, 2);
+
+		// then
+		assertNotNull(products);
+		assertEquals(2, products.getTotalElements());
+		verify(productRepository, times(1)).findAll(pageable);
+	}
+
+	@Test
+	@DisplayName("상품 ID로 조회 테스트")
+	void testGetProductById() {
+		// given
+		Category category = new Category();
+		Product product = Product.builder()
+			.stock(5)
+			.productName("갤럭시탭 S8")
+			.description("감성대신 실력을 더했다")
+			.price(87500)
+			.forwardDate(LocalDate.parse("2024-07-01"))
+			.thumbnailPath("path/to/thumbnail")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		when(productRepository.findById(1)).thenReturn(Optional.of(product));
+
+		// when
+		ProductResponse productResponse = productService.getProductById(1);
 
 		// then
 		assertNotNull(productResponse);
 		assertEquals(product.getProductName(), productResponse.getProductName());
-		verify(productRepository, times(1)).findById(productId);
+		verify(productRepository, times(1)).findById(1);
 	}
 
 	@Test
@@ -184,5 +265,82 @@ class ProductServiceTest {
 		verify(tagRepository, times(2)).findByName(anyString());
 		verify(tagRepository, times(2)).save(any(Tag.class));
 		verify(productTagRepository, times(2)).save(any(ProductTag.class));
+	}
+
+	@Test
+	@DisplayName("제목으로 상품 조회 테스트")
+	void testGetAllProductsByTitle() {
+		// given
+		Category category = new Category();
+		Product product1 = Product.builder()
+			.stock(5)
+			.productName("갤럭시탭 S8")
+			.description("감성대신 실력을 더했다")
+			.price(87500)
+			.forwardDate(LocalDate.parse("2024-07-01"))
+			.thumbnailPath("path/to/thumbnail")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		Product product2 = Product.builder()
+			.stock(3)
+			.productName("갤럭시탭 A7")
+			.description("가성비 최고의 태블릿")
+			.price(35000)
+			.forwardDate(LocalDate.parse("2024-07-02"))
+			.thumbnailPath("path/to/thumbnail2")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		when(productRepository.findAllByProductNameContaining("갤럭시탭")).thenReturn(List.of(product1, product2));
+
+		// when
+		List<ProductResponse> products = productService.getAllProductsByTitle("갤럭시탭");
+
+		// then
+		assertNotNull(products);
+		assertEquals(2, products.size());
+		verify(productRepository, times(1)).findAllByProductNameContaining("갤럭시탭");
+	}
+
+	@Test
+	@DisplayName("최신 상품 조회 테스트")
+	void testGetLatestProducts() {
+		// given
+		Category category = new Category();
+		Product product1 = Product.builder()
+			.stock(5)
+			.productName("갤럭시탭 S8")
+			.description("감성대신 실력을 더했다")
+			.price(87500)
+			.forwardDate(LocalDate.parse("2024-07-01"))
+			.thumbnailPath("path/to/thumbnail")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		Product product2 = Product.builder()
+			.stock(3)
+			.productName("아이패드 프로")
+			.description("혁신을 더하다")
+			.price(95000)
+			.forwardDate(LocalDate.parse("2024-07-02"))
+			.thumbnailPath("path/to/thumbnail2")
+			.stockStatus(Product.StockStatus.SALE)
+			.category(category)
+			.build();
+
+		Pageable pageable = PageRequest.of(0, 2);
+		when(productRepository.findProductsByLatestForwardDate(pageable)).thenReturn(List.of(product1, product2));
+
+		// when
+		List<ProductResponse> products = productService.getLatestProducts(2);
+
+		// then
+		assertNotNull(products);
+		assertEquals(2, products.size());
+		verify(productRepository, times(1)).findProductsByLatestForwardDate(pageable);
 	}
 }
