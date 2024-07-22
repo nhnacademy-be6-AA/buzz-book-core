@@ -3,7 +3,6 @@ package store.buzzbook.core.controller.review;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.dto.review.ReviewRequest;
@@ -31,6 +31,9 @@ import store.buzzbook.core.service.review.ReviewService;
 @RequestMapping("/api/reviews")
 @Tag(name = "리뷰 관리", description = "리뷰 CRU_")
 public class ReviewController {
+
+	private static final int DEFAULT_PAGE_NO = 0;
+	private static final int DEFAULT_PAGE_SIZE = 5;
 
 	private final ReviewService reviewService;
 
@@ -64,8 +67,8 @@ public class ReviewController {
 		@RequestParam(required = false) Long orderDetailId,
 		@RequestParam(required = false) @Parameter(description = "상품 id(long)에 해당하는 모든 리뷰 조회") Integer productId,
 		@RequestParam(required = false) @Parameter(description = "유저 id(long)로 해당 유저가 작성한 모든 리뷰 조회") Long userId,
-		@RequestParam(required = false, defaultValue = "0") @Parameter(description = "페이지 번호") Integer pageNo,
-		@RequestParam(required = false, defaultValue = "5") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) {
+		@RequestParam(required = false, defaultValue = DEFAULT_PAGE_NO+"") @Parameter(description = "페이지 번호") Integer pageNo,
+		@RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE+"") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) {
 
 		if (orderDetailId != null) {
 			return ResponseEntity.ok(reviewService.getReviewByOrderDetailId(orderDetailId));
@@ -88,7 +91,12 @@ public class ReviewController {
 	@ApiResponse(responseCode = "200", description = "리뷰 수정 성공시 수정된 리뷰의 ReviewResponse 반환")
 
 	public ResponseEntity<ReviewResponse> updateReview(@PathVariable int reviewId,
-		@Validated @RequestBody ReviewRequest reviewReq) {
+		@Valid @RequestBody ReviewRequest reviewReq) {
+
+		ReviewResponse rr = reviewService.updateReview(reviewId, reviewReq);
+
+		log.warn("{}", rr);
+
 		return ResponseEntity.ok(reviewService.updateReview(reviewId, reviewReq));
 	}
 
