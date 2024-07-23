@@ -78,10 +78,5 @@ public class ImageService {
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-
-	}
-
-	public String reviewImageUpload(MultipartFile file) {
-		return multiImageUpload(List.of(file)).getFirst();
 	}
 }
