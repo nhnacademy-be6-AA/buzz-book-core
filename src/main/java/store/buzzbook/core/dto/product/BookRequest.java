@@ -33,7 +33,7 @@ public class BookRequest {
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "날짜 형식은 YYYY-MM-DD 여야 합니다")
     private String publishDate;
 
-    @NotBlank(message = "상품 ID를 입력하세요")
+    @Nullable
     private Integer productId;
 
 }

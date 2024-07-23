@@ -1,7 +1,5 @@
 package store.buzzbook.core.service.product;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,21 +44,9 @@ public class BookService {
 		return BookResponse.convertToBookResponse(newBook);
 	}
 
-	public List<BookResponse> getAllBooks() {
-		return bookRepository.findAll().stream()
-			.map(BookResponse::convertToBookResponse)
-			.toList();
-	}
-
 	public Page<BookResponse> getAllBooks(int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		return bookRepository.findAll(pageable).map(BookResponse::convertToBookResponse);
-	}
-
-	public List<BookResponse> getAllBooksExistProductId() {
-		return bookRepository.findAllByProductIdIsNotNull().stream()
-			.map(BookResponse::convertToBookResponse)
-			.toList();
 	}
 
 	public Page<BookResponse> getAllBooksExistProductId(int pageNo, int pageSize) {
@@ -83,11 +69,6 @@ public class BookService {
 			throw new DataNotFoundException("book.productId", productId);
 		}
 		return BookResponse.convertToBookResponse(book);
-	}
-
-	public List<BookResponse> getBooksByProductIdList(List<Integer> productIdList) {
-		List<Book> bookList = bookRepository.findAllByProductIdIn(productIdList);
-		return bookList.stream().map(BookResponse::convertToBookResponse).toList();
 	}
 
 	public BookResponse deleteBookById(long id) {
