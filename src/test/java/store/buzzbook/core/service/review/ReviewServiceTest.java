@@ -42,7 +42,6 @@ import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.review.ReviewRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.image.ImageService;
-import store.buzzbook.core.service.point.PointService;
 
 @Slf4j
 
@@ -86,8 +85,6 @@ class ReviewServiceTest {
 	private OrderDetailRepository orderDetailRepository;
 	@Mock
 	private ProductRepository productRepository;
-	@Mock
-	private PointService pointService;
 	@Mock
 	private ImageService imageClient;
 	@InjectMocks
