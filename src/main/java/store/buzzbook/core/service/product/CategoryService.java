@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.product.DataAlreadyException;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.review.IllegalRequestException;
@@ -21,7 +20,6 @@ import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.repository.product.CategoryRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
@@ -97,8 +95,8 @@ public class CategoryService {
 
 	public CategoryResponse getTopCategories() {
 		List<Category> topCategories = categoryRepository.findAllByParentCategoryIsNull();
-		if (topCategories.size() > 2) {
-			throw new DataAlreadyException("왜 최상위 카테고리가 여러개지?");
+		if (topCategories.size() > 1) {
+			throw new DataAlreadyException("최상위 카테고리가 여러개. \"전체\"카테고리 외 최상위 카테고리 추가 불가능");
 		}
 		return new CategoryResponse(topCategories.getFirst());
 	}
@@ -108,5 +106,4 @@ public class CategoryService {
 		return new CategoryResponse((categoryRepository.findById(categoryId).orElseThrow(
 			() -> new DataNotFoundException("category", categoryId))));
 	}
-
 }

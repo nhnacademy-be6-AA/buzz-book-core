@@ -15,4 +15,5 @@ public class ReadDeliveryPolicyResponse {
 	private String name;
 	private int standardPrice;
 	private int policyPrice;
+	private boolean deleted;
 }

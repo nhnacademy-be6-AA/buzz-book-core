@@ -62,7 +62,7 @@ public class OrderJwtAop {
 
 		Map<String, Object> claims = getInfoMapFromJwtForRestTemplate(request);
 
-		Long userId = (Long) claims.get(AuthService.USER_ID);
+		Long userId = ((Integer)claims.get(AuthService.USER_ID)).longValue();
 		String loginId = (String) claims.get(AuthService.LOGIN_ID);
 		String role = (String) claims.get(AuthService.ROLE);
 
@@ -70,7 +70,7 @@ public class OrderJwtAop {
 			throw new AuthorizeFailException("사용자 정보가 null 입니다.");
 		}
 
-		if (!"admin".equals(role)) {
+		if (!"ADMIN".equals(role)) {
 			throw new AuthorizeFailException("접근 권한이 없습니다.");
 		}
 

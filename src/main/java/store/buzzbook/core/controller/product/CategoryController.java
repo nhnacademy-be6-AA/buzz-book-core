@@ -25,19 +25,22 @@ import store.buzzbook.core.service.product.CategoryService;
 @Tag(name = "카테고리 관리", description = "카테고리 CRUD")
 public class CategoryController {
 
+	private static final int DEFAULT_PAGE_NO = 0;
+	private static final int DEFAULT_PAGE_SIZE = 20;
+
 	private final CategoryService categoryService;
 
 	//해당 카테고리의 상위카테고리들 + 1차 하위카테고리
 	@GetMapping("/{id}")
-	public ResponseEntity<CategoryResponse> getAllSubCategories(@PathVariable int id) {
+	public ResponseEntity<CategoryResponse> getCategory(@PathVariable int id) {
 		CategoryResponse subCategories = categoryService.getSubCategoriesResponse(id);
 		return ResponseEntity.ok(subCategories);
 	}
 
 	@GetMapping
 	public ResponseEntity<Page<CategoryResponse>> getAllCategories(
-		@RequestParam(required = false) Integer pageNo,
-		@RequestParam(required = false) Integer pageSize) {
+		@RequestParam(required = false, defaultValue = DEFAULT_PAGE_NO+"") Integer pageNo,
+		@RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE+"") Integer pageSize) {
 		Page<CategoryResponse> page = categoryService.getPageableCategoryResponses(pageNo, pageSize);
 		return ResponseEntity.ok(page);
 	}

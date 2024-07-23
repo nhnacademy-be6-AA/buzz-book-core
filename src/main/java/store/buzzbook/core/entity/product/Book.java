@@ -25,7 +25,6 @@ import lombok.Setter;
 @Entity
 @NoArgsConstructor
 @Getter
-@Setter
 public class Book {
 
 	@Id
@@ -48,6 +47,7 @@ public class Book {
 	@JsonProperty("pubdate")
 	private LocalDate publishDate;
 
+	@Setter
 	@ManyToOne
 	@JoinColumn(name = "product_id")
 	private Product product;
