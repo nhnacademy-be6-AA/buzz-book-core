@@ -3,7 +3,6 @@ package store.buzzbook.core.controller.order;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,21 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.NotAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
-import store.buzzbook.core.common.annotation.JwtValidate;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreateOrderStatusRequest;
 import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
-import store.buzzbook.core.dto.order.DeleteDeliveryPolicyRequest;
-import store.buzzbook.core.dto.order.DeleteOrderStatusRequest;
-import store.buzzbook.core.dto.order.DeleteWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
@@ -44,12 +37,8 @@ import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.ReadWrappingRequest;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
-import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.order.UpdateOrderStatusRequest;
-import store.buzzbook.core.dto.order.UpdateWrappingRequest;
-import store.buzzbook.core.dto.point.CreatePointLogRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
@@ -71,7 +60,7 @@ public class OrderController {
 	@JwtOrderValidate
 	@Operation(summary = "주문 리스트 조회", description = "주문 리스트 조회")
 	@PostMapping("/list")
-	public ResponseEntity<?> getOrders(@RequestBody ReadOrdersRequest readOrdersRequest, HttpServletRequest request) {
+	public ResponseEntity<Map<String, Object>> getOrders(@RequestBody ReadOrdersRequest readOrdersRequest, HttpServletRequest request) {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
@@ -164,43 +153,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readAllOrderStatus());
 	}
 
-	@JwtOrderAdminValidate
-	@Operation(summary = "주문 상태 등록", description = "주문 상태 등록")
-	@PostMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> createOrderStatus(@RequestBody CreateOrderStatusRequest createOrderStatusRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.createOrderStatus(createOrderStatusRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "주문 상태 수정", description = "주문 상태 수정")
-	@PutMapping("/status")
-	public ResponseEntity<ReadOrderStatusResponse> updateOrderStatus(@RequestBody UpdateOrderStatusRequest updateOrderStatusRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			return ResponseEntity.ok(orderService.updateOrderStatus(updateOrderStatusRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "주문 상태 삭제", description = "주문 상태 삭제")
-	@DeleteMapping("/status/{id}")
-	public ResponseEntity<String> deleteOrderStatus(@PathVariable int id, HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			orderService.deleteOrderStatus(id);
-			return ResponseEntity.ok(SUCCESS);
-		}
-
-		return ResponseEntity.ok(FAILURE);
-	}
-
 	@Operation(summary = "운임비 정책 조회", description = "운임비 정책 조회")
 	@PostMapping("/delivery-policy/id")
 	public ResponseEntity<ReadDeliveryPolicyResponse> getDeliveryPolicy(
@@ -221,19 +173,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "운임비 정책 수정", description = "운임비 정책 수정")
-	@PutMapping("/delivery-policy")
-	public ResponseEntity<ReadDeliveryPolicyResponse> updateDeliveryPolicy(@RequestBody UpdateDeliveryPolicyRequest updateDeliveryPolicyRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.updateDeliveryPolicy(updateDeliveryPolicyRequest));
+			return ResponseEntity.ok(orderService.createDeliveryPolicy(createDeliveryPolicyRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
@@ -247,8 +187,7 @@ public class OrderController {
 			orderService.deleteDeliveryPolicy(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
-
-		return ResponseEntity.ok(FAILURE);
+		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
 
 	@Operation(summary = "포장 조회", description = "포장 조회")
@@ -270,19 +209,7 @@ public class OrderController {
 		HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.createWrapping(createWrappingRequest));
-		}
-		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
-	}
-
-	@JwtOrderAdminValidate
-	@Operation(summary = "포장 수정", description = "포장 수정")
-	@PutMapping("/wrapping")
-	public ResponseEntity<ReadWrappingResponse> updateWrapping(@RequestBody UpdateWrappingRequest updateWrappingRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		if (userInfo.isAdmin()) {
-			ResponseEntity.ok(orderService.updateWrapping(updateWrappingRequest));
+			return ResponseEntity.ok(orderService.createWrapping(createWrappingRequest));
 		}
 		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
@@ -296,6 +223,6 @@ public class OrderController {
 			orderService.deleteWrapping(id);
 			return ResponseEntity.ok(SUCCESS);
 		}
-		return ResponseEntity.ok(FAILURE);
+		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
 }

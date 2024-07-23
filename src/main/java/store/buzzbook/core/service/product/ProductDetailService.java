@@ -25,7 +25,11 @@ public class ProductDetailService {
 	private final ReviewRepository reviewRepository;
 	private final ReviewService reviewService;
 
-	public ProductDetailResponse convertProductDetailResponse(Product product) {
+	public ProductDetailResponse getProductDetail(int productId) {
+		return convertProductDetailResponse(productId);
+	}
+
+	private ProductDetailResponse convertProductDetailResponse(Product product) {
 
 		Book book = bookRepository.findByProductId(product.getId());
 		List<Review> reviews = reviewRepository.findAllByOrderDetail_ProductIdOrderByReviewCreatedAtDesc(
@@ -37,13 +41,9 @@ public class ProductDetailService {
 			.build();
 	}
 
-	public ProductDetailResponse convertProductDetailResponse(int productId) {
+	private ProductDetailResponse convertProductDetailResponse(int productId) {
 		Product product = productRepository.findById(productId)
 			.orElseThrow(() -> new DataNotFoundException("product", productId));
 		return convertProductDetailResponse(product);
-	}
-
-	public ProductDetailResponse getProductDetail(int productId) {
-		return convertProductDetailResponse(productId);
 	}
 }
