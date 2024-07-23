@@ -192,8 +192,8 @@ class UserServiceTest {
 				String loginId = (String)invocation.getArguments()[0];
 				if (loginId.equals(registerUserRequest.loginId())) {
 					User dUser = convertToUser(registerUserRequest);
-					user.deactivate();
-					return Optional.of(user);
+					dUser.deactivate();
+					return Optional.of(dUser);
 				}
 
 				return Optional.empty();
