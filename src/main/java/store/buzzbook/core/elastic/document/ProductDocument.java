@@ -52,7 +52,7 @@ public class ProductDocument {
 	private String stockStatus;
 
 	@Field(type = FieldType.Integer)
-	private Integer category_id;
+	private Integer categoryId;
 
 	@Field(type = FieldType.Object)
 	private List<TagDocument> tags;
@@ -68,7 +68,7 @@ public class ProductDocument {
 		this.score = product.getScore();
 		this.thumbnailPath = product.getThumbnailPath();
 		this.stockStatus = product.getStockStatus().toString();
-		this.category_id = product.getCategory().getId();
+		this.categoryId = product.getCategory().getId();
 		this.tags = product.getProductTags().stream()
 			.map(productTag -> new TagDocument(productTag.getTag()))
 			.toList();

@@ -19,6 +19,7 @@ import store.buzzbook.core.elastic.document.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.dto.product.BookApiRequest;
+import store.buzzbook.core.elastic.repository.ProductDocumentRepository;
 import store.buzzbook.core.entity.product.Author;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.BookAuthor;
@@ -49,7 +50,7 @@ public class BookSearchService {
 	@Value("${aladin.api.key}")
 	private String aladinApiKey;
 
-
+	private final ProductDocumentRepository productDocumentRepository;
 	public void searchAndSaveBooks(String query) {
 		List<BookApiRequest.Item> items = searchBooks(query);
 		saveBooksToDatabase(items);
@@ -179,8 +180,8 @@ public class BookSearchService {
 		productDocument.setForwardDate(product.getForwardDate());
 		productDocument.setScore(product.getScore());
 		productDocument.setThumbnailPath(product.getThumbnailPath());
-		productDocument.setStockStatus(product.getStockStatus());
-		productDocument.setCategoryName(product.getCategory().getName());
+		productDocument.setStockStatus(String.valueOf(product.getStockStatus()));
+		productDocument.setCategoryId(product.getCategory().getId());
 
 		productDocumentRepository.save(productDocument);
 	}

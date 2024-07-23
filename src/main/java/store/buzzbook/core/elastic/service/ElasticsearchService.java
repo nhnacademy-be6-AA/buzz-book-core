@@ -60,7 +60,7 @@ public class ElasticsearchService {
 				product.getScore(),
 				product.getThumbnailPath(),
 				product.getStockStatus(),
-				product.getCategory_id(),
+				product.getCategoryId(),
 				product.getTags()
 			))
 			.collect(Collectors.toList());

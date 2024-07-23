@@ -38,10 +38,10 @@ spring:
     username: admin
     password: nhnacademy123!
 
-  #  elasticsearch:
-  #    uris: http://115.94.72.198:9200
-  #    username: elastic
-  #    password: nhnacademy123!
+  elasticsearch:
+    uris: http://115.94.72.198:9200
+    username: elastic
+    password: nhnacademy123!
 
   cloud:
     openfeign:
