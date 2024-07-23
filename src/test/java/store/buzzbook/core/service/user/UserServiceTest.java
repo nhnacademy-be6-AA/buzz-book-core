@@ -39,11 +39,13 @@ import store.buzzbook.core.dto.user.UserRealBillInfo;
 import store.buzzbook.core.dto.user.UserRealBillInfoDetail;
 import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.point.PointLog;
+import store.buzzbook.core.entity.point.PointPolicy;
 import store.buzzbook.core.entity.user.Grade;
 import store.buzzbook.core.entity.user.GradeName;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.entity.user.UserStatus;
 import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.user.DeactivationRepository;
 import store.buzzbook.core.repository.user.GradeLogRepository;
 import store.buzzbook.core.repository.user.GradeRepository;
@@ -64,6 +66,8 @@ class UserServiceTest {
 	private UserProducerService userProducerService;
 	@Spy
 	private PointLogRepository pointLogRepository;
+	@Mock
+	private PointPolicyRepository pointPolicyRepository;
 	@Spy
 	private User user;
 
@@ -74,6 +78,7 @@ class UserServiceTest {
 	@InjectMocks
 	private UserServiceImpl userService;
 
+	private PointPolicy pointPolicy;
 	private RegisterUserRequest registerUserRequest;
 	private Grade grade;
 
@@ -95,6 +100,12 @@ class UserServiceTest {
 			.password("328u1u90uiodhiosdafhioufo82^&%6712jbsja")
 			.build();
 
+		pointPolicy = PointPolicy.builder()
+			.id(1L)
+			.name("회원가입")
+			.point(1000)
+			.rate(1.0)
+			.deleted(false).build();
 		user = convertToUser(registerUserRequest);
 
 		isPasswordEncryptedMethod = UserServiceImpl.class.getDeclaredMethod("isPasswordEncrypted", String.class);
@@ -107,6 +118,7 @@ class UserServiceTest {
 	@Test
 	@DisplayName("유저 생성")
 	void testCreateUser() {
+		Mockito.when(pointPolicyRepository.findByName(pointPolicy.getName())).thenReturn(pointPolicy);
 		Mockito.when(userRepository.existsByLoginId(Mockito.anyString()))
 			.thenAnswer(invocation -> {
 				String duplicatedLoginId = "duplicatedLoginId";
@@ -191,9 +203,9 @@ class UserServiceTest {
 			.thenAnswer(invocation -> {
 				String loginId = (String)invocation.getArguments()[0];
 				if (loginId.equals(registerUserRequest.loginId())) {
-					User user = convertToUser(registerUserRequest);
-					user.deactivate();
-					return Optional.of(user);
+					User dUser = convertToUser(registerUserRequest);
+					dUser.deactivate();
+					return Optional.of(dUser);
 				}
 
 				return Optional.empty();
