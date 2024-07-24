@@ -93,10 +93,6 @@ public class ReviewController {
 	public ResponseEntity<ReviewResponse> updateReview(@PathVariable int reviewId,
 		@Valid @RequestBody ReviewRequest reviewReq) {
 
-		ReviewResponse rr = reviewService.updateReview(reviewId, reviewReq);
-
-		log.warn("{}", rr);
-
 		return ResponseEntity.ok(reviewService.updateReview(reviewId, reviewReq));
 	}
 
