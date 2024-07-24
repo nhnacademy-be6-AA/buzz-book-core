@@ -3,6 +3,7 @@ package store.buzzbook.core.dto.order;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder
 public class CreateOrderDetailRequest {
 	@Setter
 	private int price;
