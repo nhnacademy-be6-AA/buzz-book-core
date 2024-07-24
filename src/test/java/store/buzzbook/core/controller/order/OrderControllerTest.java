@@ -252,8 +252,8 @@ class OrderControllerTest {
 
 		Map<String, Object> data = new HashMap<>();
 		data.put("responseData", List.of(readOrdersResponse));
-		data.put("total", 1);
-		when(orderService.readOrders(any())).thenReturn(data);
+		data.put("hasNext", true);
+		when(orderService.readOrders(any(ReadOrdersRequest.class))).thenReturn(data);
 
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setAttribute(AuthService.LOGIN_ID, "testLoginId");
@@ -266,7 +266,6 @@ class OrderControllerTest {
 
 		verify(orderService).readOrders(any(ReadOrdersRequest.class));
 	}
-
 
 	@Test
 	@DisplayName("주문 등록 - 비회원")
