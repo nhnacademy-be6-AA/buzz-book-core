@@ -1,19 +1,21 @@
 package store.buzzbook.core.dto.order;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Builder
-@ToString
-@AllArgsConstructor
-public class ReadOrderWithoutDetailsProjectionResponse {
+public class ReadOrderWithBillLogsResponse {
 	private Long orderId;
 	private String orderStr;
 	private String loginId;
@@ -28,4 +30,8 @@ public class ReadOrderWithoutDetailsProjectionResponse {
 	private String receiverContactNumber;
 	private String senderContactNumber;
 	private String couponCode;
+	private String orderEmail;
+	private Integer deliveryRate;
+
+	private List<ReadBillLogWithoutOrderResponse> billlogs;
 }
