@@ -2,6 +2,7 @@ package store.buzzbook.core.repository.order;
 
 import static store.buzzbook.core.entity.order.QOrder.*;
 import static store.buzzbook.core.entity.order.QOrderDetail.*;
+import static store.buzzbook.core.entity.payment.QBillLog.*;
 import static store.buzzbook.core.entity.user.QUser.*;
 
 import java.util.List;
@@ -18,8 +19,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
+import store.buzzbook.core.dto.order.ReadOrderWithBillLogsResponse;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrdersResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 
 @RequiredArgsConstructor
 public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
@@ -76,9 +80,9 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 		return checkEndPage(results, pageable);
 	}
 
-	private Slice<ReadOrdersResponse> checkEndPage(List<ReadOrdersResponse> orders, Pageable pageable){
+	private Slice<ReadOrdersResponse> checkEndPage(List<ReadOrdersResponse> orders, Pageable pageable) {
 		boolean hasNext = false;
-		if(orders.size()> pageable.getPageSize()){
+		if (orders.size() > pageable.getPageSize()) {
 			hasNext = true;
 			orders.remove(pageable.getPageSize());
 		}
@@ -137,5 +141,59 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			)));
 
 		return checkEndPage(results, pageable);
+	}
+
+	@Override
+	public Slice<ReadOrderWithBillLogsResponse> readOrdersWithBillLogs(ReadBillLogsRequest request, Pageable pageable) {
+		List<ReadOrderWithBillLogsResponse> results = jpaQueryFactory
+			.select(order)
+			.from(order)
+			.leftJoin(order.user, user)
+			.leftJoin(billLog).on(billLog.order.eq(order))
+			.orderBy(order.deliveryRate.desc())
+			.offset(pageable.getOffset())
+			.limit(pageable.getPageSize() + 1)
+			.transform(GroupBy.groupBy(order.orderStr).list(
+				Projections.constructor(ReadOrderWithBillLogsResponse.class,
+					order.id.as("orderId"),
+					order.orderStr.as("orderStr"),
+					user.loginId.as("loginId"),
+					order.price.as("orderPrice"),
+					order.request.as("request"),
+					order.address.as("address"),
+					order.addressDetail.as("addressDetail"),
+					order.zipcode.as("zipcode"),
+					order.desiredDeliveryDate.as("desiredDeliveryDate"),
+					order.receiver.as("receiver"),
+					order.sender.as("sender"),
+					order.receiverContactNumber.as("receiverContactNumber"),
+					order.senderContactNumber.as("senderContactNumber"),
+					order.couponCode.as("couponCode"),
+					order.orderEmail.as("orderEmail"),
+					order.deliveryRate.as("deliveryRate"),
+					GroupBy.list(Projections.fields(
+						ReadBillLogWithoutOrderResponse.class,
+						billLog.id.as("id"),
+						billLog.payment.as("payment"),
+						billLog.price.as("price"),
+						billLog.payAt.as("payAt"),
+						billLog.status.as("status"),
+						billLog.paymentKey.as("paymentKey"),
+						billLog.cancelReason.as("cancelReason"))
+					)
+				)));
+
+		return checkOrderEndPage(results, pageable);
+	}
+
+	private Slice<ReadOrderWithBillLogsResponse> checkOrderEndPage(List<ReadOrderWithBillLogsResponse> orders,
+		Pageable pageable) {
+		boolean hasNext = false;
+		if (orders.size() > pageable.getPageSize()) {
+			hasNext = true;
+			orders.remove(pageable.getPageSize());
+		}
+
+		return new SliceImpl<>(orders, pageable, hasNext);
 	}
 }

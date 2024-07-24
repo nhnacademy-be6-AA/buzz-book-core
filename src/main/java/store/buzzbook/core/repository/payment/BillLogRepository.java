@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import store.buzzbook.core.entity.payment.BillLog;
 
-public interface BillLogRepository extends JpaRepository<BillLog, Long>, BillLogQuerydslRepository {
+public interface BillLogRepository extends JpaRepository<BillLog, Long> {
 	@Query("select b from BillLog b join Order o on b.order.id = o.id where o.user.id = :userId and b.order.orderStr = :orderStr order by b.payAt desc")
 	List<BillLog> findByUserIdAndOrderStr(@Param("userId") long userId, @Param("orderStr") String orderStr);
 
