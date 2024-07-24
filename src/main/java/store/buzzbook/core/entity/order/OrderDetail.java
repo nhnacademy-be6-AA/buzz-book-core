@@ -41,7 +41,7 @@ public class OrderDetail {
 
 	@NotNull
 	@Setter
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
 	private OrderStatus orderStatus;
 
