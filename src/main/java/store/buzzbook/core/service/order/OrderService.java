@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,10 +56,8 @@ import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.ReadOrdersResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
-import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -660,5 +660,18 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public String readOrderStr(long orderDetailId) {
 		return orderDetailRepository.findOrderStrByOrderDetailId(orderDetailId);
+	}
+
+	@Transactional(readOnly = true)
+	public Map<String, Object> readOrders2(ReadOrdersRequest request) {
+		Map<String, Object> data = new HashMap<>();
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+
+		Slice<ReadOrdersResponse> responses = orderRepository.findAll2(request, pageable);
+
+		data.put("responseData", responses.getContent());
+		data.put("total", responses.getSize());
+
+		return data;
 	}
 }
