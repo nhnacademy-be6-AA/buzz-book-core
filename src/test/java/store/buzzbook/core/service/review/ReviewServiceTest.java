@@ -23,7 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.product.DataAlreadyException;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -42,8 +41,7 @@ import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.review.ReviewRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.image.ImageService;
-
-@Slf4j
+import store.buzzbook.core.service.point.PointService;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceTest {
@@ -87,6 +85,8 @@ class ReviewServiceTest {
 	private ProductRepository productRepository;
 	@Mock
 	private ImageService imageClient;
+	@Mock
+	private PointService pointService;	// 사용함!!
 	@InjectMocks
 	private ReviewService reviewService;
 

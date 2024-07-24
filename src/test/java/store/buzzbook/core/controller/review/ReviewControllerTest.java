@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +17,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -54,20 +55,21 @@ class ReviewControllerTest {
 
 	@Test
 	@DisplayName("POST review")
-	void testSaveReview() throws Exception {
+	void postReview() throws Exception {
+		List<MultipartFile> mockFiles = new ArrayList<>();
 
-		MockMultipartFile file = new MockMultipartFile("files", "test.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
+		when(reviewService.saveReview(any(ReviewRequest.class), anyList())).thenReturn(mockReviewResponse);
 
-		when(reviewService.saveReview(testReviewRequest, List.of(file))).thenReturn(mockReviewResponse);
-
-		mockMvc.perform(multipart("/api/reviews")
-				.file(file)
+		mockMvc.perform(post("/api/reviews")
 				.param("content", content)
 				.param("reviewScore", String.valueOf(reviewScore))
 				.param("orderDetailId", String.valueOf(orderDetailId))
-				.contentType(MediaType.MULTIPART_FORM_DATA))
+				.contentType(MediaType.MULTIPART_FORM_DATA)
+				.content(objectMapper.writeValueAsString(mockFiles)))
 			.andExpect(status().isOk());
+
 	}
+
 
 	@Test
 	@DisplayName("GET review")

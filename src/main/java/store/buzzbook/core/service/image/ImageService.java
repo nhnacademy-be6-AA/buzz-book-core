@@ -16,10 +16,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.client.image.CloudImageClient;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ImageService {
@@ -29,29 +27,28 @@ public class ImageService {
 	private final CloudImageClient cloudImageClient;
 	private final ObjectMapper objectMapper;
 
-	@Value("${nhncloud.image.appkey}")
-	private String appKey;
-
 	@Value("${nhncloud.image.secretkey}")
 	private String secretKey;
 
 	public String uploadImagesToCloud(List<MultipartFile> files, String folderPath) {
-		String authorizationHeader = secretKey; // secretKey를 Authorization 헤더로 사용
-		String basepath = folderPath;
 		boolean overwrite = true;
 
 		Map<String, Object> paramsMap = Map.of(
-			"basepath", basepath,
+			"basepath", folderPath,
 			"overwrite", overwrite
 		);
 
+		String paramsJson = null;
+
 		try {
-			String paramsJson = new ObjectMapper().writeValueAsString(paramsMap);
-			ResponseEntity<JSONObject> response = cloudImageClient.uploadImages(secretKey, paramsJson, files);
-			return Objects.requireNonNull(response.getBody()).toJSONString();
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to upload images", e);
+			paramsJson = new ObjectMapper().writeValueAsString(paramsMap);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
 		}
+
+		ResponseEntity<JSONObject> response = cloudImageClient.uploadImages(secretKey, paramsJson, files);
+
+		return Objects.requireNonNull(response.getBody()).toJSONString();
 
 	}
 
@@ -65,8 +62,9 @@ public class ImageService {
 		try {
 			String paramsJson = new ObjectMapper().writeValueAsString(paramsMap);
 			ResponseEntity<JSONObject> response = cloudImageClient.uploadImages(secretKey, paramsJson, files);
-			JsonNode successesNode = objectMapper.readTree(Objects.requireNonNull(response.getBody()).toString())
-				.get("successes");
+
+
+			JsonNode successesNode = objectMapper.readTree(Objects.requireNonNull(response.getBody()).toString()).get("successes");
 			List<String> imageUrls = new ArrayList<>();
 			if (successesNode != null && successesNode.isArray()) {
 				for (JsonNode success : successesNode) {
@@ -78,10 +76,5 @@ public class ImageService {
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-
-	}
-
-	public String reviewImageUpload(MultipartFile file) {
-		return multiImageUpload(List.of(file)).getFirst();
 	}
 }
