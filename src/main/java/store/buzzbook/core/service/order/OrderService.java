@@ -119,6 +119,7 @@ public class OrderService {
 		return orderRepository.findAll(request);
 	}
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		int page = request.getPage() - 1;
@@ -185,6 +186,7 @@ public class OrderService {
 		return data;
 	}
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> readMyOrders(ReadOrdersRequest request, String loginId) {
 		Map<String, Object> data = new HashMap<>();
 		int page = request.getPage() - 1;
@@ -490,6 +492,7 @@ public class OrderService {
 		return createAt.isBefore(daysAgo);
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -515,6 +518,7 @@ public class OrderService {
 		return details;
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderEmail(order.getId(),
@@ -523,15 +527,18 @@ public class OrderService {
 		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), null);
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderStatusResponse readOrderStatusById(int id) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
 			.orElseThrow(OrderStatusNotFoundException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderStatusResponse readOrderStatusByName(String orderStatusName) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findByName(orderStatusName));
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadOrderStatusResponse> readAllOrderStatus() {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
 	}
@@ -554,11 +561,13 @@ public class OrderService {
 		deliveryPolicy.delete();
 	}
 
+	@Transactional(readOnly = true)
 	public ReadDeliveryPolicyResponse readDeliveryPolicyById(int deliveryPolicyId) {
 		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.findById(deliveryPolicyId)
 			.orElseThrow(DeliveryPolicyNotFoundException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
 		return deliveryPolicyRepository.findAll().stream().filter(deliveryPolicy -> !deliveryPolicy.isDeleted()).map(DeliveryPolicyMapper::toDto).toList();
 	}
@@ -575,11 +584,13 @@ public class OrderService {
 		wrapping.delete();
 	}
 
+	@Transactional(readOnly = true)
 	public ReadWrappingResponse readWrappingById(int wrappingId) {
 		return WrappingMapper.toDto(wrappingRepository.findById(wrappingId)
 			.orElseThrow(WrappingNotFoundException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadWrappingResponse> readAllWrapping() {
 		return wrappingRepository.findAll().stream().filter(wrapping -> !wrapping.isDeleted()).map(WrappingMapper::toDto).toList();
 	}
@@ -646,6 +657,7 @@ public class OrderService {
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
 
+	@Transactional(readOnly = true)
 	public String readOrderStr(long orderDetailId) {
 		return orderDetailRepository.findOrderStrByOrderDetailId(orderDetailId);
 	}

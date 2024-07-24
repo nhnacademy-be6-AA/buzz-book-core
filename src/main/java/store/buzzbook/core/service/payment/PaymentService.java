@@ -283,6 +283,7 @@ public class PaymentService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
@@ -296,6 +297,7 @@ public class PaymentService {
 		return data;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderStr) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByUserIdAndOrderStr(userId, orderStr);
@@ -307,6 +309,7 @@ public class PaymentService {
 		return responses;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithAdmin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
@@ -318,6 +321,7 @@ public class PaymentService {
 		return responses;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithoutLogin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
@@ -329,12 +333,14 @@ public class PaymentService {
 		return responses;
 	}
 
+	@Transactional(readOnly = true)
 	public String getPaymentKeyWithoutLogin(String orderId, String orderEmail) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_OrderEmail(orderId, orderEmail)
 			.getFirst()
 			.getPaymentKey();
 	}
 
+	@Transactional(readOnly = true)
 	public String getPaymentKey(String orderId, long userId) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getFirst().getPaymentKey();
 	}
