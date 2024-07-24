@@ -64,7 +64,7 @@ public class OrderController {
 		Map<String, Object> data = null;
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
 		if (userInfo.isAdmin()) {
-			data = orderService.readOrders(readOrdersRequest);
+			data = orderService.readOrders2(readOrdersRequest);
 		} else {
 			data = orderService.readMyOrders(readOrdersRequest, userInfo.loginId());
 		}
