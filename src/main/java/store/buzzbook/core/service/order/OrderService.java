@@ -104,84 +104,22 @@ public class OrderService {
 	private final UserService userService;
 	private final AddressRepository addressRepository;
 	private final PointPolicyRepository pointPolicyRepository;
-	private final ApplicationContext applicationContext;
 	private final PointService pointService;
-
-	private OrderService getOrderServiceProxy() {
-		return applicationContext.getBean(OrderService.class);
-	}
 
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	@Cacheable(value = "getOrders", key = "#request.size")
-	public List<ReadOrderProjectionResponse> getOrders(ReadOrdersRequest request) {
-		return orderRepository.findAll(request);
-	}
 
+	@Cacheable(value = "readOrders", key = "#request.page")
 	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
-		int page = request.getPage() - 1;
-		int size = request.getSize();
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		List<ReadOrderProjectionResponse> orders = this.getOrderServiceProxy().getOrders(request);
-		List<ReadOrdersResponse> responses = new ArrayList<>();
+		Slice<ReadOrdersResponse> responses = orderRepository.findAll(request, pageable);
 
-		Set<String> orderStrs = orders.stream()
-			.map(ReadOrderProjectionResponse::getOrderStr)
-			.collect(Collectors.toSet());
-		for (String orderStr : orderStrs) {
-			Iterator<ReadOrderProjectionResponse> iterator = orders.stream()
-				.filter(order -> order.getOrderStr().equals(orderStr))
-				.iterator();
-			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream()
-				.filter(o -> o.getOrderStr().equals(orderStr))
-				.findFirst();
-			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(
-				OrderNotFoundException::new);
-			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder()
-				.id(order.getId())
-				.orderStr(order.getOrderStr())
-				.address(order.getAddress())
-				.addressDetail(order.getAddressDetail())
-				.zipcode(order.getZipcode())
-				.receiver(order.getReceiver())
-				.deliveryRate(order.getDeliveryRate())
-				.price(order.getPrice())
-				.request(order.getRequest())
-				.loginId(order.getLoginId())
-				.desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.orderEmail(order.getOrderEmail())
-				.sender(order.getSender())
-				.receiverContactNumber(order.getReceiverContactNumber())
-				.senderContactNumber(order.getSenderContactNumber())
-				.couponCode(order.getCouponCode())
-				.build();
-			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
-			while (iterator.hasNext()) {
-				ReadOrderProjectionResponse newOrder = iterator.next();
-				if (orderStr.equals(newOrder.getOrderStr())) {
-					details.add(newOrder.getOrderDetail());
-				}
-			}
-			readOrdersResponse.setDetails(details);
-			responses.add(readOrdersResponse);
-		}
-
-		int totalElements = responses.size();
-		int totalPages = (int)Math.ceil((double)totalElements / size);
-
-		int fromIndex = Math.min(page * size, totalElements);
-		int toIndex = Math.min((page + 1) * size, totalElements);
-
-		List<ReadOrdersResponse> paginatedResponses = responses.subList(fromIndex, toIndex);
-
-		data.put("responseData", paginatedResponses);
-		data.put("total", paginatedResponses.size());
-		// data.put("totalPages", totalPages);
-		// data.put("currentPage", page + 1);
-		// data.put("pageSize", size);
+		data.put("responseData", responses.getContent());
+		data.put("hasNext", responses.hasNext());
 
 		return data;
 	}
@@ -189,70 +127,17 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public Map<String, Object> readMyOrders(ReadOrdersRequest request, String loginId) {
 		Map<String, Object> data = new HashMap<>();
-		int page = request.getPage() - 1;
-		int size = request.getSize();
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		List<ReadOrderProjectionResponse> orders = orderRepository.findAllByUser_LoginId(request, loginId);
-		List<ReadOrdersResponse> responses = new ArrayList<>();
+		Slice<ReadOrdersResponse> responses = orderRepository.findAllByUser_LoginId(request, loginId, pageable);
 
-		Set<String> orderStrs = orders.stream()
-			.map(ReadOrderProjectionResponse::getOrderStr)
-			.collect(Collectors.toSet());
-		for (String orderStr : orderStrs) {
-			Iterator<ReadOrderProjectionResponse> iterator = orders.stream()
-				.filter(order -> order.getOrderStr().equals(orderStr))
-				.iterator();
-			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream()
-				.filter(o -> o.getOrderStr().equals(orderStr))
-				.findFirst();
-			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(
-				OrderNotFoundException::new);
-			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder()
-				.id(order.getId())
-				.orderStr(order.getOrderStr())
-				.address(order.getAddress())
-				.addressDetail(order.getAddressDetail())
-				.zipcode(order.getZipcode())
-				.receiver(order.getReceiver())
-				.deliveryRate(order.getDeliveryRate())
-				.price(order.getPrice())
-				.request(order.getRequest())
-				.loginId(order.getLoginId())
-				.desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.sender(order.getSender())
-				.receiverContactNumber(order.getReceiverContactNumber())
-				.senderContactNumber(order.getSenderContactNumber())
-				.couponCode(order.getCouponCode())
-				.build();
-			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
-			while (iterator.hasNext()) {
-				ReadOrderProjectionResponse newOrder = iterator.next();
-				if (orderStr.equals(newOrder.getOrderStr())) {
-					details.add(newOrder.getOrderDetail());
-				}
-			}
-			readOrdersResponse.setDetails(details);
-			responses.add(readOrdersResponse);
-		}
-
-		int totalElements = responses.size();
-		int totalPages = (int)Math.ceil((double)totalElements / size);
-
-		int fromIndex = Math.min(page * size, totalElements);
-		int toIndex = Math.min((page + 1) * size, totalElements);
-
-		List<ReadOrdersResponse> paginatedResponses = responses.subList(fromIndex, toIndex);
-
-		data.put("responseData", paginatedResponses);
-		data.put("total", paginatedResponses.size());
-		// data.put("totalPages", totalPages);
-		// data.put("currentPage", page + 1);
-		// data.put("pageSize", size);
+		data.put("responseData", responses.getContent());
+		data.put("hasNext", responses.hasNext());
 
 		return data;
 	}
 
-	@CacheEvict(value = "getOrders", allEntries = true)
+	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
@@ -329,7 +214,7 @@ public class OrderService {
 		return PointLogResponse.from(pointLog);
 	}
 
-	@CacheEvict(value = "getOrders", allEntries = true)
+	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
@@ -660,18 +545,5 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public String readOrderStr(long orderDetailId) {
 		return orderDetailRepository.findOrderStrByOrderDetailId(orderDetailId);
-	}
-
-	@Transactional(readOnly = true)
-	public Map<String, Object> readOrders2(ReadOrdersRequest request) {
-		Map<String, Object> data = new HashMap<>();
-		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
-
-		Slice<ReadOrdersResponse> responses = orderRepository.findAll2(request, pageable);
-
-		data.put("responseData", responses.getContent());
-		data.put("total", responses.getSize());
-
-		return data;
 	}
 }
