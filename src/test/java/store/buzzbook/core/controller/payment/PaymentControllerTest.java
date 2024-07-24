@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
+import store.buzzbook.core.dto.payment.ReadPaymentKeyWithOrderDetailRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.user.GradeInfoResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -66,6 +68,7 @@ class PaymentControllerTest {
 	private ReadBillLogRequest readBillLogRequest;
 	private ReadPaymentKeyRequest readPaymentKeyRequest;
 	private ReadPaymentKeyRequest readPaymentKeyRequest2;
+	private ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest;
 
 	@BeforeEach
 	public void setUp() {
@@ -79,6 +82,7 @@ class PaymentControllerTest {
 		readBillLogRequest = new ReadBillLogRequest("MC4zODU1NzE0MTc1NzQy");
 		readPaymentKeyRequest = new ReadPaymentKeyRequest("MC4xMDE2OTQyNzMzOTg5", "parkseol.dev@gmail.com");
 		readPaymentKeyRequest2 = new ReadPaymentKeyRequest("MC4xMDE2OTQyNzMzOTg5", null);
+		readPaymentKeyWithOrderDetailRequest = new ReadPaymentKeyWithOrderDetailRequest(123L, "parkseol.dev@gmail.com");
 	}
 
 	@Test
@@ -240,76 +244,71 @@ class PaymentControllerTest {
 		verify(paymentService).createRefundBillLogWithDifferentPayment(any(CreateCancelBillLogRequest.class), any(HttpServletRequest.class));
 	}
 
-	// @Test
-	// @DisplayName("결제키 조회 - 비회원")
-	// void getPaymentKey_NotLoggedIn() throws Exception {
-	// 	when(paymentService.getPaymentKeyWithoutLogin(readPaymentKeyRequest.getOrderId(), readPaymentKeyRequest.getOrderEmail()))
-	// 		.thenReturn(anyString());
-	//
-	// 	mockMvc.perform(post("/api/payments/payment-key")
-	// 			.content(objectMapper.writeValueAsString(readPaymentKeyRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON))
-	// 		.andExpect(status().isOk())
-	// 		.andExpect(content().string(anyString()));
-	//
-	// 	verify(paymentService).getPaymentKeyWithoutLogin(anyString(), anyString());
-	// }
+	@Disabled
+	@Test
+	@DisplayName("결제키 조회 - 비회원")
+	void getPaymentKey_NotLoggedIn() throws Exception {
+		when(paymentService.getPaymentKeyWithoutLogin(readPaymentKeyRequest.getOrderId(), readPaymentKeyRequest.getOrderEmail()))
+			.thenReturn(anyString());
 
-	// @Test
-	// @DisplayName("결제키 조회 - 회원")
-	// void getPaymentKey_LoggedIn() throws Exception {
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
-	// 	when(paymentService.getPaymentKey(readPaymentKeyRequest2.getOrderId(), testUserInfo.id())).thenReturn(anyString());
-	//
-	// 	mockMvc.perform(post("/api/payments/payment-key")
-	// 			.content(objectMapper.writeValueAsString(readPaymentKeyRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.requestAttr(AuthService.LOGIN_ID, "parkseol"))
-	// 		.andExpect(status().isOk())
-	// 		.andExpect(content().string(anyString()));
-	//
-	// 	verify(paymentService).getPaymentKey(anyString(), anyLong());
-	// }
+		mockMvc.perform(post("/api/payments/payment-key")
+				.content(objectMapper.writeValueAsString(readPaymentKeyRequest))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(content().string(anyString()));
 
-	// @Test
-	// @DisplayName("주문상세 아이디로 결제키 조회 - 비회원")
-	// void getPaymentKeyWithOrderDetailId_NotLoggedIn() throws Exception {
-	// 	ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest = new ReadPaymentKeyWithOrderDetailRequest();
-	// 	readPaymentKeyWithOrderDetailRequest.setOrderDetailId(123L);
-	// 	readPaymentKeyWithOrderDetailRequest.setOrderEmail("test@example.com");
-	//
-	// 	when(orderService.readOrderStr(anyLong())).thenReturn("orderStr");
-	// 	when(paymentService.getPaymentKeyWithoutLogin(anyString(), anyString()))
-	// 		.thenReturn("responseKey");
-	//
-	// 	mockMvc.perform(post("/api/payments/detail/payment-key")
-	// 			.content(objectMapper.writeValueAsString(readPaymentKeyWithOrderDetailRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON))
-	// 		.andExpect(status().isOk())
-	// 		.andExpect(content().string("responseKey"));
-	//
-	// 	verify(paymentService).getPaymentKeyWithoutLogin(eq("orderStr"), eq("test@example.com"));
-	// }
+		verify(paymentService).getPaymentKeyWithoutLogin(anyString(), anyString());
+	}
 
-	// @Test
-	// @DisplayName("주문상세 아이디로 결제키 조회 - 회원")
-	// void getPaymentKeyWithOrderDetailId_LoggedIn() throws Exception {
-	// 	ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest = new ReadPaymentKeyWithOrderDetailRequest();
-	// 	readPaymentKeyWithOrderDetailRequest.setOrderDetailId(123L);
-	// 	UserInfo userInfo = new UserInfo();
-	// 	userInfo.setId(1L);
-	//
-	// 	when(userService.getUserInfoByLoginId(anyString())).thenReturn(userInfo);
-	// 	when(orderService.readOrderStr(anyLong())).thenReturn("orderStr");
-	// 	when(paymentService.getPaymentKey(anyString(), anyLong())).thenReturn("responseKey");
-	//
-	// 	mockMvc.perform(post("/api/payments/detail/payment-key")
-	// 			.content(objectMapper.writeValueAsString(readPaymentKeyWithOrderDetailRequest))
-	// 			.contentType(MediaType.APPLICATION_JSON)
-	// 			.requestAttr(AuthService.LOGIN_ID, "testLoginId"))
-	// 		.andExpect(status().isOk())
-	// 		.andExpect(content().string("responseKey"));
-	//
-	// 	verify(paymentService).getPaymentKey(eq("orderStr"), eq(1L));
-	// }
+	@Disabled
+	@Test
+	@DisplayName("결제키 조회 - 회원")
+	void getPaymentKey_LoggedIn() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		when(paymentService.getPaymentKey(readPaymentKeyRequest2.getOrderId(), testUserInfo.id())).thenReturn(anyString());
+
+		mockMvc.perform(post("/api/payments/payment-key")
+				.content(objectMapper.writeValueAsString(readPaymentKeyRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.requestAttr(AuthService.LOGIN_ID, "parkseol"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(anyString()));
+
+		verify(paymentService).getPaymentKey(anyString(), anyLong());
+	}
+
+	@Disabled
+	@Test
+	@DisplayName("주문상세 아이디로 결제키 조회 - 비회원")
+	void getPaymentKeyWithOrderDetailId_NotLoggedIn() throws Exception {
+		when(orderService.readOrderStr(anyLong())).thenReturn(anyString());
+		when(paymentService.getPaymentKeyWithoutLogin(readPaymentKeyRequest.getOrderId(), readPaymentKeyWithOrderDetailRequest.getOrderEmail()))
+			.thenReturn(anyString());
+
+		mockMvc.perform(post("/api/payments/detail/payment-key")
+				.content(objectMapper.writeValueAsString(readPaymentKeyRequest))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(content().string(anyString()));
+
+		verify(paymentService).getPaymentKeyWithoutLogin(anyString(), anyString());
+	}
+
+	@Disabled
+	@Test
+	@DisplayName("주문상세 아이디로 결제키 조회 - 회원")
+	void getPaymentKeyWithOrderDetailId_LoggedIn() throws Exception {
+		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo);
+		when(orderService.readOrderStr(anyLong())).thenReturn(anyString());
+		when(paymentService.getPaymentKey(readPaymentKeyRequest.getOrderId(), testUserInfo.id())).thenReturn("responseKey");
+
+		mockMvc.perform(post("/api/payments/detail/payment-key")
+				.content(objectMapper.writeValueAsString(readPaymentKeyWithOrderDetailRequest))
+				.contentType(MediaType.APPLICATION_JSON)
+				.requestAttr(AuthService.LOGIN_ID, "testLoginId"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(anyString()));
+
+		verify(paymentService).getPaymentKey(anyString(), anyLong());
+	}
 }
