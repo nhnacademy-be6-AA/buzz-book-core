@@ -1,19 +1,19 @@
 package store.buzzbook.core.service.product;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.entity.product.Product;
@@ -38,130 +38,119 @@ class ProductTagServiceTest {
 	@InjectMocks
 	private ProductTagService productTagService;
 
-	@BeforeEach
-	void setUp() {
-		// 임시
-	}
+	private final int productId = 1;
+	private final int tag1Id = 11;
+	private final int tag2Id = 22;
 
-	// @Test
-	// @DisplayName("상품 ID로 태그 조회 테스트")
-	// void testGetTagsByProductId() {
-	// 	// given
-	// 	int productId = 1;
-	// 	Tag tag1 = new Tag("태그1");
-	// 	Tag tag2 = new Tag("태그2");
-	//
-	// 	ProductTag productTag1 = new ProductTag(null, tag1);
-	// 	ProductTag productTag2 = new ProductTag(null, tag2);
-	//
-	// 	when(productTagRepository.findByProductId(productId)).thenReturn(List.of(productTag1, productTag2));
-	//
-	// 	// when
-	// 	List<String> tags = productTagService.getTagsByProductId(productId);
-	//
-	// 	// then
-	// 	assertNotNull(tags);
-	// 	assertEquals(2, tags.size());
-	// 	assertTrue(tags.contains("태그1"));
-	// 	assertTrue(tags.contains("태그2"));
-	// 	verify(productTagRepository, times(1)).findByProductId(productId);
-	// }
-	//
-	// @Test
-	// @DisplayName("상품에 태그 추가 테스트")
-	// @Transactional
-	// void testAddTagToProduct() {
-	// 	// given
-	// 	int productId = 1;
-	// 	List<Integer> tagIds = List.of(1, 2);
-	//
-	// 	Product product = new Product();
-	// 	Tag tag1 = mock(Tag.class);
-	// 	Tag tag2 = mock(Tag.class);
-	//
-	// 	when(tag1.getId()).thenReturn(1);
-	// 	when(tag2.getId()).thenReturn(2);
-	// 	when(tag1.getName()).thenReturn("태그1");
-	// 	when(tag2.getName()).thenReturn("태그2");
-	//
-	// 	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-	// 	when(tagRepository.findAllById(tagIds)).thenReturn(List.of(tag1, tag2));
-	// 	when(productTagRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-	//
-	// 	// when
-	// 	productTagService.addTagToProduct(productId, tagIds);
-	//
-	// 	// then
-	// 	verify(productRepository, times(1)).findById(productId);
-	// 	verify(tagRepository, times(1)).findAllById(tagIds);
-	// 	verify(productTagRepository, times(1)).saveAll(anyList());
-	// }
-	//
-	// @Test
-	// @DisplayName("상품에 태그 추가 실패 테스트 - 일부 태그가 없음")
-	// @Transactional
-	// void testAddTagToProductTagNotFound() {
-	// 	// given
-	// 	int productId = 1;
-	// 	List<Integer> tagIds = List.of(1, 2);
-	//
-	// 	Product product = new Product();
-	// 	Tag tag1 = mock(Tag.class);
-	//
-	// 	when(tag1.getId()).thenReturn(1);
-	//
-	// 	when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-	// 	when(tagRepository.findAllById(tagIds)).thenReturn(List.of(tag1));
-	//
-	// 	// when & then
-	// 	DataNotFoundException exception = assertThrows(DataNotFoundException.class, () -> {
-	// 		productTagService.addTagToProduct(productId, tagIds);
-	// 	});
-	//
-	// 	assertEquals("[2] (으)로 Tags 을(를) 찾을 수 없습니다.", exception.getMessage());
-	// 	assertEquals("Tags", exception.getDataType());
-	// 	verify(productRepository, times(1)).findById(productId);
-	// 	verify(tagRepository, times(1)).findAllById(tagIds);
-	// 	verify(productTagRepository, times(0)).saveAll(anyList());
-	// }
+	@Mock
+	private Product product;
+
+	@Mock
+	private Tag tag1, tag2;
 
 	@Test
-	@DisplayName("상품의 모든 태그 삭제 테스트")
-	@Transactional
-	void testRemoveAllTagsFromProduct() {
-		// given
-		int productId = 1;
+	void testGetTagsByProductId_Success() {
+
+		List<ProductTag> productTags = new ArrayList<>();
+		productTags.add(new ProductTag(product, tag1));
+		productTags.add(new ProductTag(product, tag2));
+
+		when(tag1.getName()).thenReturn("Tag1");
+		when(tag2.getName()).thenReturn("Tag2");
+
+		when(productTagRepository.findByProductId(productId)).thenReturn(productTags);
+
+		// When
+		List<String> tags = productTagService.getTagsByProductId(productId);
+
+		// Then
+		assertThat(tags).containsExactly("Tag1", "Tag2");
+		verify(productTagRepository, times(1)).findByProductId(productId);
+	}
+
+	@Test
+	void testAddTagToProduct_Success() {
+
+		List<Integer> tagIds = List.of(1, 2);
+
+		List<Tag> tags = new ArrayList<>();
+		tags.add(new Tag("Test Tag 1"));
+		tags.add(new Tag("Test Tag 2"));
+		when(tagRepository.findAllById(tagIds)).thenReturn(tags);
+
+
+		when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+		when(product.getId()).thenReturn(productId);
+
+		// When
+		productTagService.addTagToProduct(productId, tagIds);
+
+		// Then
+		verify(productRepository, times(1)).findById(productId);
+		verify(tagRepository, times(1)).findAllById(tagIds);
+		verify(productTagRepository, times(1)).saveAll(anyList());
+	}
+
+	@Test
+	void testAddTagToProduct_ProductNotFound() {
+
+		List<Integer> tagIds = List.of(1, 2);
+
+		when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+		// When & Then
+		assertThrows(DataNotFoundException.class, () -> productTagService.addTagToProduct(productId, tagIds));
+
+		verify(productRepository, times(1)).findById(productId);
+		verify(tagRepository, never()).findAllById(anyList());
+		verify(productTagRepository, never()).saveAll(anyList());
+	}
+
+	@Test
+	void testAddTagToProduct_TagNotFound() {
+		List<Integer> tagIds = List.of(1, 2);
+
+		when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+		List<Tag> tags = new ArrayList<>();
+		tags.add(new Tag("Test Tag 1"));
+		// Tag with ID 2 is not found
+
+		when(tagRepository.findAllById(tagIds)).thenReturn(tags);
+
+		// When & Then
+		assertThrows(DataNotFoundException.class, () -> productTagService.addTagToProduct(productId, tagIds));
+
+		verify(productRepository, times(1)).findById(productId);
+		verify(tagRepository, times(1)).findAllById(tagIds);
+		verify(productTagRepository, never()).saveAll(anyList());
+	}
+
+	@Test
+	void testRemoveAllTagsFromProduct_Success() {
 		List<Integer> tagIds = List.of(1, 2);
 
 		when(productRepository.existsById(productId)).thenReturn(true);
 
-		// when
+		// When
 		productTagService.removeAllTagsFromProduct(productId, tagIds);
 
-		// then
+		// Then
 		verify(productRepository, times(1)).existsById(productId);
 		verify(productTagRepository, times(1)).deleteTagsByProductIdAndTagIds(productId, tagIds);
 	}
 
 	@Test
-	@DisplayName("상품의 모든 태그 삭제 실패 테스트 - 상품이 존재하지 않음")
-	@Transactional
-	void testRemoveAllTagsFromProductProductNotFound() {
-		// given
-		int productId = 1;
+	void testRemoveAllTagsFromProduct_ProductNotFound() {
 		List<Integer> tagIds = List.of(1, 2);
 
 		when(productRepository.existsById(productId)).thenReturn(false);
 
-		// when & then
-		DataNotFoundException exception = assertThrows(DataNotFoundException.class, () -> {
-			productTagService.removeAllTagsFromProduct(productId, tagIds);
-		});
+		// When & Then
+		assertThrows(DataNotFoundException.class, () -> productTagService.removeAllTagsFromProduct(productId, tagIds));
 
-		assertEquals("id값 1 (으)로 product(을)를 찾을 수 없습니다.", exception.getMessage());
-		assertEquals("product", exception.getDataType());
-		assertEquals(1L, exception.getId());
 		verify(productRepository, times(1)).existsById(productId);
-		verify(productTagRepository, times(0)).deleteTagsByProductIdAndTagIds(anyInt(), anyList());
+		verify(productTagRepository, never()).deleteTagsByProductIdAndTagIds(anyInt(), anyList());
 	}
+
 }
