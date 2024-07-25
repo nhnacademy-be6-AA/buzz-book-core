@@ -152,7 +152,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.leftJoin(billLog).on(billLog.order.eq(order))
 			.orderBy(order.deliveryRate.desc())
 			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize() + 1)
+			.limit(pageable.getPageSize() * 2)
 			.transform(GroupBy.groupBy(order.orderStr).list(
 				Projections.constructor(ReadOrderWithBillLogsResponse.class,
 					order.id.as("orderId"),
@@ -183,17 +183,12 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 					)
 				)));
 
-		return checkOrderEndPage(results, pageable);
-	}
+		boolean hasNext = results.size() > pageable.getPageSize();
 
-	private Slice<ReadOrderWithBillLogsResponse> checkOrderEndPage(List<ReadOrderWithBillLogsResponse> orders,
-		Pageable pageable) {
-		boolean hasNext = false;
-		if (orders.size() > pageable.getPageSize()) {
-			hasNext = true;
-			orders.remove(pageable.getPageSize());
+		if (hasNext) {
+			results.subList(0, pageable.getPageSize());
 		}
 
-		return new SliceImpl<>(orders, pageable, hasNext);
+		return new SliceImpl<>(results, pageable, hasNext);
 	}
 }
