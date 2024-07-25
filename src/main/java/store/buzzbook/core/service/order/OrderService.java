@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,6 @@ import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.NotShippedException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
-import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
@@ -44,8 +44,6 @@ import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
-import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
-import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
@@ -54,10 +52,8 @@ import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.ReadOrdersResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
-import store.buzzbook.core.dto.order.UpdateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.order.UpdateWrappingRequest;
 import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -104,153 +100,40 @@ public class OrderService {
 	private final UserService userService;
 	private final AddressRepository addressRepository;
 	private final PointPolicyRepository pointPolicyRepository;
-	private final ApplicationContext applicationContext;
 	private final PointService pointService;
-
-	private OrderService getOrderServiceProxy() {
-		return applicationContext.getBean(OrderService.class);
-	}
 
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	@Cacheable(value = "getOrders", key = "#request.size")
-	public List<ReadOrderProjectionResponse> getOrders(ReadOrdersRequest request) {
-		return orderRepository.findAll(request);
-	}
 
+	@Cacheable(value = "readOrders", key = "#request.page")
+	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
-		int page = request.getPage() - 1;
-		int size = request.getSize();
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		List<ReadOrderProjectionResponse> orders = this.getOrderServiceProxy().getOrders(request);
-		List<ReadOrdersResponse> responses = new ArrayList<>();
+		Slice<ReadOrdersResponse> responses = orderRepository.findAll(request, pageable);
 
-		Set<String> orderStrs = orders.stream()
-			.map(ReadOrderProjectionResponse::getOrderStr)
-			.collect(Collectors.toSet());
-		for (String orderStr : orderStrs) {
-			Iterator<ReadOrderProjectionResponse> iterator = orders.stream()
-				.filter(order -> order.getOrderStr().equals(orderStr))
-				.iterator();
-			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream()
-				.filter(o -> o.getOrderStr().equals(orderStr))
-				.findFirst();
-			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(
-				OrderNotFoundException::new);
-			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder()
-				.id(order.getId())
-				.orderStr(order.getOrderStr())
-				.address(order.getAddress())
-				.addressDetail(order.getAddressDetail())
-				.zipcode(order.getZipcode())
-				.receiver(order.getReceiver())
-				.deliveryRate(order.getDeliveryRate())
-				.price(order.getPrice())
-				.request(order.getRequest())
-				.loginId(order.getLoginId())
-				.desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.orderEmail(order.getOrderEmail())
-				.sender(order.getSender())
-				.receiverContactNumber(order.getReceiverContactNumber())
-				.senderContactNumber(order.getSenderContactNumber())
-				.couponCode(order.getCouponCode())
-				.build();
-			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
-			while (iterator.hasNext()) {
-				ReadOrderProjectionResponse newOrder = iterator.next();
-				if (orderStr.equals(newOrder.getOrderStr())) {
-					details.add(newOrder.getOrderDetail());
-				}
-			}
-			readOrdersResponse.setDetails(details);
-			responses.add(readOrdersResponse);
-		}
-
-		int totalElements = responses.size();
-		int totalPages = (int)Math.ceil((double)totalElements / size);
-
-		int fromIndex = Math.min(page * size, totalElements);
-		int toIndex = Math.min((page + 1) * size, totalElements);
-
-		List<ReadOrdersResponse> paginatedResponses = responses.subList(fromIndex, toIndex);
-
-		data.put("responseData", paginatedResponses);
-		data.put("total", paginatedResponses.size());
-		// data.put("totalPages", totalPages);
-		// data.put("currentPage", page + 1);
-		// data.put("pageSize", size);
+		data.put("responseData", responses.getContent());
+		data.put("hasNext", responses.hasNext());
 
 		return data;
 	}
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> readMyOrders(ReadOrdersRequest request, String loginId) {
 		Map<String, Object> data = new HashMap<>();
-		int page = request.getPage() - 1;
-		int size = request.getSize();
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		List<ReadOrderProjectionResponse> orders = orderRepository.findAllByUser_LoginId(request, loginId);
-		List<ReadOrdersResponse> responses = new ArrayList<>();
+		Slice<ReadOrdersResponse> responses = orderRepository.findAllByUser_LoginId(request, loginId, pageable);
 
-		Set<String> orderStrs = orders.stream()
-			.map(ReadOrderProjectionResponse::getOrderStr)
-			.collect(Collectors.toSet());
-		for (String orderStr : orderStrs) {
-			Iterator<ReadOrderProjectionResponse> iterator = orders.stream()
-				.filter(order -> order.getOrderStr().equals(orderStr))
-				.iterator();
-			Optional<ReadOrderProjectionResponse> optionalOrder = orders.stream()
-				.filter(o -> o.getOrderStr().equals(orderStr))
-				.findFirst();
-			ReadOrderProjectionResponse order = optionalOrder.orElseThrow(
-				OrderNotFoundException::new);
-			ReadOrdersResponse readOrdersResponse = ReadOrdersResponse.builder()
-				.id(order.getId())
-				.orderStr(order.getOrderStr())
-				.address(order.getAddress())
-				.addressDetail(order.getAddressDetail())
-				.zipcode(order.getZipcode())
-				.receiver(order.getReceiver())
-				.deliveryRate(order.getDeliveryRate())
-				.price(order.getPrice())
-				.request(order.getRequest())
-				.loginId(order.getLoginId())
-				.desiredDeliveryDate(order.getDesiredDeliveryDate())
-				.sender(order.getSender())
-				.receiverContactNumber(order.getReceiverContactNumber())
-				.senderContactNumber(order.getSenderContactNumber())
-				.couponCode(order.getCouponCode())
-				.build();
-			List<ReadOrderDetailProjectionResponse> details = new ArrayList<>();
-			while (iterator.hasNext()) {
-				ReadOrderProjectionResponse newOrder = iterator.next();
-				if (orderStr.equals(newOrder.getOrderStr())) {
-					details.add(newOrder.getOrderDetail());
-				}
-			}
-			readOrdersResponse.setDetails(details);
-			responses.add(readOrdersResponse);
-		}
-
-		int totalElements = responses.size();
-		int totalPages = (int)Math.ceil((double)totalElements / size);
-
-		int fromIndex = Math.min(page * size, totalElements);
-		int toIndex = Math.min((page + 1) * size, totalElements);
-
-		List<ReadOrdersResponse> paginatedResponses = responses.subList(fromIndex, toIndex);
-
-		data.put("responseData", paginatedResponses);
-		data.put("total", paginatedResponses.size());
-		// data.put("totalPages", totalPages);
-		// data.put("currentPage", page + 1);
-		// data.put("pageSize", size);
+		data.put("responseData", responses.getContent());
+		data.put("hasNext", responses.hasNext());
 
 		return data;
 	}
 
-	@CacheEvict(value = "getOrders", allEntries = true)
+	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
@@ -327,7 +210,7 @@ public class OrderService {
 		return PointLogResponse.from(pointLog);
 	}
 
-	@CacheEvict(value = "getOrders", allEntries = true)
+	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse updateOrderWithAdmin(UpdateOrderRequest updateOrderRequest) {
 		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
@@ -490,6 +373,7 @@ public class OrderService {
 		return createAt.isBefore(daysAgo);
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -515,6 +399,7 @@ public class OrderService {
 		return details;
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderEmail(order.getId(),
@@ -523,15 +408,18 @@ public class OrderService {
 		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), null);
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderStatusResponse readOrderStatusById(int id) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
 			.orElseThrow(OrderStatusNotFoundException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public ReadOrderStatusResponse readOrderStatusByName(String orderStatusName) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findByName(orderStatusName));
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadOrderStatusResponse> readAllOrderStatus() {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
 	}
@@ -554,11 +442,13 @@ public class OrderService {
 		deliveryPolicy.delete();
 	}
 
+	@Transactional(readOnly = true)
 	public ReadDeliveryPolicyResponse readDeliveryPolicyById(int deliveryPolicyId) {
 		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.findById(deliveryPolicyId)
 			.orElseThrow(DeliveryPolicyNotFoundException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
 		return deliveryPolicyRepository.findAll().stream().filter(deliveryPolicy -> !deliveryPolicy.isDeleted()).map(DeliveryPolicyMapper::toDto).toList();
 	}
@@ -575,11 +465,13 @@ public class OrderService {
 		wrapping.delete();
 	}
 
+	@Transactional(readOnly = true)
 	public ReadWrappingResponse readWrappingById(int wrappingId) {
 		return WrappingMapper.toDto(wrappingRepository.findById(wrappingId)
 			.orElseThrow(WrappingNotFoundException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadWrappingResponse> readAllWrapping() {
 		return wrappingRepository.findAll().stream().filter(wrapping -> !wrapping.isDeleted()).map(WrappingMapper::toDto).toList();
 	}
@@ -646,6 +538,7 @@ public class OrderService {
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
 
+	@Transactional(readOnly = true)
 	public String readOrderStr(long orderDetailId) {
 		return orderDetailRepository.findOrderStrByOrderDetailId(orderDetailId);
 	}

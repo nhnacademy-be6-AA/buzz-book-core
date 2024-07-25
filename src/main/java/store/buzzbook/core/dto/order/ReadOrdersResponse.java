@@ -1,5 +1,6 @@
 package store.buzzbook.core.dto.order;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @AllArgsConstructor
-public class ReadOrdersResponse {
+public class ReadOrdersResponse implements Serializable {
 	private Long id;
 	private String orderStr;
 	private String loginId;

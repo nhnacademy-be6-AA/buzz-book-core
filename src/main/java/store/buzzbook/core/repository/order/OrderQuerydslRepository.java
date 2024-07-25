@@ -1,14 +1,15 @@
 package store.buzzbook.core.repository.order;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
-import store.buzzbook.core.dto.order.ReadOrderProjectionResponse;
+import store.buzzbook.core.dto.order.ReadOrderWithBillLogsResponse;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
+import store.buzzbook.core.dto.order.ReadOrdersResponse;
+import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 
 public interface OrderQuerydslRepository {
-	List<ReadOrderProjectionResponse> findAllByUser_LoginId(ReadOrdersRequest request, String loginId);
-	List<ReadOrderProjectionResponse> findAll(ReadOrdersRequest request);
+	Slice<ReadOrdersResponse> findAll(ReadOrdersRequest request, Pageable pageable);
+	Slice<ReadOrdersResponse> findAllByUser_LoginId(ReadOrdersRequest request, String loginId, Pageable pageable);
+	Slice<ReadOrderWithBillLogsResponse> readOrdersWithBillLogs(ReadBillLogsRequest request, Pageable pageable);
 }

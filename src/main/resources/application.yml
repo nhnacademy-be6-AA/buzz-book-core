@@ -21,6 +21,7 @@ spring:
       auto_quote_keyword: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
     servlet:
       multipart:
         enabled: true

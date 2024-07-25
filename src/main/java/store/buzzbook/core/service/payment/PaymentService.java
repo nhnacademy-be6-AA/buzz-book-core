@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,10 +42,10 @@ import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
+import store.buzzbook.core.dto.order.ReadOrderWithBillLogsResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.CreateBillLogRequest;
 import store.buzzbook.core.dto.payment.CreateCancelBillLogRequest;
-import store.buzzbook.core.dto.payment.ReadBillLogProjectionResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
@@ -283,19 +284,20 @@ public class PaymentService {
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
 		Map<String, Object> data = new HashMap<>();
 		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-		Page<ReadBillLogProjectionResponse> pageBillLogs = billLogRepository.findAll(request, pageable);
-		List<ReadBillLogProjectionResponse> billLogs = pageBillLogs.getContent();
+		Slice<ReadOrderWithBillLogsResponse> pageBillLogs = orderRepository.readOrdersWithBillLogs(request, pageable);
 
-		data.put("responseData", billLogs);
-		data.put("total", pageBillLogs.getTotalElements());
+		data.put("responseData", pageBillLogs.getContent());
+		data.put("hasNext", pageBillLogs.hasNext());
 
 		return data;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderStr) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByUserIdAndOrderStr(userId, orderStr);
@@ -307,6 +309,7 @@ public class PaymentService {
 		return responses;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithAdmin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
@@ -318,6 +321,7 @@ public class PaymentService {
 		return responses;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithoutLogin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
 		List<BillLog> billLogs = billLogRepository.findByOrder_OrderStr(orderId);
@@ -329,12 +333,14 @@ public class PaymentService {
 		return responses;
 	}
 
+	@Transactional(readOnly = true)
 	public String getPaymentKeyWithoutLogin(String orderId, String orderEmail) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_OrderEmail(orderId, orderEmail)
 			.getFirst()
 			.getPaymentKey();
 	}
 
+	@Transactional(readOnly = true)
 	public String getPaymentKey(String orderId, long userId) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getFirst().getPaymentKey();
 	}

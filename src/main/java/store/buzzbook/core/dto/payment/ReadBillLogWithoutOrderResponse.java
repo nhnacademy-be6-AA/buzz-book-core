@@ -13,9 +13,9 @@ import store.buzzbook.core.entity.payment.BillStatus;
 @Getter
 @Builder
 public class ReadBillLogWithoutOrderResponse {
-	private long id;
+	private Long id;
 	private String payment;
-	private int price;
+	private Integer price;
 	private LocalDateTime payAt;
 	private BillStatus status;
 	private String paymentKey;
