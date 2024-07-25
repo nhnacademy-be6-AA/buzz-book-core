@@ -23,12 +23,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
+import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
@@ -133,6 +137,10 @@ class OrderServiceTest {
 	private List<TagResponse> tags = new ArrayList<>();
 	private TagResponse tagResponse;
 	private ReadOrderResponse readOrderResponse;
+	private ReadOrderDetailProjectionResponse detail1;
+	private ReadOrderDetailProjectionResponse detail2;
+	private List<ReadOrderDetailProjectionResponse> orderDetailProjections;
+	private ReadOrdersResponse readOrdersResponse;
 
 	@BeforeEach
 	void setUp() {
@@ -297,34 +305,69 @@ class OrderServiceTest {
 			null,                   // couponCode
 			0                          // deliveryRate
 		);
+
+		detail1 = ReadOrderDetailProjectionResponse.builder()
+			.orderDetailId(1)
+			.orderDetailPrice(1500)
+			.orderDetailQuantity(2)
+			.orderDetailWrap("Standard Wrap")
+			.orderDetailCreatedAt(LocalDateTime.now().minusDays(1))
+			.orderDetailOrderStatusName("Shipped")
+			.orderDetailWrappingPaper("Red")
+			.orderDetailProductName("Product A")
+			.orderDetailUpdatedAt(LocalDateTime.now())
+			.build();
+
+		detail2 = ReadOrderDetailProjectionResponse.builder()
+			.orderDetailId(2)
+			.orderDetailPrice(2000)
+			.orderDetailQuantity(1)
+			.orderDetailWrap("Gift Wrap")
+			.orderDetailCreatedAt(LocalDateTime.now().minusDays(2))
+			.orderDetailOrderStatusName("Delivered")
+			.orderDetailWrappingPaper("Blue")
+			.orderDetailProductName("Product B")
+			.orderDetailUpdatedAt(LocalDateTime.now())
+			.build();
+
+		orderDetailProjections = Arrays.asList(detail1, detail2);
+
+		readOrdersResponse = ReadOrdersResponse.builder()
+			.id(1L)
+			.orderStr("orderStr123")
+			.loginId("john.doe")
+			.price(3500)
+			.request("Please deliver between 9 AM and 5 PM")
+			.address("123 Main St")
+			.addressDetail("Apt 4B")
+			.zipcode(12345)
+			.desiredDeliveryDate(LocalDate.of(2024, 8, 15))
+			.receiver("John Doe")
+			.details(orderDetailProjections)
+			.sender("Jane Smith")
+			.receiverContactNumber("01087654321")
+			.senderContactNumber("01012345678")
+			.couponCode("DISCOUNT2024")
+			.deliveryRate(50)
+			.orderEmail("john.doe@example.com")
+			.build();
 	}
 
-	// @Disabled
-	// @Test
-	// void testGetOrders() {
-	// 	ReadOrdersRequest request = new ReadOrdersRequest(1, 10);
-	// 	List<ReadOrderProjectionResponse> orders = new ArrayList<>();
-	//
-	// 	when(orderRepository.findAll(any(ReadOrdersRequest.class))).thenReturn(orders);
-	//
-	// 	List<ReadOrderProjectionResponse> response = orderService.getOrders(request);
-	// 	assertNotNull(response);
-	// }
-	//
-	// @Disabled
-	// @Test
-	// void testReadOrders() {
-	// 	ReadOrdersRequest request = new ReadOrdersRequest(1, 10);
-	// 	List<ReadOrderProjectionResponse> orders = new ArrayList<>();
-	//
-	// 	when(orderRepository.findAll(any(ReadOrdersRequest.class))).thenReturn(orders);
-	//
-	// 	Map<String, Object> data = orderService.readOrders(request);
-	// 	assertNotNull(data);
-	// 	assertTrue(data.containsKey("responseData"));
-	// 	assertTrue(data.containsKey("total"));
-	// }
-	//
+	@Test
+	void testReadOrders() {
+		ReadOrdersRequest request = new ReadOrdersRequest(1, 10);
+		PageRequest pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+		List<ReadOrdersResponse> orders = List.of(readOrdersResponse);
+		Slice<ReadOrdersResponse> orderSlice = new SliceImpl<>(orders, pageable, false);
+
+		when(orderRepository.findAll(any(ReadOrdersRequest.class), pageable)).thenReturn(orderSlice);
+
+		Map<String, Object> data = orderService.readOrders(request);
+		assertNotNull(data);
+		assertEquals(orders, data.get("responseData"));
+		assertEquals(false, data.get("hasNext"));
+	}
+
 	// @Disabled
 	// @Test
 	// void testReadMyOrders() {
@@ -340,73 +383,75 @@ class OrderServiceTest {
 	// 	assertTrue(data.containsKey("total"));
 	// }
 
-	@Disabled
-	@Test
-	void testCreateOrder() {
-		CreateOrderDetailRequest detail1 = CreateOrderDetailRequest.builder()
-			.price(2000)
-			.quantity(3)
-			.wrap(true)
-			.createAt(LocalDateTime.now())
-			.orderStatusId(4)
-			.wrappingId(2)
-			.orderId(1L)
-			.productId(101)
-			.productName("Sample Product")
-			.thumbnailPath("/images/sample-product.png")
-			.couponCode("SUMMER2024")
-			.build();
-
-		CreateOrderDetailRequest detail2 = CreateOrderDetailRequest.builder()
-			.price(1500)
-			.quantity(2)
-			.wrap(false)
-			.createAt(LocalDateTime.now())
-			.orderStatusId(4)
-			.wrappingId(1)
-			.orderId(1L)
-			.productId(102)
-			.productName("Another Product")
-			.thumbnailPath("/images/another-product.png")
-			.build();
-
-		List<CreateOrderDetailRequest> details = new ArrayList<>();
-		details.add(detail1);
-		details.add(detail2);
-
-		CreateOrderRequest createOrderRequest1 = CreateOrderRequest.builder()
-			.orderStr("orderStr123")
-			.price(3500)
-			.request("Please deliver between 9 AM and 5 PM")
-			.addresses("123 Main St, Cityville")
-			.address("123 Main St")
-			.addressDetail("Apt 4B")
-			.zipcode(12345)
-			.desiredDeliveryDate("2024-08-15")
-			.receiver("John Doe")
-			.deliveryPolicyId(1)
-			.loginId("john.doe")
-			.details(details)
-			.contactNumber("01012345678")
-			.orderStatusId(1)
-			.sender("Jane Smith")
-			.receiverContactNumber("01087654321")
-			.orderEmail("john.doe@example.com")
-			.myPoint(5000)
-			.couponCode("DISCOUNT2024")
-			.deliveryRate(50)
-			.build();
-
-		when(userService.getUserInfoByLoginId(createOrderRequest1.getLoginId())).thenReturn(testUserInfo);
-		when(userRepository.findById(testUser.getId())).thenReturn(Optional.ofNullable(testUser));
-		when(orderRepository.save(any(Order.class))).thenReturn(order);
-		when(orderService.createOrder(createOrderRequest1)).thenReturn(readOrderResponse);
-
-		orderService.createOrder(createOrderRequest1);
-
-		verify(userRepository, times(1)).findById(anyLong());
-		verify(orderRepository, times(1)).save(any(Order.class));
-	}
+	// @Disabled
+	// @Test
+	// void testCreateOrder() {
+	// 	CreateOrderDetailRequest detail1 = CreateOrderDetailRequest.builder()
+	// 		.price(2000)
+	// 		.quantity(3)
+	// 		.wrap(true)
+	// 		.createAt(LocalDateTime.now())
+	// 		.orderStatusId(4)
+	// 		.wrappingId(2)
+	// 		.orderId(1L)
+	// 		.productId(101)
+	// 		.productName("Sample Product")
+	// 		.thumbnailPath("/images/sample-product.png")
+	// 		.couponCode("SUMMER2024")
+	// 		.build();
+	//
+	// 	CreateOrderDetailRequest detail2 = CreateOrderDetailRequest.builder()
+	// 		.price(1500)
+	// 		.quantity(2)
+	// 		.wrap(false)
+	// 		.createAt(LocalDateTime.now())
+	// 		.orderStatusId(4)
+	// 		.wrappingId(1)
+	// 		.orderId(1L)
+	// 		.productId(102)
+	// 		.productName("Another Product")
+	// 		.thumbnailPath("/images/another-product.png")
+	// 		.build();
+	//
+	// 	List<CreateOrderDetailRequest> details = new ArrayList<>();
+	// 	details.add(detail1);
+	// 	details.add(detail2);
+	//
+	// 	CreateOrderRequest createOrderRequest1 = CreateOrderRequest.builder()
+	// 		.orderStr("orderStr123")
+	// 		.price(3500)
+	// 		.request("Please deliver between 9 AM and 5 PM")
+	// 		.addresses("123 Main St, Cityville")
+	// 		.address("123 Main St")
+	// 		.addressDetail("Apt 4B")
+	// 		.zipcode(12345)
+	// 		.desiredDeliveryDate("2024-08-15")
+	// 		.receiver("John Doe")
+	// 		.deliveryPolicyId(1)
+	// 		.loginId("john.doe")
+	// 		.details(details)
+	// 		.contactNumber("01012345678")
+	// 		.orderStatusId(1)
+	// 		.sender("Jane Smith")
+	// 		.receiverContactNumber("01087654321")
+	// 		.orderEmail("john.doe@example.com")
+	// 		.myPoint(5000)
+	// 		.couponCode("DISCOUNT2024")
+	// 		.deliveryRate(50)
+	// 		.build();
+	//
+	//
+	//
+	// 	when(userService.getUserInfoByLoginId(createOrderRequest1.getLoginId())).thenReturn(testUserInfo);
+	// 	when(userRepository.findById(testUser.getId())).thenReturn(Optional.ofNullable(testUser));
+	// 	when(orderRepository.save(any(Order.class))).thenReturn(order);
+	// 	when(orderService.createOrder(createOrderRequest1)).thenReturn(readOrderResponse);
+	//
+	// 	orderService.createOrder(createOrderRequest1);
+	//
+	// 	verify(userRepository, times(1)).findById(anyLong());
+	// 	verify(orderRepository, times(1)).save(any(Order.class));
+	// }
 
 	// @Test
 	// void testUpdateOrderWithAdmin() {
