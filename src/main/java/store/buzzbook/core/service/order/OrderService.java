@@ -105,7 +105,6 @@ public class OrderService {
 	@PersistenceContext
 	private EntityManager entityManager;
 
-
 	@Cacheable(value = "readOrders", key = "#request.page")
 	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
