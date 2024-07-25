@@ -19,7 +19,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
 	OrderDetail findByIdAndOrder_User_LoginId(long orderDetailId, String loginId);
 
-	@Query("select o.orderStr from OrderDetail od inner join fetch od.order o where od.id = :orderDetailId")
+	@Query("select o.orderStr from OrderDetail od inner join od.order o where od.id = :orderDetailId")
 	String findOrderStrByOrderDetailId(@Param("orderDetailId") Long orderDetailId);
 
 	@Query("SELECT od FROM OrderDetail od " +

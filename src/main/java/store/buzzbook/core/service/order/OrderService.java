@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.NotAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
@@ -401,6 +402,10 @@ public class OrderService {
 	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
+		if (order.getUser() != null) {
+			throw new NotAuthorizedException("비회원 주문만 조회 가능합니다.");
+		}
+
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_OrderEmail(order.getId(),
 			request.getOrderEmail());
 
