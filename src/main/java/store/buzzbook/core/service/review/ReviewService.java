@@ -1,5 +1,6 @@
 package store.buzzbook.core.service.review;
 
+import static store.buzzbook.core.common.listener.OrderStatusListener.*;
 import static store.buzzbook.core.common.listener.PointPolicyListener.*;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import store.buzzbook.core.common.exception.product.DataNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.review.ReviewRequest;
 import store.buzzbook.core.dto.review.ReviewResponse;
+import store.buzzbook.core.dto.review.OrderDetailsWithoutReviewResponse;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.point.PointPolicy;
@@ -42,6 +44,8 @@ public class ReviewService {
 
 	static final String DELIMITER = " </> ";
 	static final String CLOUD_IMAGE_FILE_DEFAULT_PATH = "http://image.toast.com/aaaacuf/aa-image/review";
+
+	static final List<String> REVIEWABLE_STATUS_LIST = List.of(PAID, REFUND, PARTIAL_REFUND, SHIPPING_OUT, SHIPPED, BREAKAGE_REFUND);
 
 	private final UserRepository userRepository;
 	private final PointPolicyRepository pointPolicyRepository;
@@ -166,6 +170,13 @@ public class ReviewService {
 		User user = userRepository.findById(review.getOrderDetail().getOrder().getUser().getId()).orElseThrow(
 			UserNotFoundException::new);
 		return constructorReviewResponse(user, review);
+	}
+
+	public Page<OrderDetailsWithoutReviewResponse> findAllOrderDetailsByUserId(long userId, int page, int size){
+		Pageable pageable = PageRequest.of(page, size);
+
+		return orderDetailRepository.findAllNoExistReviewOrderDetailsByUserId(userId, REVIEWABLE_STATUS_LIST, pageable).map(
+			OrderDetailsWithoutReviewResponse::new);
 	}
 
 	private String buildPathString(List<String> paths) {
