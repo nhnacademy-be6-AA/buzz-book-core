@@ -2,6 +2,7 @@ package store.buzzbook.core.controller.review;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.dto.review.ReviewRequest;
 import store.buzzbook.core.dto.review.ReviewResponse;
+import store.buzzbook.core.dto.review.OrderDetailsWithoutReviewResponse;
 import store.buzzbook.core.service.review.ReviewService;
 
 @Slf4j
@@ -93,11 +95,19 @@ public class ReviewController {
 	public ResponseEntity<ReviewResponse> updateReview(@PathVariable int reviewId,
 		@Valid @RequestBody ReviewRequest reviewReq) {
 
-		ReviewResponse rr = reviewService.updateReview(reviewId, reviewReq);
-
-		log.warn("{}", rr);
-
 		return ResponseEntity.ok(reviewService.updateReview(reviewId, reviewReq));
+	}
+
+
+	@GetMapping("/orderDetails/{userId}")
+	@Operation(summary = "리뷰를 안쓴 구매 이력", description = "userId값으로 리뷰를 작성하지 않은 구매 이력 조회")
+	@ApiResponse(responseCode = "200", description = "조회 성공시 Page<OrderDetailsWithoutReviewResponse> 반환")
+	public ResponseEntity<Page<OrderDetailsWithoutReviewResponse>> getNoReviewUserOrderDetails(
+		@PathVariable @Parameter(description = "유저 아이디") long userId,
+		@RequestParam(required = false, defaultValue = DEFAULT_PAGE_NO+"") @Parameter(description = "페이지 번호") Integer pageNo,
+		@RequestParam(required = false, defaultValue = DEFAULT_PAGE_SIZE+"") @Parameter(description = "페이지 크기") Integer pageSize) {
+
+		return ResponseEntity.ok(reviewService.findAllOrderDetailsByUserId(userId, pageNo, pageSize));
 	}
 
 }

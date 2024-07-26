@@ -23,11 +23,6 @@ public class ProductDetailController {
 
 	@GetMapping("/{id}/detail")
 	public ResponseEntity<ProductDetailResponse> getProductDetail(@PathVariable int id){
-
-		ProductDetailResponse productDetailResponse = productDetailService.getProductDetail(id);
-
-		log.info("{}", productDetailResponse);
-
-		return ResponseEntity.ok(productDetailResponse);
+		return ResponseEntity.ok(productDetailService.getProductDetail(id));
 	}
 }

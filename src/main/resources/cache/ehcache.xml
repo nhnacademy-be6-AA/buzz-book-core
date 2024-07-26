@@ -29,9 +29,9 @@
     </cache-template>
 
 
-    <cache alias="getOrders" uses-template="default">
+    <cache alias="readOrders" uses-template="default">
         <key-type>java.lang.Integer</key-type>
-        <value-type>java.util.ArrayList</value-type>
+        <value-type>java.util.HashMap</value-type>
         <expiry>
             <ttl unit="minutes">10</ttl>
         </expiry>
