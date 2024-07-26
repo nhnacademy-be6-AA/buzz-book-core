@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
@@ -25,9 +26,11 @@ public class ProductDetailService {
 	private final ReviewRepository reviewRepository;
 	private final ReviewService reviewService;
 
+	@Transactional(readOnly = true)
 	public ProductDetailResponse getProductDetail(int productId) {
 		return convertProductDetailResponse(productId);
 	}
+
 
 	private ProductDetailResponse convertProductDetailResponse(Product product) {
 
@@ -40,6 +43,7 @@ public class ProductDetailService {
 			.reviews(reviews.stream().map(reviewService::constructorReviewResponse).toList())
 			.build();
 	}
+
 
 	private ProductDetailResponse convertProductDetailResponse(int productId) {
 		Product product = productRepository.findById(productId)

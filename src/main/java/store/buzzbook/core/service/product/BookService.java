@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
@@ -24,6 +25,7 @@ public class BookService {
 	private final PublisherRepository publisherRepository;
 	private final ProductRepository productRepository;
 
+	@Transactional
 	public BookResponse saveBook(BookRequest bookReq) {
 		Publisher publisher = publisherRepository.findByName(bookReq.getPublisher());
 
@@ -44,17 +46,20 @@ public class BookService {
 		return BookResponse.convertToBookResponse(newBook);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<BookResponse> getAllBooks(int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		return bookRepository.findAll(pageable).map(BookResponse::convertToBookResponse);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<BookResponse> getAllBooksExistProductId(int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		return bookRepository.findAllByProductIdIsNotNull(pageable)
 			.map(BookResponse::convertToBookResponse);
 	}
 
+	@Transactional(readOnly = true)
 	public BookResponse getBookById(long id) {
 		Book book = bookRepository.findById(id).orElse(null);
 		if (book == null) {
@@ -63,6 +68,7 @@ public class BookService {
 		return BookResponse.convertToBookResponse(book);
 	}
 
+	@Transactional(readOnly = true)
 	public BookResponse getBookByProductId(int productId) {
 		Book book = bookRepository.findByProductId(productId);
 		if (book == null) {
@@ -71,6 +77,7 @@ public class BookService {
 		return BookResponse.convertToBookResponse(book);
 	}
 
+	@Transactional
 	public BookResponse deleteBookById(long id) {
 
 		Book book = bookRepository.findById(id).orElse(null);
