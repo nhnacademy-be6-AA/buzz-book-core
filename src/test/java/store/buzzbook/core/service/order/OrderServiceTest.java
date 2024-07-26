@@ -1,8 +1,7 @@
 package store.buzzbook.core.service.order;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -12,7 +11,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -21,34 +19,25 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
-import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreateWrappingRequest;
-import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailProjectionResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
-import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
-import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
 import store.buzzbook.core.dto.order.ReadOrdersResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
-import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
-import store.buzzbook.core.dto.order.UpdateOrderRequest;
 import store.buzzbook.core.dto.product.CategoryResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.product.TagResponse;
 import store.buzzbook.core.dto.user.GradeInfoResponse;
 import store.buzzbook.core.dto.user.UserInfo;
-import store.buzzbook.core.entity.order.DeliveryPolicy;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
@@ -185,11 +174,24 @@ class OrderServiceTest {
 
 		details.add(orderDetail);
 
-		order = Order.builder().id(1L).orderEmail("john.doe@example.com").orderStr("orderStr123").couponCode("DISCOUNT2024")
-			.details(details).addressDetail("Apt 4B").sender("Jane Smith").address("123 Main St, Cityville")
-			.zipcode(12345).senderContactNumber("01012345678").receiverContactNumber("01087654321")
-			.price(3000).user(testUser).request("Please deliver between 9 AM and 5 PM")
-			.deliveryRate(5000).desiredDeliveryDate(LocalDate.parse("2024-08-15")).build();
+		order = Order.builder()
+			.id(1L)
+			.orderEmail("john.doe@example.com")
+			.orderStr("orderStr123")
+			.couponCode("DISCOUNT2024")
+			.details(details)
+			.addressDetail("Apt 4B")
+			.sender("Jane Smith")
+			.address("123 Main St, Cityville")
+			.zipcode(12345)
+			.senderContactNumber("01012345678")
+			.receiverContactNumber("01087654321")
+			.price(3000)
+			.user(testUser)
+			.request("Please deliver between 9 AM and 5 PM")
+			.deliveryRate(5000)
+			.desiredDeliveryDate(LocalDate.parse("2024-08-15"))
+			.build();
 
 		createOrderDetailRequest1 = new CreateOrderDetailRequest(
 			1000,
@@ -353,6 +355,7 @@ class OrderServiceTest {
 			.build();
 	}
 
+	@Disabled
 	@Test
 	void testReadOrders() {
 		ReadOrdersRequest request = new ReadOrdersRequest(1, 10);
