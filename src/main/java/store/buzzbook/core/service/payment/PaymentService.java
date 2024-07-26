@@ -16,7 +16,6 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpEntity;
@@ -77,6 +76,13 @@ import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
+/**
+ * 결제 관련 서비스
+ * 결제 내역 조회, 생성, paymentKey 조회, 취소와 환불 내역 생성, 결제 내역 롤백 기능을 제공합니다.
+ *
+ * @author 박설
+ */
+
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -107,6 +113,13 @@ public class PaymentService {
 	private final UserService userService;
 	private final PointService pointService;
 	private final PointLogRepository pointLogRepository;
+
+	/**
+	 *  결제 내역을 생성합니다.
+	 *
+	 * @param billLogRequestObject 토스 api에서 반환하는 payment 객체
+	 * @return 결제 내역 응답 객체
+	 */
 
 	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
@@ -154,6 +167,14 @@ public class PaymentService {
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, PAID), userInfo.loginId()));
 	}
 
+	/**
+	 * 주문 번호로 조회한 주문 상세 리스트들의 상태를 수정하고 DTO 리스트로 반환합니다.
+	 *
+	 * @param order 주문 엔터티
+	 * @param orderStatus 주문 상태 이름
+	 * @return 주문 상세 응답 객체 리스트
+	 */
+
 	private List<ReadOrderDetailResponse> getReadOrderDetailResponses(Order order, String orderStatus) {
 		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
@@ -170,6 +191,13 @@ public class PaymentService {
 		}
 		return readOrderDetailResponses;
 	}
+
+	/**
+	 * 주문 취소 내역을 생성합니다.
+	 *
+	 * @param billLogRequestObject 토스 api에서 반환하는 payment 객체
+	 * @return 주문 내역 응답 객체
+	 */
 
 	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
@@ -213,6 +241,14 @@ public class PaymentService {
 
 		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), null));
 	}
+
+	/**
+	 * 다른 지불 수단(쿠폰, 포인트)에 대한 결제 내역을 생성합니다.
+	 *
+	 * @param createBillLogRequest 결제 내역 생성 요청 객체
+	 * @param request 고객 정보를 얻기 위한 HttpServletRequest 객체
+	 * @return 결제 내역 응답 객체
+	 */
 
 	@Transactional(rollbackFor = Exception.class)
 	public ReadBillLogResponse createBillLogWithDifferentPayment(CreateBillLogRequest createBillLogRequest,
@@ -263,6 +299,15 @@ public class PaymentService {
 			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
 	}
 
+	/**
+	 * 쿠폰 상태를 업데이트 합니다.
+	 *
+	 * @param billLog 결제 내역 엔터티
+	 * @param headers 쿠폰 서버로 보낼 고객 인증 헤더
+	 * @param couponStatus 쿠폰 상태 객체
+	 * @throws CouponStatusNotUpdatedException 쿠폰 상태가 업데이트 되지 않았을 경우 2초마다 최대 3번 재시도 요청
+	 */
+
 	@Retryable(
 		retryFor = { CouponStatusNotUpdatedException.class },
 		maxAttempts = 3,
@@ -284,6 +329,13 @@ public class PaymentService {
 		}
 	}
 
+	/**
+	 * 결제 내역과 함께 주문 내역들을 조회합니다.
+	 *
+	 * @param request 결제 내역 조회 요청 객체
+	 * @return 결제 내역이 딸린 주문 내역 리스트 객체와 다음 페이지 존재 여부를 가진 Map 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public Map<String, Object> readBillLogs(ReadBillLogsRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -297,6 +349,14 @@ public class PaymentService {
 		return data;
 	}
 
+	/**
+	 * 주문 정보 없이 결제 내역을 조회합니다.
+	 *
+	 * @param userId 고객 번호
+	 * @param orderStr 주문 문자열(코드)
+	 * @return 주문 정보가 없는 결제 내역 응답 객체 리스트
+	 */
+
 	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrder(long userId, String orderStr) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
@@ -308,6 +368,13 @@ public class PaymentService {
 
 		return responses;
 	}
+
+	/**
+	 * 관리자가 주문 정보 없이 결제 내역을 조회합니다.
+	 *
+	 * @param orderId 주문 문자열(코드)
+	 * @return 주문 정보가 없는 결제 내역 응답 객체 리스트
+	 */
 
 	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithAdmin(String orderId) {
@@ -321,6 +388,13 @@ public class PaymentService {
 		return responses;
 	}
 
+	/**
+	 * 비회원이 주문 정보없이 결제 내역을 조회합니다.
+	 *
+	 * @param orderId 주문 문자열(코드)
+	 * @return 주문 정보가 없는 결제 내역 응답 객체 리스트
+	 */
+
 	@Transactional(readOnly = true)
 	public List<ReadBillLogWithoutOrderResponse> readBillLogWithoutOrderWithoutLogin(String orderId) {
 		List<ReadBillLogWithoutOrderResponse> responses = new ArrayList<>();
@@ -333,6 +407,14 @@ public class PaymentService {
 		return responses;
 	}
 
+	/**
+	 * 비회원의 PaymentKey를 조회합니다.
+	 *
+	 * @param orderId 주문 문자열(코드)
+	 * @param orderEmail 주문 시 입력한 이메일
+	 * @return 비회원 결제 내역의 PaymentKey 문자열
+	 */
+
 	@Transactional(readOnly = true)
 	public String getPaymentKeyWithoutLogin(String orderId, String orderEmail) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_OrderEmail(orderId, orderEmail)
@@ -340,10 +422,25 @@ public class PaymentService {
 			.getPaymentKey();
 	}
 
+	/**
+	 * 회원의 PaymentKey를 조회합니다.
+	 *
+	 * @param orderId 주문 문자열(코드)
+	 * @param userId 고객 번호
+	 * @return 회원 결제 내역의 PaymentKey 문자열
+	 */
+
 	@Transactional(readOnly = true)
 	public String getPaymentKey(String orderId, long userId) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getFirst().getPaymentKey();
 	}
+
+	/**
+	 * 다른 지불 수단(쿠폰, 포인트)에 대한 결제 취소 내역을 생성합니다.
+	 *
+	 * @param createCancelBillLogRequest 결제 취소 내역 생성 요청 객체
+	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
+	 */
 
 	@Transactional
 	public void createCancelBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
@@ -382,6 +479,13 @@ public class PaymentService {
 			}
 		}
 	}
+
+	/**
+	 * 다른 지불 수단(쿠폰, 포인트)에 대한 환불 내역을 생성합니다.
+	 *
+	 * @param createCancelBillLogRequest 결제 취소 내역 생성 요청 객체
+	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
+	 */
 
 	@Transactional(rollbackFor = Exception.class)
 	public void createRefundBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
@@ -427,6 +531,12 @@ public class PaymentService {
 			}
 		}
 	}
+
+	/**
+	 * 토스 결제 승인 실패 시 결제 내역을 롤백합니다. (포인트 결제, 쿠폰 결제, 포인트 적립 내역들 취소)
+	 *
+	 * @param readPaymentResponse 토스에서 준 Payment 응답 객체
+	 */
 
 	@Transactional
 	public void rollbackBillLog(ReadPaymentResponse readPaymentResponse) {
