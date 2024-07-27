@@ -90,8 +90,8 @@ public class PaymentController {
 
 	@Operation(summary = "토스 결제 승인 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
 	@PostMapping("/bill-log/rollback")
-	public ResponseEntity<String> rollbackBillLog(@RequestBody ReadPaymentResponse readPaymentResponse) {
-		paymentService.rollbackBillLog(readPaymentResponse);
+	public ResponseEntity<String> rollbackBillLog(@RequestBody String paymentKey) {
+		paymentService.rollbackBillLog(paymentKey);
 		return ResponseEntity.ok(SUCCESS);
 	}
 

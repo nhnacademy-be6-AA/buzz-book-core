@@ -535,12 +535,12 @@ public class PaymentService {
 	/**
 	 * 토스 결제 승인 실패 시 결제 내역을 롤백합니다. (포인트 결제, 쿠폰 결제, 포인트 적립 내역들 취소)
 	 *
-	 * @param readPaymentResponse 토스에서 준 Payment 응답 객체
+	 * @param paymentKey paymentKey
 	 */
 
 	@Transactional
-	public void rollbackBillLog(ReadPaymentResponse readPaymentResponse) {
-		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(readPaymentResponse.getPaymentKey());
+	public void rollbackBillLog(String paymentKey) {
+		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(paymentKey);
 		for (BillLog billLog : billLogs) {
 			billLogRepository.save(BillLog.builder().payment(billLog.getPayment()).price(billLog.getPrice())
 				.payAt(LocalDateTime.now()).status(BillStatus.CANCELED).paymentKey(billLog.getPaymentKey()).order(billLog.getOrder()).cancelReason(PAYMENT_ERROR).build());
