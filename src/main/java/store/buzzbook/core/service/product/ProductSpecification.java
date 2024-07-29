@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -24,6 +25,7 @@ public class ProductSpecification {
 
 	private final CategoryRepository categoryRepository;
 
+
 	public Specification<Product> orderBy(String orderBy) {
 		return (Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
 			if ("name".equals(orderBy)) {
@@ -39,6 +41,7 @@ public class ProductSpecification {
 		};
 	}
 
+	@Transactional(readOnly = true)
 	public Specification<Product> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId) {
 		return (Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
