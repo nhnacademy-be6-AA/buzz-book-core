@@ -85,7 +85,7 @@ public class ReviewService {
 		return constructorReviewResponse(review);
 	}
 
-
+	@Transactional(readOnly = true)
 	public ReviewResponse getReview(int reviewId) {
 		Review review = reviewRepository.findById(reviewId).orElse(null);
 		if (review == null) {
@@ -94,6 +94,7 @@ public class ReviewService {
 		return constructorReviewResponse(review);
 	}
 
+	@Transactional(readOnly = true)
 	public ReviewResponse getReviewByOrderDetailId(long orderDetailId) {
 		Review review = reviewRepository.findByOrderDetailId(orderDetailId);
 		if (review == null) {
@@ -102,12 +103,14 @@ public class ReviewService {
 		return constructorReviewResponse(review);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<ReviewResponse> findAllReviewByProductId(int productId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Review> reviews = reviewRepository.findAllByOrderDetail_ProductIdOrderByReviewCreatedAtDesc(productId, pageable);
 		return reviews.map(this::constructorReviewResponse);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<ReviewResponse> findAllReviewByUserId(long userId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Review> reviews = reviewRepository.findAllByOrderDetail_Order_User_IdOrderByReviewCreatedAtDesc(userId,
@@ -166,12 +169,14 @@ public class ReviewService {
 			.build();
 	}
 
+	@Transactional(readOnly = true)
 	public ReviewResponse constructorReviewResponse(Review review) {
 		User user = userRepository.findById(review.getOrderDetail().getOrder().getUser().getId()).orElseThrow(
 			UserNotFoundException::new);
 		return constructorReviewResponse(user, review);
 	}
 
+	@Transactional(readOnly = true)
 	public Page<OrderDetailsWithoutReviewResponse> findAllOrderDetailsByUserId(long userId, int page, int size){
 		Pageable pageable = PageRequest.of(page, size);
 
