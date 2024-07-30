@@ -58,7 +58,7 @@ public class WishlistController {
 	}
 
 	@JwtValidate
-	@GetMapping("{/productId}")
+	@GetMapping("/{productId}")
 	@ApiOperation("해당 상품이 user가 wishlist에 등록한 상품인지 확인")
 	public ResponseEntity<Boolean> checkWishlist(HttpServletRequest request,
 		@PathVariable int productId) {

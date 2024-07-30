@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
@@ -26,6 +27,7 @@ public class WishlistServiceImpl implements WishlistService {
 	private final UserRepository userRepository;
 
 	@Override
+	@Transactional
 	public long createWishlist(long userId, int productId) {
 		User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 		Product product = productRepository.findById(productId).orElseThrow(
@@ -35,11 +37,13 @@ public class WishlistServiceImpl implements WishlistService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteWishlist(long wishlistId) {
 		wishlistRepository.deleteById(wishlistId);
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<ProductResponse> getWishlists(long userId, int pageNo, int pageSize) {
 
 		if (!userRepository.existsById(userId)) {
@@ -58,6 +62,7 @@ public class WishlistServiceImpl implements WishlistService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public boolean isUserWishlist(long userId, int productId) {
 
 		if (!userRepository.existsById(userId)) {
