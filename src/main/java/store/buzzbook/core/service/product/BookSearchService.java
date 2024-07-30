@@ -49,7 +49,7 @@ public class BookSearchService {
 	@Value("${aladin.api.key}")
 	private String aladinApiKey;
 
-	// private final ProductDocumentRepository productDocumentRepository;
+
 	public void searchAndSaveBooks(String query) {
 		List<BookApiRequest.Item> items = searchBooks(query);
 		saveBooksToDatabase(items);

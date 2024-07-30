@@ -65,7 +65,6 @@ public class ProductService {
 		return convertToProductResponse(product);
 	}
 
-
 	@Transactional(readOnly = true)
 	public List<ProductResponse> getAllProducts() {
 		return productRepository.findAll().stream()
@@ -73,13 +72,11 @@ public class ProductService {
 			.toList();
 	}
 
-
 	@Transactional(readOnly = true)
 	public Page<ProductResponse> getAllProducts(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		return productRepository.findAll(pageable).map(ProductResponse::convertToProductResponse);
 	}
-
 
 	@Transactional(readOnly = true)
 	public ProductResponse getProductById(int id) {
@@ -91,6 +88,7 @@ public class ProductService {
 
 		return ProductResponse.convertToProductResponse(product);
 	}
+
 	@Transactional
 	public ProductResponse updateProduct(int id, ProductUpdateRequest productRequest) {
 		Product product = productRepository.findById(id).orElseThrow(() -> new DataNotFoundException("product", id));
@@ -143,7 +141,6 @@ public class ProductService {
 		return productRepository.save(newProduct);
 	}
 
-
 	//엘라 대체용으로 임시로 만듦
 	@Transactional(readOnly = true)
 	public List<ProductResponse> getAllProductsByTitle(String title) {
@@ -155,16 +152,19 @@ public class ProductService {
 			.toList();
 	}
 
-
-	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId, String orderBy, int pageNo, int pageSize) {
-		Pageable pageable = PageRequest.of(pageNo-1, pageSize);
+	@Transactional(readOnly = true)
+	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId,
+		String orderBy, int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
 
 		Page<Product> products;
 
 		if ("reviews".equals(orderBy)) {
-			products = productRepository.findProductsByCriteriaOrderByReviewCountDesc(status, name, categoryId, pageable);
+			products = productRepository.findProductsByCriteriaOrderByReviewCountDesc(status, name, categoryId,
+				pageable);
 		} else {
-			Specification<Product> spec = Specification.where(productSpecification.getProductsByCriteria(status, name, categoryId))
+			Specification<Product> spec = Specification.where(
+					productSpecification.getProductsByCriteria(status, name, categoryId))
 				.and(productSpecification.orderBy(orderBy));
 			products = productRepository.findAll(spec, pageable);
 		}
@@ -178,9 +178,6 @@ public class ProductService {
 	// public List<ProductDocument> searchByProductName(String productName) {
 	// 	// return productDocumentRepository.findByProductNameContaining(productName);
 	// }
-
-
-
 
 	// 태그 관련 정보를 포함하는 ProductResponse 변환 메서드
 	private ProductResponse convertToProductResponse(Product product) {
