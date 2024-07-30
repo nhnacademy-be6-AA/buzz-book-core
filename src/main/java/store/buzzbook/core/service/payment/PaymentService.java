@@ -73,6 +73,8 @@ import store.buzzbook.core.repository.point.PointLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.auth.AuthService;
+// import store.buzzbook.core.service.order.NonUserOrderSuccessService;
+// import store.buzzbook.core.service.order.UserOrderSuccessService;
 import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
@@ -137,6 +139,12 @@ public class PaymentService {
 		}
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
+
+		// AbstractOrderSuccessService userOrderSuccessService = new UserOrderSuccessService();
+		// userOrderSuccessService.orderSuccess(order.getId());
+		//
+		// AbstractOrderSuccessService nonUserOrderSuccessService = new NonUserOrderSuccessService();
+		// nonUserOrderSuccessService.orderSuccess(order.getId());
 
 		BillLog billLog = billLogRepository.save(
 			BillLog.builder()
