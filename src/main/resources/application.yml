@@ -39,7 +39,7 @@ spring:
     password: nhnacademy123!
 
   elasticsearch:
-    uris: http://115.94.72.198:9200
+    uris: http://115.94.72.197:9200
     username: elastic
     password: nhnacademy123!
 

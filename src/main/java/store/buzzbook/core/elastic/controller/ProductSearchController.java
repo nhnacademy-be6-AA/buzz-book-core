@@ -14,8 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import store.buzzbook.core.elastic.document.ProductDocument;
-import store.buzzbook.core.elastic.service.ElasticDataTransferService;
+import store.buzzbook.core.elastic.document.BookDocument;
 import store.buzzbook.core.elastic.service.ElasticsearchService;
 
 @RestController
@@ -25,22 +24,21 @@ import store.buzzbook.core.elastic.service.ElasticsearchService;
 public class ProductSearchController {
 
 	private final ElasticsearchService elasticsearchService;
-	private final ElasticDataTransferService dataTransferService;
 
 	@GetMapping("/search")
 	@Operation(summary = "상품 검색", description = "상품명을 기준으로 검색")
 	@ApiResponse(responseCode = "200", description = "검색 성공시 Elasticsearch 검색 결과 반환")
-	public ResponseEntity<List<ProductDocument>> searchProducts(
+	public ResponseEntity<List<BookDocument>> searchProducts(
 		@RequestParam @Parameter(description = "검색할 상품명", required = true) String query) throws
 		JsonProcessingException {
-		List<ProductDocument> response = elasticsearchService.searchProducts(query);
+		List<BookDocument> response = elasticsearchService.searchProducts(query);
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/datainit")
-	@Operation(summary = "데이터 싱크", description = "MySQL의 데이터를 Elasticsearch로")
-	@ApiResponse(responseCode = "200", description = "성공시 데이터 총 갯수 반환")
-	public ResponseEntity<Long> searchProducts(){
-		return ResponseEntity.ok(dataTransferService.mySqlDataTransferToElastic());
-	}
+	// @GetMapping("/datainit")
+	// @Operation(summary = "데이터 싱크", description = "MySQL의 데이터를 Elasticsearch로")
+	// @ApiResponse(responseCode = "200", description = "성공시 데이터 총 갯수 반환")
+	// public ResponseEntity<Long> searchProducts(){
+	// 	return ResponseEntity.ok(dataTransferService.mySqlDataTransferToElastic());
+	// }
 }

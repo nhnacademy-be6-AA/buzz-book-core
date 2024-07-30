@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.elastic.client.ElasticSearchClient;
-import store.buzzbook.core.elastic.document.ProductDocument;
+import store.buzzbook.core.elastic.document.BookDocument;
 
 @Service
 @RequiredArgsConstructor
@@ -31,37 +31,33 @@ public class ElasticsearchService {
 	private String password;
 
 
-	public List<ProductDocument> searchProducts(String query) throws JsonProcessingException {
+	public List<BookDocument> searchProducts(String query) throws JsonProcessingException {
 		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
 
-		// JSON 응답 -> ProductDocument 리스트로 변환
+		// JSON 응답 -> BookDocument 리스트로 변환
 
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		JsonNode rootNode = objectMapper.readTree(response);
 		JsonNode hitsNode = rootNode.path("hits").path("hits");
 
-		List<ProductDocument> products = new ArrayList<>();
+		List<BookDocument> books = new ArrayList<>();
 		for (JsonNode hitNode : hitsNode) {
 			JsonNode sourceNode = hitNode.path("_source");
-			ProductDocument product = objectMapper.treeToValue(sourceNode, ProductDocument.class);
-			products.add(product);
+			BookDocument book = objectMapper.treeToValue(sourceNode, BookDocument.class);
+			books.add(book);
 		}
 
-		return products.stream()
-			.map(product -> new ProductDocument(
-				product.getId(),
-				product.getStock(),
-				product.getProductName(),
-				product.getDescription(),
-				product.getPrice(),
-				product.getForwardDate(),
-				product.getScore(),
-				product.getThumbnailPath(),
-				product.getStockStatus(),
-				product.getCategoryId(),
-				product.getTags()
+		return books.stream()
+			.map(book -> new BookDocument(
+				book.getBookId(),
+				book.getProductId(),
+				book.getIsbn(),
+				book.getBookTitle(),
+				book.getDescription(),
+				book.getForwardDate(),
+				book.getAuthors()
 			))
 			.collect(Collectors.toList());
 	}
