@@ -8,20 +8,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Builder
+@NoArgsConstructor
+@Getter
 public class Wishlist {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,4 +32,9 @@ public class Wishlist {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "product_id")
 	private Product product;
+
+	public Wishlist(User user, Product product) {
+		this.user = user;
+		this.product = product;
+	}
 }
