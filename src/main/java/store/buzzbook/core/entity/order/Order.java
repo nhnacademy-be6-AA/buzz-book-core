@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import store.buzzbook.core.entity.user.User;
 
 @Builder
@@ -72,6 +73,11 @@ public class Order {
 	private int deliveryRate;
 
 	private int deductedPoints;
+
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
+	private OrderStatus orderStatus;
 
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
