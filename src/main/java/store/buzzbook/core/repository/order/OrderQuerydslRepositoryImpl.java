@@ -36,7 +36,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.from(order)
 			.join(order.user).on(order.user.id.eq(user.id))
 			.leftJoin(order.details, orderDetail)
-			.orderBy(order.deliveryRate.desc())
+			.orderBy(order.desiredDeliveryDate.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize() + 1)
 			.transform(GroupBy.groupBy(order.orderStr).list(Projections.constructor(
@@ -99,7 +99,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.join(order.user).on(order.user.id.eq(user.id))
 			.leftJoin(order.details, orderDetail)
 			.where(order.user.loginId.eq(loginId))
-			.orderBy(order.deliveryRate.desc())
+			.orderBy(order.desiredDeliveryDate.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize() + 1)
 			.transform(GroupBy.groupBy(order.orderStr).list(Projections.constructor(
@@ -150,7 +150,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 			.from(order)
 			.leftJoin(order.user, user)
 			.leftJoin(billLog).on(billLog.order.eq(order))
-			.orderBy(order.deliveryRate.desc())
+			.orderBy(order.desiredDeliveryDate.desc())
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize() * 2)
 			.transform(GroupBy.groupBy(order.orderStr).list(
