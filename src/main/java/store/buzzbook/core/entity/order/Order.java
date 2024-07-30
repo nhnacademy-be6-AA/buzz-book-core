@@ -1,6 +1,7 @@
 package store.buzzbook.core.entity.order;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +75,8 @@ public class Order {
 
 	private int deductedPoints;
 
+	private int earnedPoints;
+
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
@@ -81,4 +84,8 @@ public class Order {
 
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
+
+	public void changeOrderStatus(OrderStatus orderStatus) {
+		this.orderStatus = orderStatus;
+	}
 }
