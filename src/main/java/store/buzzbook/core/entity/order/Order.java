@@ -71,6 +71,8 @@ public class Order {
 
 	private int deliveryRate;
 
+	private int deductedPoints;
+
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
 }
