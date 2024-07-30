@@ -154,7 +154,8 @@ class OrderControllerTest {
 			"parkseol.dev@gmail.com",   // orderEmail
 			500,                      // myPoint (nullable)
 			null,           // couponCode (nullable)
-			0                        // deliveryRate
+			0,                        // deliveryRate
+			0
 		);
 
 		updateOrderRequest = new UpdateOrderRequest("MC4wOTA4MjAzNjg2OTQy", "REFUND");

@@ -39,4 +39,6 @@ public class CreateOrderRequest {
 	@Nullable
 	private String couponCode;
 	private int deliveryRate;
+	@Nullable
+	private Integer deductedPoints;
 }

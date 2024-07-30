@@ -39,7 +39,6 @@ import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
@@ -52,7 +51,6 @@ import store.buzzbook.core.dto.order.ReadOrdersResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
@@ -60,7 +58,6 @@ import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
-import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
@@ -201,8 +198,6 @@ public class OrderService {
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(ProductNotFoundException::new);
 
-			product.decreaseStock(detail.getQuantity());
-
 			detail.setPrice(product.getPrice());
 
 			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
@@ -232,16 +227,16 @@ public class OrderService {
 	 * @return 생성된 포인트 내역 반환
 	 */
 
-	@Transactional(rollbackFor = Exception.class)
-	public PointLogResponse createPointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
-		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
-		int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
-		int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
-		PointLog pointLog = pointService.createPointLogWithDelta(user, createPointLogForOrderRequest.getPointOrderInquiry(), point+benefit);
-
-		return PointLogResponse.from(pointLog);
-	}
+	// @Transactional(rollbackFor = Exception.class)
+	// public PointLogResponse createPointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
+	// 	User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
+	// 	double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
+	// 	int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
+	// 	int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
+	// 	PointLog pointLog = pointService.createPointLogWithDelta(user, createPointLogForOrderRequest.getPointOrderInquiry(), point+benefit);
+	//
+	// 	return PointLogResponse.from(pointLog);
+	// }
 
 	/**
 	 * 관리자가 주문을 수정하는 기능입니다.

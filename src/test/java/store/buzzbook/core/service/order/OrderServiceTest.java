@@ -243,7 +243,8 @@ class OrderServiceTest {
 			"john.doe@example.com",
 			100,
 			"DISCOUNT2024",
-			50
+			50,
+			0
 		);
 
 		readOrderStatusResponse = new ReadOrderStatusResponse(4, "PAID", "2024-07-15 12:01:11");

@@ -9,6 +9,7 @@ import store.buzzbook.core.entity.payment.BillStatus;
 @Getter
 @NoArgsConstructor
 public class CreateCancelBillLogRequest {
+	private String orderId;
 	private String paymentKey;
 	@Nullable
 	private String cancelReason;

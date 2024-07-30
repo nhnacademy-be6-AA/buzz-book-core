@@ -1,16 +1,12 @@
-package store.buzzbook.core.service.payment;
-
-import static store.buzzbook.core.common.listener.OrderStatusListener.*;
+package store.buzzbook.core.service.order;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -18,50 +14,32 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.DuplicateBillLogException;
 import store.buzzbook.core.common.exception.order.JSONParsingException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
-import store.buzzbook.core.common.exception.user.UserNotFoundException;
-import store.buzzbook.core.dto.coupon.CouponResponse;
-import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderWithBillLogsResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
-import store.buzzbook.core.dto.payment.CreateBillLogRequest;
 import store.buzzbook.core.dto.payment.CreateCancelBillLogRequest;
-import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
-import store.buzzbook.core.dto.user.UserInfo;
-import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.payment.BillLog;
-import store.buzzbook.core.entity.payment.BillStatus;
-import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.mapper.order.OrderDetailMapper;
-import store.buzzbook.core.mapper.order.OrderMapper;
 import store.buzzbook.core.mapper.order.WrappingMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
@@ -70,13 +48,15 @@ import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.point.PointLogRepository;
+import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
-import store.buzzbook.core.service.auth.AuthService;
-// import store.buzzbook.core.service.order.NonUserOrderSuccessService;
-// import store.buzzbook.core.service.order.UserOrderSuccessService;
 import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
+import store.buzzbook.core.service.auth.AuthService;
+import store.buzzbook.core.dto.user.UserInfo;
+import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.common.exception.user.UserNotFoundException;
 
 /**
  * 결제 관련 서비스
@@ -89,6 +69,10 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class PaymentService {
 	private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
+	private final PointPolicyRepository pointPolicyRepository;
+	private final UserOrderCancelService userOrderCancelService;
+	private final NonUserOrderProcessService nonUserOrderProcessService;
+	private final NonUserOrderCancelService nonUserOrderCancelService;
 
 	@Value("${api.gateway.host}")
 	private String host;
@@ -115,6 +99,8 @@ public class PaymentService {
 	private final UserService userService;
 	private final PointService pointService;
 	private final PointLogRepository pointLogRepository;
+	private final OrderFactory orderFactory;
+	private final UserOrderProcessService userOrderProcessService;
 
 	/**
 	 *  결제 내역을 생성합니다.
@@ -124,7 +110,8 @@ public class PaymentService {
 	 */
 
 	@Transactional(rollbackFor = Exception.class)
-	public ReadBillLogResponse createBillLog(JSONObject billLogRequestObject) {
+	public void order(JSONObject billLogRequestObject) {
+
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
 			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
@@ -140,39 +127,17 @@ public class PaymentService {
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 
-		// AbstractOrderSuccessService userOrderSuccessService = new UserOrderSuccessService();
-		// userOrderSuccessService.orderSuccess(order.getId());
-		//
-		// AbstractOrderSuccessService nonUserOrderSuccessService = new NonUserOrderSuccessService();
-		// nonUserOrderSuccessService.orderSuccess(order.getId());
-
-		BillLog billLog = billLogRepository.save(
-			BillLog.builder()
-				.price(readPaymentResponse.getTotalAmount())
-				.paymentKey(
-					readPaymentResponse.getPaymentKey())
-				.order(order)
-				.status(BillStatus.valueOf(readPaymentResponse.getStatus()))
-				.payment(readPaymentResponse.getMethod())
-				.payAt(
-					LocalDateTime.now())
-				.build());
-		UserInfo userInfo = null;
 		if (order.getUser() != null) {
-			userInfo = UserInfo.builder()
-				.email(order.getOrderEmail())
-				.loginId(order.getUser().getLoginId())
-				.isAdmin(order.getUser().isAdmin())
-				.contactNumber(order.getUser().getContactNumber())
-				.birthday(order.getUser().getBirthday())
-				.build();
-		} else {
-			userInfo = UserInfo.builder()
-				.loginId(order.getOrderEmail())
-				.build();
-		}
+			HttpHeaders headers = new HttpHeaders();
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, PAID), userInfo.loginId()));
+			orderFactory.setOrderStrategy(userOrderProcessService, order.getId(), readPaymentResponse.getPaymentKey(), headers);
+			orderFactory.process();
+		} else {
+			HttpHeaders headers = new HttpHeaders();
+
+			orderFactory.setOrderStrategy(nonUserOrderProcessService, order.getId(), null, headers);
+			orderFactory.nonUserProcess();
+		}
 	}
 
 	/**
@@ -208,7 +173,7 @@ public class PaymentService {
 	 */
 
 	@Transactional(rollbackFor = Exception.class)
-	public ReadBillLogResponse createCancelBillLog(JSONObject billLogRequestObject) {
+	public void cancel(JSONObject billLogRequestObject) {
 
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
@@ -220,35 +185,72 @@ public class PaymentService {
 
 		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
 
-		BillLog billLog = billLogRepository.save(
-			BillLog.builder()
-				.price(Arrays.stream(readPaymentResponse.getCancels())
-					.max(
-						Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(),
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME)))
-					.get()
-					.getCancelAmount())
-				.paymentKey(
-					readPaymentResponse.getPaymentKey())
-				.order(order)
-				.status(BillStatus.valueOf(readPaymentResponse.getStatus()))
-				.payment(readPaymentResponse.getMethod())
-				.payAt(
-					LocalDateTime.now())
-				.cancelReason(Arrays.stream(readPaymentResponse.getCancels())
-					.max(
-						Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(),
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME)))
-					.get()
-					.getCancelReason())
-				.build());
-
 		if (order.getUser() != null) {
-			return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), order.getUser().getLoginId()));
+			HttpHeaders headers = new HttpHeaders();
+
+			orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), readPaymentResponse.getPaymentKey(), headers);
+			orderFactory.process();
+		} else {
+			HttpHeaders headers = new HttpHeaders();
+
+			orderFactory.setOrderStrategy(nonUserOrderCancelService, order.getId(), null, headers);
+			orderFactory.nonUserProcess();
 		}
 
-		return BillLogMapper.toDto(billLog, OrderMapper.toDto(order, getReadOrderDetailResponses(order, CANCELED), null));
+		// BillLog billLog = billLogRepository.save(
+		// 	BillLog.builder()
+		// 		.price(Arrays.stream(readPaymentResponse.getCancels())
+		// 			.max(
+		// 				Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(),
+		// 					DateTimeFormatter.ISO_OFFSET_DATE_TIME)))
+		// 			.get()
+		// 			.getCancelAmount())
+		// 		.paymentKey(
+		// 			readPaymentResponse.getPaymentKey())
+		// 		.order(order)
+		// 		.status(BillStatus.valueOf(readPaymentResponse.getStatus()))
+		// 		.payment(readPaymentResponse.getMethod())
+		// 		.payAt(
+		// 			LocalDateTime.now())
+		// 		.cancelReason(Arrays.stream(readPaymentResponse.getCancels())
+		// 			.max(
+		// 				Comparator.comparing(cancel -> ZonedDateTime.parse(cancel.getCanceledAt(),
+		// 					DateTimeFormatter.ISO_OFFSET_DATE_TIME)))
+		// 			.get()
+		// 			.getCancelReason())
+		// 		.build());
 	}
+
+	/**
+	 * 다른 지불 수단(쿠폰, 포인트)에 대한 환불 내역을 생성합니다.
+	 *
+	 * @param createCancelBillLogRequest 결제 취소 내역 생성 요청 객체
+	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
+	 */
+
+	@Transactional(rollbackFor = Exception.class)
+	public void refund(CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
+
+		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+
+		User user = userRepository.findByLoginId(userInfo.loginId())
+			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
+
+		Order order = orderRepository.findByOrderStr(createCancelBillLogRequest.getOrderId());
+
+		HttpHeaders headers = new HttpHeaders();
+
+		orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), createCancelBillLogRequest.getPaymentKey(), headers);
+		orderFactory.process();
+
+	}
+
+	/**
+	 * 주문 취소 내역을 생성합니다.
+	 *
+	 * @param billLogRequestObject 토스 api에서 반환하는 payment 객체
+	 * @return 주문 내역 응답 객체
+	 */
 
 	/**
 	 * 다른 지불 수단(쿠폰, 포인트)에 대한 결제 내역을 생성합니다.
@@ -258,54 +260,54 @@ public class PaymentService {
 	 * @return 결제 내역 응답 객체
 	 */
 
-	@Transactional(rollbackFor = Exception.class)
-	public ReadBillLogResponse createBillLogWithDifferentPayment(CreateBillLogRequest createBillLogRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-
-		Order order = orderRepository.findByOrderStr(createBillLogRequest.getOrderId());
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(ProductNotFoundException::new);
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(WrappingNotFoundException::new);
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
-
-		BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
-
-		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-
-		if (createBillLogRequest.getPayment().equals(POINT)) {
-			pointService.createPointLogWithDelta(user, POINT_PAYMENT_INQUIRY, -createBillLogRequest.getPrice());
-		}
-
-		if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment()
-			.equals(POINT)) {
-			HttpHeaders headers = new HttpHeaders();
-			headers.set("Content-Type", "application/json");
-			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
-			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
-
-			// 쿠폰 상태 업데이트 (재시도 포함)
-			try {
-				updateCouponStatus(billLog, headers, CouponStatus.USED);
-			} catch (Exception e) {
-				throw new CouponStatusNotUpdatedException();
-			}
-		}
-
-		return BillLogMapper.toDto(billLog,
-			OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
-	}
+	// @Transactional(rollbackFor = Exception.class)
+	// public ReadBillLogResponse createBillLogWithDifferentPayment(CreateBillLogRequest createBillLogRequest,
+	// 	HttpServletRequest request) {
+	// 	UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+	//
+	// 	Order order = orderRepository.findByOrderStr(createBillLogRequest.getOrderId());
+	// 	List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+	//
+	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+	// 	for (OrderDetail orderDetail : orderDetails) {
+	// 		orderDetail.setOrderStatus(orderStatusRepository.findByName(PAID));
+	// 		Product product = productRepository.findById(orderDetail.getProduct().getId())
+	// 			.orElseThrow(ProductNotFoundException::new);
+	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+	// 			.orElseThrow(WrappingNotFoundException::new);
+	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+	// 		readOrderDetailResponses.add(
+	// 			OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+	// 				readWrappingResponse));
+	// 	}
+	//
+	// 	BillLog billLog = billLogRepository.save(BillLogMapper.toEntity(createBillLogRequest, order));
+	//
+	// 	User user = userRepository.findByLoginId(userInfo.loginId())
+	// 		.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
+	//
+	// 	if (createBillLogRequest.getPayment().equals(POINT)) {
+	// 		pointService.createPointLogWithDelta(user, POINT_PAYMENT_INQUIRY, -createBillLogRequest.getPrice());
+	// 	}
+	//
+	// 	if (!createBillLogRequest.getPayment().equals(SIMPLE_PAYMENT) && !createBillLogRequest.getPayment()
+	// 		.equals(POINT)) {
+	// 		HttpHeaders headers = new HttpHeaders();
+	// 		headers.set("Content-Type", "application/json");
+	// 		headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
+	// 		headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
+	//
+	// 		// 쿠폰 상태 업데이트 (재시도 포함)
+	// 		try {
+	// 			updateCouponStatus(billLog, headers, CouponStatus.USED);
+	// 		} catch (Exception e) {
+	// 			throw new CouponStatusNotUpdatedException();
+	// 		}
+	// 	}
+	//
+	// 	return BillLogMapper.toDto(billLog,
+	// 		OrderMapper.toDto(order, readOrderDetailResponses, user.getLoginId()));
+	// }
 
 	/**
 	 * 쿠폰 상태를 업데이트 합니다.
@@ -316,26 +318,26 @@ public class PaymentService {
 	 * @throws CouponStatusNotUpdatedException 쿠폰 상태가 업데이트 되지 않았을 경우 2초마다 최대 3번 재시도 요청
 	 */
 
-	@Retryable(
-		retryFor = { CouponStatusNotUpdatedException.class },
-		maxAttempts = 3,
-		backoff = @Backoff(delay = 2000)
-	)
-	protected void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
-		UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
-		HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
-
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
-			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
-			CouponResponse.class);
-
-		CouponResponse couponResponse = couponResponseResponseEntity.getBody();
-
-		if (couponResponse == null || couponResponse.status() != couponStatus) {
-			throw new CouponStatusNotUpdatedException();
-		}
-	}
+	// @Retryable(
+	// 	retryFor = { CouponStatusNotUpdatedException.class },
+	// 	maxAttempts = 3,
+	// 	backoff = @Backoff(delay = 2000)
+	// )
+	// public void updateCouponStatus(BillLog billLog, HttpHeaders headers, CouponStatus couponStatus) {
+	// 	UpdateCouponRequest updateCouponRequest = new UpdateCouponRequest(billLog.getPayment(), couponStatus);
+	// 	HttpEntity<UpdateCouponRequest> updateCouponRequestHttpEntity = new HttpEntity<>(updateCouponRequest, headers);
+	//
+	// 	RestTemplate restTemplate = new RestTemplate();
+	// 	ResponseEntity<CouponResponse> couponResponseResponseEntity = restTemplate.exchange(
+	// 		String.format("http://%s:%d/api/coupons", host, port), HttpMethod.PUT, updateCouponRequestHttpEntity,
+	// 		CouponResponse.class);
+	//
+	// 	CouponResponse couponResponse = couponResponseResponseEntity.getBody();
+	//
+	// 	if (couponResponse == null || couponResponse.status() != couponStatus) {
+	// 		throw new CouponStatusNotUpdatedException();
+	// 	}
+	// }
 
 	/**
 	 * 결제 내역과 함께 주문 내역들을 조회합니다.
@@ -450,95 +452,43 @@ public class PaymentService {
 	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
 	 */
 
-	@Transactional
-	public void createCancelBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
-		HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-
-		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
-			.stream().filter(b -> !(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
-
-		for (BillLog billLog : billLogs) {
-			billLogRepository.save(BillLog.builder()
-				.price(billLog.getPrice())
-				.paymentKey(createCancelBillLogRequest.getPaymentKey())
-				.payment(billLog.getPayment())
-				.status(createCancelBillLogRequest.getStatus())
-				.order(billLog.getOrder())
-				.cancelReason(createCancelBillLogRequest.getCancelReason())
-				.payAt(LocalDateTime.now())
-				.build());
-
-			if (billLog.getPayment().equals(POINT)) {
-				pointService.createPointLogWithDelta(user, POINT_CANCEL_INQUIRY, billLog.getPrice());
-			}
-
-			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
-				HttpHeaders headers = new HttpHeaders();
-				headers.set("Content-Type", "application/json");
-
-				try {
-					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
-				} catch (Exception e) {
-					throw new CouponStatusNotUpdatedException();
-				}
-			}
-		}
-	}
-
-	/**
-	 * 다른 지불 수단(쿠폰, 포인트)에 대한 환불 내역을 생성합니다.
-	 *
-	 * @param createCancelBillLogRequest 결제 취소 내역 생성 요청 객체
-	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
-	 */
-
-	@Transactional(rollbackFor = Exception.class)
-	public void createRefundBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
-		HttpServletRequest request) {
-
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-
-		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey());
-
-		for (BillLog billLog : billLogs) {
-			billLogRepository.save(BillLog.builder()
-				.price(billLog.getPrice())
-				.paymentKey(createCancelBillLogRequest.getPaymentKey())
-				.payment(billLog.getPayment())
-				.status(createCancelBillLogRequest.getStatus())
-				.order(billLog.getOrder())
-				.cancelReason(createCancelBillLogRequest.getCancelReason())
-				.payAt(LocalDateTime.now())
-				.build());
-
-			if (billLog.getPayment().equals(SIMPLE_PAYMENT)) {
-				int deliveryRate = billLog.getOrder().getDeliveryRate();
-
-				pointService.createPointLogWithDelta(user, POINT_REFUND_INQUIRY, billLog.getPrice() - deliveryRate);
-			}
-
-			if (billLog.getPayment().equals(POINT)) {
-				pointService.createPointLogWithDelta(user, CANCEL_POINT_REFUND_INQUIRY, -billLog.getPrice());
-			}
-
-			if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
-				HttpHeaders headers = new HttpHeaders();
-				headers.set("Content-Type", "application/json");
-
-				try {
-					updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
-				} catch (Exception e) {
-					throw new CouponStatusNotUpdatedException();
-				}
-
-			}
-		}
-	}
+	// @Transactional
+	// public void createCancelBillLogWithDifferentPayment(CreateCancelBillLogRequest createCancelBillLogRequest,
+	// 	HttpServletRequest request) {
+	// 	UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
+	//
+	// 	User user = userRepository.findByLoginId(userInfo.loginId())
+	// 		.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
+	// 	List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(createCancelBillLogRequest.getPaymentKey())
+	// 		.stream().filter(b -> !(b.getPayment().equals(SIMPLE_PAYMENT))).toList();
+	//
+	// 	for (BillLog billLog : billLogs) {
+	// 		billLogRepository.save(BillLog.builder()
+	// 			.price(billLog.getPrice())
+	// 			.paymentKey(createCancelBillLogRequest.getPaymentKey())
+	// 			.payment(billLog.getPayment())
+	// 			.status(createCancelBillLogRequest.getStatus())
+	// 			.order(billLog.getOrder())
+	// 			.cancelReason(createCancelBillLogRequest.getCancelReason())
+	// 			.payAt(LocalDateTime.now())
+	// 			.build());
+	//
+	// 		if (billLog.getPayment().equals(POINT)) {
+	// 			pointService.createPointLogWithDelta(user, POINT_CANCEL_INQUIRY, billLog.getPrice());
+	// 		}
+	//
+	// 		if (!billLog.getPayment().equals(SIMPLE_PAYMENT) && !billLog.getPayment().equals(POINT)) {
+	// 			HttpHeaders headers = new HttpHeaders();
+	// 			headers.set("Content-Type", "application/json");
+	//
+	// 			try {
+	// 				updateCouponStatus(billLog, headers, CouponStatus.AVAILABLE);
+	// 			} catch (Exception e) {
+	// 				throw new CouponStatusNotUpdatedException();
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	/**
 	 * 토스 결제 승인 실패 시 결제 내역을 롤백합니다. (포인트 결제, 쿠폰 결제, 포인트 적립 내역들 취소)
@@ -546,16 +496,16 @@ public class PaymentService {
 	 * @param paymentKey paymentKey
 	 */
 
-	@Transactional
-	public void rollbackBillLog(String paymentKey) {
-		List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(paymentKey);
-		for (BillLog billLog : billLogs) {
-			billLogRepository.save(BillLog.builder().payment(billLog.getPayment()).price(billLog.getPrice())
-				.payAt(LocalDateTime.now()).status(BillStatus.CANCELED).paymentKey(billLog.getPaymentKey()).order(billLog.getOrder()).cancelReason(PAYMENT_ERROR).build());
-		}
-
-		User user = billLogs.getFirst().getOrder().getUser();
-		PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
-		pointService.createPointLogWithDelta(user, CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY, -pointLog.getDelta());
-	}
+	// @Transactional
+	// public void rollbackBillLog(String paymentKey) {
+	// 	List<BillLog> billLogs = billLogRepository.findAllByPaymentKey(paymentKey);
+	// 	for (BillLog billLog : billLogs) {
+	// 		billLogRepository.save(BillLog.builder().payment(billLog.getPayment()).price(billLog.getPrice())
+	// 			.payAt(LocalDateTime.now()).status(BillStatus.CANCELED).paymentKey(billLog.getPaymentKey()).order(billLog.getOrder()).cancelReason(PAYMENT_ERROR).build());
+	// 	}
+	//
+	// 	User user = billLogs.getFirst().getOrder().getUser();
+	// 	PointLog pointLog = pointLogRepository.findFirstByUserIdOrderByCreatedAtDesc(user.getId());
+	// 	pointService.createPointLogWithDelta(user, CANCEL_POINT_FOR_PAYMENT_ERROR_INQUIRY, -pointLog.getDelta());
+	// }
 }

@@ -25,11 +25,10 @@ import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyWithOrderDetailRequest;
-import store.buzzbook.core.dto.payment.ReadPaymentResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
-import store.buzzbook.core.service.payment.PaymentService;
+import store.buzzbook.core.service.order.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
 /**
@@ -85,7 +84,7 @@ public class PaymentController {
 	@Operation(summary = "결제 내역 추가", description = "결제 내역 추가")
 	@PostMapping("/bill-log")
 	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody JSONObject createBillLogRequest) {
-		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
+		return ResponseEntity.ok(paymentService.order(createBillLogRequest));
 	}
 
 	@Operation(summary = "토스 결제 승인 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
@@ -98,7 +97,7 @@ public class PaymentController {
 	@Operation(summary = "취소 내역 추가", description = "취소 내역 추가")
 	@PostMapping("/bill-log/cancel")
 	public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody JSONObject createBillLogRequest) {
-		return ResponseEntity.ok(paymentService.createCancelBillLog(createBillLogRequest));
+		return ResponseEntity.ok(paymentService.cancel(createBillLogRequest));
 	}
 
 	@JwtOrderValidate
@@ -121,7 +120,7 @@ public class PaymentController {
 	@Operation(summary = "포인트, 쿠폰 환불 내역 추가", description = "포인트, 쿠폰 환불 내역 추가")
 	@PostMapping("/bill-log/different-payment/refund")
 	public ResponseEntity<String> createRefundBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
-		paymentService.createRefundBillLogWithDifferentPayment(createCancelBillLogRequest, request);
+		paymentService.refund(createCancelBillLogRequest, request);
 		return ResponseEntity.ok(CANCELED);
 	}
 

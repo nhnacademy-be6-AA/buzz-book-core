@@ -1,6 +1,7 @@
 package store.buzzbook.core.entity.order;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,12 +14,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import store.buzzbook.core.entity.user.User;
 
 @Builder
@@ -70,11 +73,12 @@ public class Order {
 
 	private int deliveryRate;
 
-	private Integer deductedPoints;
+	private int deductedPoints;
 
-	private Integer earnedPoints;
+	@Setter
+	private int earnedPoints;
 
-	private Integer deductedCouponPrice;
+	private int deductedCouponPrice;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
