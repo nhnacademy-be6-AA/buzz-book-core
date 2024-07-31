@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,10 @@ import org.springframework.web.client.RestTemplate;
 
 import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.common.exception.order.OutOfCouponException;
+import store.buzzbook.core.common.exception.order.OutOfPointsException;
+import store.buzzbook.core.common.exception.order.ProductNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -27,6 +32,8 @@ import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
+import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
@@ -64,6 +71,17 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 
 	@Override
 	boolean validateStock(int productId, int quantity) {
+		Product product = productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);
+		return (product.getStock() < quantity);
+	}
+
+	@Override
+	boolean validatePoints(int deductedPoints, int holdingPoints) {
+		return (deductedPoints > holdingPoints);
+	}
+
+	@Override
+	boolean validateCoupon(User user, String couponCode) {
 		return false;
 	}
 
@@ -158,8 +176,17 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 			Product product = detail.getProduct();
 			// 1. 검증
 			if (validateStock(product.getId(), detail.getQuantity())) {
-				// 예외 처리 하겠다.
+				throw new ProductOutOfStockException();
 			}
+
+			if (validatePoints(order.getDeductedPoints(), pointService.getUserPoint(order.getUser().getId()))) {
+				throw new OutOfPointsException();
+			}
+
+			if (validateCoupon(order.getUser(), order.getCouponCode())) {
+				throw new OutOfCouponException();
+			}
+
 			// 2. 재고 처리
 			decreaseStock(product.getId(), detail.getQuantity());
 		}
@@ -177,7 +204,7 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 	}
 
 	@Override
-	public void nonUserProcess(long orderId, HttpHeaders headers) {
+	public void nonUserProcess(long orderId) {
 		return;
 	}
 }

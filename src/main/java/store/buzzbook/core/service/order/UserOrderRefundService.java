@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.entity.coupon.CouponStatus;
@@ -144,7 +145,7 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 			Product product = detail.getProduct();
 			// 1. 검증
 			if (validateStock(product.getId(), detail.getQuantity())) {
-				// 예외 처리 하겠다.
+				throw new ProductOutOfStockException();
 			}
 			// 2. 재고 처리
 			increaseStock(product.getId(), detail.getQuantity());
@@ -158,7 +159,7 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 	}
 
 	@Override
-	public void nonUserProcess(long orderId, HttpHeaders headers) {
+	public void nonUserProcess(long orderId) {
 		return;
 	}
 }

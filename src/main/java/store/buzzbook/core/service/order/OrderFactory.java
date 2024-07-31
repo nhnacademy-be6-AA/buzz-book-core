@@ -22,6 +22,6 @@ public class OrderFactory {
 	}
 
 	void nonUserProcess() {
-		orderStrategy.nonUserProcess(orderId, httpHeaders);
+		orderStrategy.nonUserProcess(orderId);
 	}
 }

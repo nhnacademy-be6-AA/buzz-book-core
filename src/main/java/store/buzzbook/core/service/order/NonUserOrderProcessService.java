@@ -8,10 +8,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
@@ -25,7 +28,18 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 
 	@Override
 	boolean validateStock(int productId, int quantity) {
-		return false;
+		Product product = productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);
+		return (product.getStock() < quantity);
+	}
+
+	@Override
+	boolean validatePoints(int deductedPoints, int holdingPoints) {
+		return (deductedPoints > holdingPoints);
+	}
+
+	@Override
+	boolean validateCoupon(User user, String couponCode) {
+		return !(user.getUserCoupons().stream().anyMatch(c -> c.getCouponCode().equals(couponCode)));
 	}
 
 	// @Override
@@ -33,7 +47,7 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 	//
 	// }
 
-	public void nonUserProcess(long orderId, HttpHeaders headers) {
+	public void nonUserProcess(long orderId) {
 		OrderStatus orderStatus = orderStatusRepository.findByName(PAID);
 
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
@@ -43,8 +57,9 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 			Product product = detail.getProduct();
 			// 1. 검증
 			if (validateStock(product.getId(), detail.getQuantity())) {
-				// 예외 처리 하겠다.
+				throw new ProductOutOfStockException();
 			}
+
 			// 2. 재고 처리
 			decreaseStock(product.getId(), detail.getQuantity());
 		}

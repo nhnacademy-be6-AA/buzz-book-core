@@ -17,10 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
-import store.buzzbook.core.dto.payment.CreateBillLogRequest;
 import store.buzzbook.core.dto.payment.CreateCancelBillLogRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
-import store.buzzbook.core.dto.payment.ReadBillLogResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogRequest;
@@ -44,7 +42,6 @@ import store.buzzbook.core.service.user.UserService;
 @RequiredArgsConstructor
 public class PaymentController {
 	private static final String CANCELED = "Canceled";
-	private static final String SUCCESS = "Rollback Successful";
 
 	private final PaymentService paymentService;
 	private final UserService userService;
@@ -81,48 +78,56 @@ public class PaymentController {
 		return ResponseEntity.ok(data);
 	}
 
-	@Operation(summary = "결제 내역 추가", description = "결제 내역 추가")
-	@PostMapping("/bill-log")
-	public ResponseEntity<ReadBillLogResponse> createBillLog(@RequestBody JSONObject createBillLogRequest) {
-		return ResponseEntity.ok(paymentService.order(createBillLogRequest));
+	@Operation(summary = "주문 결제", description = "주문 결제")
+	@PostMapping("/order")
+	public ResponseEntity<String> order(@RequestBody JSONObject createBillLogRequest, HttpServletRequest request) {
+		paymentService.order(createBillLogRequest, request);
+		return ResponseEntity.ok().build();
 	}
 
-	@Operation(summary = "토스 결제 승인 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
-	@PostMapping("/bill-log/rollback")
-	public ResponseEntity<String> rollbackBillLog(@RequestBody String paymentKey) {
-		paymentService.rollbackBillLog(paymentKey);
-		return ResponseEntity.ok(SUCCESS);
-	}
-
-	@Operation(summary = "취소 내역 추가", description = "취소 내역 추가")
-	@PostMapping("/bill-log/cancel")
-	public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody JSONObject createBillLogRequest) {
-		return ResponseEntity.ok(paymentService.cancel(createBillLogRequest));
+	@Operation(summary = "주문 취소", description = "주문 취소")
+	@PostMapping("/cancel")
+	public ResponseEntity<String> cancel(@RequestBody JSONObject createBillLogRequest, HttpServletRequest request) {
+		paymentService.order(createBillLogRequest, request);
+		return ResponseEntity.ok().build();
 	}
 
 	@JwtOrderValidate
-	@Operation(summary = "포인트, 쿠폰 결제 내역 추가", description = "포인트, 쿠폰 결제 내역 추가")
-	@PostMapping("/bill-log/different-payment")
-	public ResponseEntity<ReadBillLogResponse> createBillLogForDifferentPayment(@RequestBody CreateBillLogRequest createBillLogRequest, HttpServletRequest request) {
-		ReadBillLogResponse readBillLogResponse = paymentService.createBillLogWithDifferentPayment(createBillLogRequest, request);
-		return ResponseEntity.ok(readBillLogResponse);
-	}
-
-	@JwtOrderValidate
-	@Operation(summary = "포인트, 쿠폰 취소 내역 추가", description = "포인트, 쿠폰 결제 내역 취소 내역 추가")
-	@PostMapping("/bill-log/different-payment/cancel")
-	public ResponseEntity<String> createCancelBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
-		paymentService.createCancelBillLogWithDifferentPayment(createCancelBillLogRequest, request);
-		return ResponseEntity.ok(CANCELED);
-	}
-
-	@JwtOrderValidate
-	@Operation(summary = "포인트, 쿠폰 환불 내역 추가", description = "포인트, 쿠폰 환불 내역 추가")
-	@PostMapping("/bill-log/different-payment/refund")
+	@Operation(summary = "주문 환불", description = "주문 환불")
+	@PostMapping("/refund")
 	public ResponseEntity<String> createRefundBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
 		paymentService.refund(createCancelBillLogRequest, request);
 		return ResponseEntity.ok(CANCELED);
 	}
+
+	// @Operation(summary = "토스 결제 승인 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
+	// @PostMapping("/bill-log/rollback")
+	// public ResponseEntity<String> rollbackBillLog(@RequestBody String paymentKey) {
+	// 	paymentService.rollbackBillLog(paymentKey);
+	// 	return ResponseEntity.ok(SUCCESS);
+	// }
+	//
+	// @Operation(summary = "취소 내역 추가", description = "취소 내역 추가")
+	// @PostMapping("/bill-log/cancel")
+	// public ResponseEntity<ReadBillLogResponse> createCancelBillLog(@RequestBody JSONObject createBillLogRequest) {
+	// 	return ResponseEntity.ok(paymentService.cancel(createBillLogRequest));
+	// }
+	//
+	// @JwtOrderValidate
+	// @Operation(summary = "포인트, 쿠폰 결제 내역 추가", description = "포인트, 쿠폰 결제 내역 추가")
+	// @PostMapping("/bill-log/different-payment")
+	// public ResponseEntity<ReadBillLogResponse> createBillLogForDifferentPayment(@RequestBody CreateBillLogRequest createBillLogRequest, HttpServletRequest request) {
+	// 	ReadBillLogResponse readBillLogResponse = paymentService.createBillLogWithDifferentPayment(createBillLogRequest, request);
+	// 	return ResponseEntity.ok(readBillLogResponse);
+	// }
+	//
+	// @JwtOrderValidate
+	// @Operation(summary = "포인트, 쿠폰 취소 내역 추가", description = "포인트, 쿠폰 결제 내역 취소 내역 추가")
+	// @PostMapping("/bill-log/different-payment/cancel")
+	// public ResponseEntity<String> createCancelBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
+	// 	paymentService.createCancelBillLogWithDifferentPayment(createCancelBillLogRequest, request);
+	// 	return ResponseEntity.ok(CANCELED);
+	// }
 
 	@JwtOrderValidate
 	@Operation(summary = "결제키 조회", description = "결제키 조회")

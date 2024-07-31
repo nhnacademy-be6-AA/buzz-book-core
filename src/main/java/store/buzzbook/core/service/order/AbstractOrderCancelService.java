@@ -32,7 +32,7 @@ public abstract class AbstractOrderCancelService implements OrderStrategy {
 	// - 고객 알림 ( 문자, 카카오 메시지)
 
 	// 검증
-	abstract boolean validateStock(int productId, int quantity);
+
 	// 재고 처리
 	void increaseStock(int productId, int quantity) {
 		Product product = productRepository.findById(productId).orElseThrow(ProductNotFoundException::new);

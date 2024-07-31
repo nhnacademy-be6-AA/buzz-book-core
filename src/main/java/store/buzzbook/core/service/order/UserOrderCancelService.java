@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.entity.coupon.CouponStatus;
@@ -52,11 +53,6 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		super(orderRepository, orderStatusRepository, productRepository);
 		this.pointService = pointService;
 		this.billLogRepository = billLogRepository;
-	}
-
-	@Override
-	boolean validateStock(int productId, int quantity) {
-		return false;
 	}
 
 	void cancelPoints(Order order, long userId, int cancelPoints, String paymentKey) {
@@ -137,9 +133,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		for (OrderDetail detail : details) {
 			Product product = detail.getProduct();
 			// 1. 검증
-			if (validateStock(product.getId(), detail.getQuantity())) {
-				// 예외 처리 하겠다.
-			}
+
 			// 2. 재고 처리
 			increaseStock(product.getId(), detail.getQuantity());
 		}
@@ -151,7 +145,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 	}
 
 	@Override
-	public void nonUserProcess(long orderId, HttpHeaders headers) {
+	public void nonUserProcess(long orderId) {
 		return;
 	}
 }

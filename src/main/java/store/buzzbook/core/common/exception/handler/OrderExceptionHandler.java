@@ -21,7 +21,10 @@ import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
+import store.buzzbook.core.common.exception.order.OutOfCouponException;
+import store.buzzbook.core.common.exception.order.OutOfPointsException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 
 @Slf4j
@@ -37,6 +40,12 @@ public class OrderExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(value = {ExpiredToRefundException.class})
 	public ResponseEntity<String> handleOrderExpired(Exception ex, WebRequest request) {
+		log.debug("Handling order exception : {}", ex.getMessage());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+	}
+
+	@ExceptionHandler(value = {ProductOutOfStockException.class, OutOfCouponException.class, OutOfPointsException.class})
+	public ResponseEntity<String> handleOrderOutOf(Exception ex, WebRequest request) {
 		log.debug("Handling order exception : {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 	}

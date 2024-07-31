@@ -8,6 +8,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductNotFoundException;
+import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
@@ -25,12 +27,7 @@ public class NonUserOrderCancelService extends AbstractOrderCancelService {
 		super(orderRepository, orderStatusRepository, productRepository);
 	}
 
-	@Override
-	boolean validateStock(int productId, int quantity) {
-		return false;
-	}
-
-	public void nonUserProcess(long orderId, HttpHeaders headers) {
+	public void nonUserProcess(long orderId) {
 		OrderStatus orderStatus = orderStatusRepository.findByName(CANCELED);
 
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
@@ -39,9 +36,7 @@ public class NonUserOrderCancelService extends AbstractOrderCancelService {
 		for (OrderDetail detail : details) {
 			Product product = detail.getProduct();
 			// 1. 검증
-			if (validateStock(product.getId(), detail.getQuantity())) {
-				// 예외 처리 하겠다.
-			}
+
 			// 2. 재고 처리
 			increaseStock(product.getId(), detail.getQuantity());
 		}
