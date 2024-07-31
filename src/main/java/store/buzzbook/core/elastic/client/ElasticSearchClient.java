@@ -15,5 +15,6 @@ public interface ElasticSearchClient {
 		@RequestHeader("Authorization") String authorization);
 
 	@PostMapping("/aa-bb_book_index/_doc")
-	void indexDocument(@RequestBody String document, @RequestHeader("Authorization") String authorization);
+	void indexDocument(@RequestBody String document,
+		@RequestHeader("Authorization") String authorization);
 }

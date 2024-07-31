@@ -24,7 +24,6 @@ public class BookDocument {
 	@Field(type = FieldType.Keyword)
 	private String isbn;
 
-
 	@Field(type = FieldType.Text, analyzer = "nori")
 	private String bookTitle;
 
