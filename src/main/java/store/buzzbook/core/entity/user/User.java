@@ -43,7 +43,7 @@ public class User {
 	private List<UserCoupon> userCoupons = new ArrayList<>();
 
 	@NotNull
-	@Size(min = 6, max = 20)
+	@Size(min = 6, max = 50)
 	@Column(name = "login_id", unique = true)
 	private String loginId;
 
