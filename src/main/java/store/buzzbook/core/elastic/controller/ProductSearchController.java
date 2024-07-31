@@ -46,12 +46,12 @@ public class ProductSearchController {
 	}
 
 	// 새로운 자동 완성 엔드포인트
-	@GetMapping("/autocomplete")
-	@Operation(summary = "자동 완성", description = "입력된 단어에 대한 자동 완성 제안")
-	@ApiResponse(responseCode = "200", description = "성공시 자동 완성 제안 반환")
-	public ResponseEntity<List<String>> autocomplete(
-		@RequestParam @Parameter(description = "자동 완성 검색어", required = true) String query) {
-		List<String> suggestions = elasticsearchService.getAutocompleteSuggestions(query);
-		return ResponseEntity.ok(suggestions);
-	}
+	// @GetMapping("/autocomplete")
+	// @Operation(summary = "자동 완성", description = "입력된 단어에 대한 자동 완성 제안")
+	// @ApiResponse(responseCode = "200", description = "성공시 자동 완성 제안 반환")
+	// public ResponseEntity<List<String>> autocomplete(
+	// 	@RequestParam @Parameter(description = "자동 완성 검색어", required = true) String query) {
+	// 	List<String> suggestions = elasticsearchService.getAutocompleteSuggestions(query);
+	// 	return ResponseEntity.ok(suggestions);
+	// }
 }

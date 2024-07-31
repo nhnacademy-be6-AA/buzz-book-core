@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
@@ -29,13 +30,21 @@ public class ElasticsearchService {
 	@Value("${spring.elasticsearch.password}")
 	private String password;
 
-
-	public List<BookDocument> searchProducts(String query) throws JsonProcessingException {
-		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
-
+	private void configureObjectMapper() {
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+	}
+
+	private String createAuthToken() {
+		return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+	}
+
+
+	public List<BookDocument> searchProducts(String query) throws JsonProcessingException {
+		configureObjectMapper();
+		String token = createAuthToken();
+		String response = elasticSearchClient.searchProducts(query, token);
+
 		JsonNode rootNode = objectMapper.readTree(response);
 		JsonNode hitsNode = rootNode.path("hits").path("hits");
 
@@ -49,24 +58,25 @@ public class ElasticsearchService {
 		return books;
 	}
 
-	public List<String> getAutocompleteSuggestions(String query) {
-		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-		String suggestQuery = buildSuggestQuery(query);  // 자동 완성을 위한 요청 본문 생성
-		String response = elasticSearchClient.suggest(suggestQuery, "Basic " + token);
-
-		List<String> suggestions = new ArrayList<>();
-		try {
-			JsonNode rootNode = objectMapper.readTree(response);
-			JsonNode suggestNode = rootNode.path("suggest").path("autocomplete");
-			for (JsonNode suggestion : suggestNode) {
-				suggestions.add(suggestion.path("text").asText());
-			}
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-
-		return suggestions;
-	}
+	// public List<String> getAutocompleteSuggestions(String query) {
+	// 	try {
+	// 		configureObjectMapper();
+	// 		String token = createAuthToken();
+	// 		String suggestQuery = buildSuggestQuery(query);  // 자동 완성을 위한 요청 본문 생성
+	// 		String response = elasticSearchClient.suggest(suggestQuery, token);
+	//
+	// 		List<String> suggestions = new ArrayList<>();
+	// 		JsonNode rootNode = objectMapper.readTree(response);
+	// 		JsonNode suggestNode = rootNode.path("suggest").path("autocomplete");
+	// 		for (JsonNode suggestion : suggestNode) {
+	// 			suggestions.add(suggestion.path("text").asText());
+	// 		}
+	// 		return suggestions;
+	// 	} catch (JsonProcessingException e) {
+	// 		e.printStackTrace(); // 실제로는 로깅을 사용하여 오류를 기록하는 것이 좋습니다.
+	// 		return Collections.emptyList(); // 오류 발생 시 빈 리스트 반환
+	// 	}
+	// }
 
 	private String buildSuggestQuery(String query) {
 		// 엘라스틱 서치의 suggest 요청 본문을 JSON 형식으로 작성
