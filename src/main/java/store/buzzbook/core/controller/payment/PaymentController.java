@@ -95,7 +95,7 @@ public class PaymentController {
 	@JwtOrderValidate
 	@Operation(summary = "주문 환불", description = "주문 환불")
 	@PostMapping("/refund")
-	public ResponseEntity<String> createRefundBillLogForDifferentPayment(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
+	public ResponseEntity<String> refund(@RequestBody CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
 		paymentService.refund(createCancelBillLogRequest, request);
 		return ResponseEntity.ok(CANCELED);
 	}
