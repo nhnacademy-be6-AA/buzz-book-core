@@ -141,6 +141,7 @@ public class ReviewService {
 
 	}
 
+
 	private void updateProductScore(int productId) {
 		Product product = productRepository.findById(productId).orElse(null);
 		if (product == null) {
@@ -169,7 +170,6 @@ public class ReviewService {
 			.build();
 	}
 
-	@Transactional(readOnly = true)
 	public ReviewResponse constructorReviewResponse(Review review) {
 		User user = userRepository.findById(review.getOrderDetail().getOrder().getUser().getId()).orElseThrow(
 			UserNotFoundException::new);
