@@ -73,12 +73,12 @@ public class Order {
 
 	private int deliveryRate;
 
-	private int deductedPoints;
+	private Integer deductedPoints;
 
 	@Setter
-	private int earnedPoints;
+	private Integer earnedPoints;
 
-	private int deductedCouponPrice;
+	private Integer deductedCouponPrice;
 
 	@NotNull
 	@ManyToOne(fetch = FetchType.LAZY)
