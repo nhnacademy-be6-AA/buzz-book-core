@@ -42,6 +42,6 @@ public class UserAuth {
 	private String provider;
 
 	@NotNull
-	@Column(name = "`provideId`", nullable = false, columnDefinition = "binary(16)")
+	@Column(name = "`provide_Id`", nullable = false, columnDefinition = "binary(16)")
 	private byte[] provideId;
 }
