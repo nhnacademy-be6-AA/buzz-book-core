@@ -80,15 +80,15 @@ public class PaymentController {
 
 	@Operation(summary = "주문 결제", description = "주문 결제")
 	@PostMapping("/order")
-	public ResponseEntity<String> order(@RequestBody JSONObject createBillLogRequest, HttpServletRequest request) {
-		paymentService.order(createBillLogRequest, request);
+	public ResponseEntity<String> order(@RequestBody JSONObject paymentInfo, HttpServletRequest request) {
+		paymentService.order(paymentInfo, request);
 		return ResponseEntity.ok().build();
 	}
 
 	@Operation(summary = "주문 취소", description = "주문 취소")
 	@PostMapping("/cancel")
-	public ResponseEntity<String> cancel(@RequestBody JSONObject createBillLogRequest, HttpServletRequest request) {
-		paymentService.order(createBillLogRequest, request);
+	public ResponseEntity<String> cancel(@RequestBody JSONObject paymentInfo, HttpServletRequest request) {
+		paymentService.cancel(paymentInfo, request);
 		return ResponseEntity.ok().build();
 	}
 

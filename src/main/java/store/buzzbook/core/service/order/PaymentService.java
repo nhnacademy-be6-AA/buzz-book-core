@@ -100,16 +100,16 @@ public class PaymentService {
 	/**
 	 *  결제 내역을 생성합니다.
 	 *
-	 * @param billLogRequestObject 토스 api에서 반환하는 payment 객체
+	 * @param paymentInfo 토스 api에서 반환하는 payment 객체
 	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
 	 */
 
 	@Transactional(rollbackFor = Exception.class)
-	public void order(JSONObject billLogRequestObject, HttpServletRequest request) {
+	public void order(JSONObject paymentInfo, HttpServletRequest request) {
 
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
-			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
+			readPaymentResponse = objectMapper.convertValue(paymentInfo,
 				ReadPaymentResponse.class);
 		} catch (Exception e) {
 			throw new JSONParsingException();
@@ -164,16 +164,16 @@ public class PaymentService {
 	/**
 	 * 주문 취소 내역을 생성합니다.
 	 *
-	 * @param billLogRequestObject 토스 api에서 반환하는 payment 객체
+	 * @param paymentInfo 토스 api에서 반환하는 payment 객체
 	 * @param request 로그인 아이디를 가져올 HttpServletRequest 객체
 	 */
 
 	@Transactional(rollbackFor = Exception.class)
-	public void cancel(JSONObject billLogRequestObject, HttpServletRequest request) {
+	public void cancel(JSONObject paymentInfo, HttpServletRequest request) {
 
 		ReadPaymentResponse readPaymentResponse = null;
 		try {
-			readPaymentResponse = objectMapper.convertValue(billLogRequestObject,
+			readPaymentResponse = objectMapper.convertValue(paymentInfo,
 				ReadPaymentResponse.class);
 		} catch (Exception e) {
 			throw new JSONParsingException();
