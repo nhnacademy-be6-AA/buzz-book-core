@@ -34,8 +34,6 @@ public class ElasticsearchService {
 		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
 
-		// JSON 응답 -> BookDocument 리스트로 변환하는 코드
-
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		JsonNode rootNode = objectMapper.readTree(response);
@@ -49,5 +47,29 @@ public class ElasticsearchService {
 		}
 
 		return books;
+	}
+
+	public List<String> getAutocompleteSuggestions(String query) {
+		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+		String suggestQuery = buildSuggestQuery(query);  // 자동 완성을 위한 요청 본문 생성
+		String response = elasticSearchClient.suggest(suggestQuery, "Basic " + token);
+
+		List<String> suggestions = new ArrayList<>();
+		try {
+			JsonNode rootNode = objectMapper.readTree(response);
+			JsonNode suggestNode = rootNode.path("suggest").path("autocomplete");
+			for (JsonNode suggestion : suggestNode) {
+				suggestions.add(suggestion.path("text").asText());
+			}
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+
+		return suggestions;
+	}
+
+	private String buildSuggestQuery(String query) {
+		// 엘라스틱 서치의 suggest 요청 본문을 JSON 형식으로 작성
+		return "{ \"suggest\": { \"autocomplete\": { \"prefix\": \"" + query + "\", \"completion\": { \"field\": \"suggest\" } } } }";
 	}
 }
