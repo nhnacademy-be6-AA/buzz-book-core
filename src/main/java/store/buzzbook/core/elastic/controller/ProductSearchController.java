@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.elastic.document.BookDocument;
+import store.buzzbook.core.elastic.service.DataTransferService;
 import store.buzzbook.core.elastic.service.ElasticsearchService;
 
 @RestController
@@ -24,6 +25,8 @@ import store.buzzbook.core.elastic.service.ElasticsearchService;
 public class ProductSearchController {
 
 	private final ElasticsearchService elasticsearchService;
+	private final DataTransferService dataTransferService;
+
 
 	@GetMapping("/search")
 	@Operation(summary = "상품 검색", description = "상품명을 기준으로 검색")
@@ -35,10 +38,10 @@ public class ProductSearchController {
 		return ResponseEntity.ok(response);
 	}
 
-	// @GetMapping("/datainit")
-	// @Operation(summary = "데이터 싱크", description = "MySQL의 데이터를 Elasticsearch로")
-	// @ApiResponse(responseCode = "200", description = "성공시 데이터 총 갯수 반환")
-	// public ResponseEntity<Long> searchProducts(){
-	// 	return ResponseEntity.ok(dataTransferService.mySqlDataTransferToElastic());
-	// }
+	@GetMapping("/datainit")
+	@Operation(summary = "데이터 싱크", description = "MySQL의 데이터를 Elasticsearch로")
+	@ApiResponse(responseCode = "200", description = "성공시 데이터 총 갯수 반환")
+	public ResponseEntity<Long> searchProducts(){
+		return ResponseEntity.ok(dataTransferService.mySqlDataTransferToElastic());
+	}
 }

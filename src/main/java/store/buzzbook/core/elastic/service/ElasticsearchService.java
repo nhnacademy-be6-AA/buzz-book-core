@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.elastic.client.ElasticSearchClient;
@@ -35,7 +34,7 @@ public class ElasticsearchService {
 		String token = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 		String response = elasticSearchClient.searchProducts(query, "Basic " + token);
 
-		// JSON 응답 -> BookDocument 리스트로 변환
+		// JSON 응답 -> BookDocument 리스트로 변환하는 코드
 
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -49,16 +48,6 @@ public class ElasticsearchService {
 			books.add(book);
 		}
 
-		return books.stream()
-			.map(book -> new BookDocument(
-				book.getBookId(),
-				book.getProductId(),
-				book.getIsbn(),
-				book.getBookTitle(),
-				book.getDescription(),
-				book.getForwardDate(),
-				book.getAuthors()
-			))
-			.collect(Collectors.toList());
+		return books;
 	}
 }

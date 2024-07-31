@@ -12,7 +12,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Document(indexName = "…")
+@Document(indexName = "aa-bb_book_index")
 @AllArgsConstructor
 public class BookDocument {
 
@@ -24,9 +24,6 @@ public class BookDocument {
 	@Field(type = FieldType.Keyword)
 	private String isbn;
 
-	// @Nullable
-	// @Field(type = FieldType.Text, analyzer = "standard")
-	// private String bookTitleEng;
 
 	@Field(type = FieldType.Text, analyzer = "nori")
 	private String bookTitle;
