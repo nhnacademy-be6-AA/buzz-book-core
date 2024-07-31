@@ -1,5 +1,7 @@
 package store.buzzbook.core.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -28,6 +30,7 @@ public class BookAuthor {
     @ManyToOne
     @JoinColumn(name = "author_id")
     @MapsId("authorId")
+    @JsonBackReference
     private Author author;
 
     @ManyToOne

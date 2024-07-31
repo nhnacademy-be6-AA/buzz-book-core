@@ -86,7 +86,8 @@ public class BookService {
 		}
 
 		Product product = productRepository.findById(book.getProduct().getId()).orElseThrow();
-		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(), product.getPrice(),
+		Product newProduct = new Product(product.getId(), 0, product.getProductName(), product.getDescription(),
+			product.getPrice(),
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
 			product.getCategory(), product.getProductTags());
 		productRepository.save(newProduct);
