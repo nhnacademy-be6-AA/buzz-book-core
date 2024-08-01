@@ -2,6 +2,7 @@ package store.buzzbook.core.elastic.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,11 +31,13 @@ public class ProductSearchController {
 
 	@GetMapping("/search")
 	@Operation(summary = "상품 검색", description = "상품명을 기준으로 검색")
-	@ApiResponse(responseCode = "200", description = "검색 성공시 Elasticsearch 검색 결과 반환")
-	public ResponseEntity<List<BookDocument>> searchProducts(
-		@RequestParam @Parameter(description = "검색할 상품명", required = true) String query) throws
-		JsonProcessingException {
-		List<BookDocument> response = elasticsearchService.searchProducts(query);
+	@ApiResponse(responseCode = "200", description = "검색 성공시 Page<BookDocument> 반환")
+	public ResponseEntity<Page<BookDocument>> searchProducts(
+		@RequestParam @Parameter(description = "검색할 상품명", required = true) String query,
+		@RequestParam(required = false, defaultValue = "1") @Parameter(description = "페이지 번호") Integer pageNo,
+		@RequestParam(required = false, defaultValue = "10") @Parameter(description = "한 페이지에 보여질 아이템 수") Integer pageSize) throws JsonProcessingException {
+
+		Page<BookDocument> response = elasticsearchService.searchProducts(query, pageNo, pageSize);
 		return ResponseEntity.ok(response);
 	}
 
