@@ -65,17 +65,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 
 	@Override
 	boolean validateOrderStatus(Order order) {
-		if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-			throw new AlreadyCanceledException();
-		}
-		if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-			throw new AlreadyRefundedException();
-		}
-		if (!order.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
-			throw new NotPaidException();
-		}
-
-		return false;
+		return (!order.getOrderStatus().equals(orderStatusRepository.findByName(PAID)));
 	}
 
 	@Override
@@ -186,7 +176,9 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 
 		// 1. 검증
 
-		validateOrderStatus(order);
+		if (validateOrderStatus(order)) {
+			throw new NotPaidException();
+		}
 
 		if (order.getCouponCode() != null) {
 			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {

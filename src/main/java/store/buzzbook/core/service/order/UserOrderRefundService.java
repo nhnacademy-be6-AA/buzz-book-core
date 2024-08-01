@@ -66,18 +66,7 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 
 	@Override
 	boolean validateOrderStatus(Order order) {
-		if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-			throw new AlreadyCanceledException();
-		}
-		if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
-			|| order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-			throw new AlreadyRefundedException();
-		}
-		if (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
-			throw new NotShippedException();
-		}
-
-		return false;
+		return (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED)));
 	}
 
 	@Override
@@ -191,7 +180,9 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 		List<OrderDetail> details = order.getDetails();
 
 		// 1. 검증
-		validateOrderStatus(order);
+		if (validateOrderStatus(order)) {
+			throw new NotShippedException();
+		}
 
 		if (order.getCouponCode() != null) {
 			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
