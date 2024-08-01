@@ -245,7 +245,7 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 	}
 
 	@Override
-	public void nonUserProcess(long orderId) {
+	public void nonUserProcess(long orderId, PayInfo payInfo) {
 		return;
 	}
 }

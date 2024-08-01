@@ -24,6 +24,6 @@ public class OrderFactory {
 	}
 
 	void nonUserProcess() {
-		orderStrategy.nonUserProcess(orderId);
+		orderStrategy.nonUserProcess(orderId, payInfo);
 	}
 }

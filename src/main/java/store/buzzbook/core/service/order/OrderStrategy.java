@@ -6,5 +6,5 @@ import store.buzzbook.core.dto.payment.PayInfo;
 
 public interface OrderStrategy {
 	void process(long orderId, PayInfo payInfo, HttpHeaders headers);
-	void nonUserProcess(long orderId);
+	void nonUserProcess(long orderId, PayInfo payInfo);
 }

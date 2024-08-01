@@ -108,7 +108,7 @@ public class PaymentService {
 			orderFactory.setOrderStrategy(userOrderProcessService, order.getId(), paymentInfo, headers);
 			orderFactory.process();
 		} else {
-			orderFactory.setOrderStrategy(nonUserOrderProcessService, order.getId(), null, null);
+			orderFactory.setOrderStrategy(nonUserOrderProcessService, order.getId(), paymentInfo, null);
 			orderFactory.nonUserProcess();
 		}
 	}
@@ -159,7 +159,7 @@ public class PaymentService {
 			orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), paymentInfo, headers);
 			orderFactory.process();
 		} else {
-			orderFactory.setOrderStrategy(nonUserOrderCancelService, order.getId(), null, null);
+			orderFactory.setOrderStrategy(nonUserOrderCancelService, order.getId(), paymentInfo, null);
 			orderFactory.nonUserProcess();
 		}
 	}

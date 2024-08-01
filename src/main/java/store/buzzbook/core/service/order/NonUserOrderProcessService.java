@@ -2,6 +2,7 @@ package store.buzzbook.core.service.order;
 
 import static store.buzzbook.core.common.listener.OrderStatusListener.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -14,17 +15,23 @@ import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
+import store.buzzbook.core.entity.payment.BillLog;
+import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
+import store.buzzbook.core.repository.payment.BillLogRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 
 @Service
 public class NonUserOrderProcessService extends AbstractOrderProcessService {
+	private BillLogRepository billLogRepository;
+
 	protected NonUserOrderProcessService(OrderRepository orderRepository,
-		OrderStatusRepository orderStatusRepository, ProductRepository productRepository) {
+		OrderStatusRepository orderStatusRepository, ProductRepository productRepository, BillLogRepository billLogRepository) {
 		super(orderRepository, orderStatusRepository, productRepository);
+		this.billLogRepository = billLogRepository;
 	}
 
 	@Override
@@ -43,12 +50,26 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 		return false;
 	}
 
+	void savePayment(Order order, PayInfo payInfo) {
+		billLogRepository.save(
+			BillLog.builder()
+				.price(payInfo.getPrice())
+				.paymentKey(
+					payInfo.getPaymentKey())
+				.order(order)
+				.status(BillStatus.DONE)
+				.payment(payInfo.getPayType().name())
+				.payAt(
+					LocalDateTime.now())
+				.build());
+	}
+
 	// @Override
 	// void notify(long orderId, long userId, String message) {
 	//
 	// }
 
-	public void nonUserProcess(long orderId) {
+	public void nonUserProcess(long orderId, PayInfo payInfo) {
 		OrderStatus orderStatus = orderStatusRepository.findByName(PAID);
 
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
@@ -64,6 +85,9 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 			// 2. 재고 처리
 			decreaseStock(product.getId(), detail.getQuantity());
 		}
+
+		savePayment(order, payInfo);
+
 		// 6. 주문 상태 변경
 		updateOrderStatus(order.getId(), orderStatus);
 		// 7. 고객 알림

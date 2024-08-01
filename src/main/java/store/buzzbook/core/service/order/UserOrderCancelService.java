@@ -196,7 +196,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 	}
 
 	@Override
-	public void nonUserProcess(long orderId) {
+	public void nonUserProcess(long orderId, PayInfo payInfo) {
 		return;
 	}
 }
