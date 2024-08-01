@@ -17,8 +17,11 @@ import org.springframework.web.client.RestTemplate;
 
 import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.common.exception.order.OutOfCouponException;
 import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
+import store.buzzbook.core.dto.coupon.CouponRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
+import store.buzzbook.core.dto.coupon.CouponStatusResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.order.Order;
@@ -27,6 +30,7 @@ import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
@@ -53,6 +57,23 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		super(orderRepository, orderStatusRepository, productRepository);
 		this.pointService = pointService;
 		this.billLogRepository = billLogRepository;
+	}
+
+	@Override
+	boolean validateCoupon(User user, String couponCode, HttpHeaders headers) {
+		CouponRequest couponRequest = new CouponRequest(couponCode);
+		HttpEntity<CouponRequest> couponRequestHttpEntity = new HttpEntity<>(couponRequest, headers);
+
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<CouponStatusResponse> couponResponseEntity = restTemplate.exchange(
+			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.POST, couponRequestHttpEntity,
+			CouponStatusResponse.class);
+
+		if (CouponStatus.USED == CouponStatus.fromString(couponResponseEntity.getBody().status())) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	void cancelPoints(Order order, long userId, int cancelPoints, String paymentKey) {
@@ -133,6 +154,9 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		for (OrderDetail detail : details) {
 			Product product = detail.getProduct();
 			// 1. 검증
+			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
+				throw new OutOfCouponException();
+			}
 
 			// 2. 재고 처리
 			increaseStock(product.getId(), detail.getQuantity());

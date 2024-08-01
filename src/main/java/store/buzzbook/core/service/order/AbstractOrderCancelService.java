@@ -1,10 +1,13 @@
 package store.buzzbook.core.service.order;
 
+import org.springframework.http.HttpHeaders;
+
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
@@ -32,6 +35,7 @@ public abstract class AbstractOrderCancelService implements OrderStrategy {
 	// - 고객 알림 ( 문자, 카카오 메시지)
 
 	// 검증
+	abstract boolean validateCoupon(User user, String couponCode, HttpHeaders headers);
 
 	// 재고 처리
 	void increaseStock(int productId, int quantity) {

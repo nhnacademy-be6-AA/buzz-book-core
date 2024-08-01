@@ -1,5 +1,7 @@
 package store.buzzbook.core.service.order;
 
+import org.springframework.http.HttpHeaders;
+
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.entity.order.Order;
@@ -35,7 +37,7 @@ public abstract class AbstractOrderProcessService implements OrderStrategy {
 	// 검증
 	abstract boolean validateStock(int productId, int quantity);
 	abstract boolean validatePoints(int deductedPoints, int holdingPoints);
-	abstract boolean validateCoupon(User user, String couponCode);
+	abstract boolean validateCoupon(User user, String couponCode, HttpHeaders headers);
 
 	// 재고 처리
 	void decreaseStock(int productId, int quantity) {

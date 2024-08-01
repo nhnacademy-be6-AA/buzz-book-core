@@ -22,7 +22,9 @@ import store.buzzbook.core.common.exception.order.OutOfCouponException;
 import store.buzzbook.core.common.exception.order.OutOfPointsException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
+import store.buzzbook.core.dto.coupon.CouponRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
+import store.buzzbook.core.dto.coupon.CouponStatusResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.coupon.CouponStatus;
@@ -33,7 +35,6 @@ import store.buzzbook.core.entity.payment.BillLog;
 import store.buzzbook.core.entity.payment.BillStatus;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.entity.user.UserCoupon;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
@@ -81,8 +82,20 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 	}
 
 	@Override
-	boolean validateCoupon(User user, String couponCode) {
-		return false;
+	boolean validateCoupon(User user, String couponCode, HttpHeaders headers) {
+		CouponRequest couponRequest = new CouponRequest(couponCode);
+		HttpEntity<CouponRequest> couponRequestHttpEntity = new HttpEntity<>(couponRequest, headers);
+
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<CouponStatusResponse> couponResponseEntity = restTemplate.exchange(
+			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.POST, couponRequestHttpEntity,
+			CouponStatusResponse.class);
+
+		if (CouponStatus.AVAILABLE == CouponStatus.fromString(couponResponseEntity.getBody().status())) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	void usePoints(Order order, long userId, int usePoints, String paymentKey) {
@@ -183,7 +196,7 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 				throw new OutOfPointsException();
 			}
 
-			if (validateCoupon(order.getUser(), order.getCouponCode())) {
+			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
 				throw new OutOfCouponException();
 			}
 
