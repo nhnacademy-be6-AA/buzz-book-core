@@ -5,6 +5,7 @@ import static store.buzzbook.core.entity.payment.QBillLog.*;
 import static store.buzzbook.core.entity.user.QGrade.*;
 import static store.buzzbook.core.entity.user.QGradeLog.*;
 import static store.buzzbook.core.entity.user.QUser.*;
+import static store.buzzbook.core.entity.user.QUserAuth.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,9 +17,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
+import store.buzzbook.core.dto.user.LoginUserResponse;
 import store.buzzbook.core.dto.user.UserRealBill;
 import store.buzzbook.core.dto.user.UserRealBillInfo;
 import store.buzzbook.core.dto.user.UserRealBillInfoDetail;
@@ -129,5 +132,18 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 		}
 
 		return new LinkedList<>(userRealBillMap.values());
+	}
+
+	@Override
+	public Optional<LoginUserResponse> findLoginUserResponseByUserAuth(String provider, byte[] provideId) {
+		LoginUserResponse loginUserResponse = jpaQueryFactory
+			.select(Projections.constructor(LoginUserResponse.class, user.loginId, user.password, user.isAdmin))
+			.from(userAuth)
+			.join(userAuth.user, user)
+			.where(userAuth.provider.eq(provider)
+				.and(userAuth.provideId.eq(provideId)))
+			.fetchOne();
+
+		return Optional.ofNullable(loginUserResponse);
 	}
 }
