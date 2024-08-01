@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -71,6 +70,21 @@ public class Order {
 
 	private int deliveryRate;
 
+	private Integer deductedPoints;
+
+	private Integer earnedPoints;
+
+	private Integer deductedCouponPrice;
+
+	@NotNull
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(referencedColumnName = "id", name = "order_status_id", nullable = false)
+	private OrderStatus orderStatus;
+
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> details = new ArrayList<>();
+
+	public void changeOrderStatus(OrderStatus orderStatus) {
+		this.orderStatus = orderStatus;
+	}
 }

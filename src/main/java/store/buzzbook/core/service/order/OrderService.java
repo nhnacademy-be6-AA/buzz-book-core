@@ -7,12 +7,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -84,6 +81,13 @@ import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 
+/**
+ * 주문 관련 서비스
+ * 주문 조회, 생성, 수정 기능과 주문 상태, 포장, 운임비 정책 조회, 생성, 삭제 기능을 제공합니다.
+ *
+ * @author 박설
+ */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -106,6 +110,13 @@ public class OrderService {
 	@PersistenceContext
 	private EntityManager entityManager;
 
+	/**
+	 * 모든 주문 내역을 조회합니다.
+	 *
+	 * @param request 주문 조회 요청 객체
+	 * @return 주문 내역 리스트와 다음 페이지 유무 여부를 가진 Map 객체
+	 */
+
 	@Cacheable(value = "readOrders", key = "#request.page")
 	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
@@ -120,6 +131,13 @@ public class OrderService {
 		return data;
 	}
 
+	/**
+	 * 내 주문 내역을 조회합니다.
+	 *
+	 * @param request 주문 조회 요청 객체와 로그인 아이디
+	 * @return 내 주문 내역 리스트와 다음 페이지 유무 여부를 가진 Map 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public Map<String, Object> readMyOrders(ReadOrdersRequest request, String loginId) {
 		Map<String, Object> data = new HashMap<>();
@@ -132,6 +150,13 @@ public class OrderService {
 
 		return data;
 	}
+
+	/**
+	 * 주문을 생성합니다.
+	 *
+	 * @param createOrderRequest 주문 생성 요청 객체
+	 * @return 생성된 주문 반환
+	 */
 
 	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
@@ -199,8 +224,16 @@ public class OrderService {
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
 	}
 
+	/**
+	 * 포인트 내역을 생성합니다.
+	 *
+	 * @param createPointLogForOrderRequest 포인트 내역 생성 요청 객체
+	 * @param userInfo 유저 정보 객체
+	 * @return 생성된 포인트 내역 반환
+	 */
+
 	@Transactional(rollbackFor = Exception.class)
-	public PointLogResponse updatePointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
+	public PointLogResponse createPointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
 		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
 		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
 		int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
@@ -209,6 +242,13 @@ public class OrderService {
 
 		return PointLogResponse.from(pointLog);
 	}
+
+	/**
+	 * 관리자가 주문을 수정하는 기능입니다.
+	 *
+	 * @param updateOrderRequest 주문 업데이트 요청 객체
+	 * @return 업데이트된 주문 응답 객체
+	 */
 
 	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
@@ -289,6 +329,14 @@ public class OrderService {
 
 		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
 	}
+
+	/**
+	 * 고객이 주문을 수정하는 기능입니다.
+	 *
+	 * @param updateOrderRequest 주문 업데이트 요청 객체
+	 * @param loginId 고객 아이디
+	 * @return 업데이트된 주문 응답 객체
+	 */
 
 	@CacheEvict(value = "getOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
@@ -373,6 +421,14 @@ public class OrderService {
 		return createAt.isBefore(daysAgo);
 	}
 
+	/**
+	 * 회원이 주문을 조회합니다.
+	 *
+	 * @param request 주문 조회 요청 객체
+	 * @param loginId 고객 아이디
+	 * @return 주문 응답 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrder(ReadOrderRequest request, String loginId) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
@@ -380,6 +436,13 @@ public class OrderService {
 
 		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), loginId);
 	}
+
+	/**
+	 * 주문 상세 엔티티 리스트를 DTO 리스트로 변환합니다.
+	 *
+	 * @param orderDetails 주문 상세 엔티티 리스트
+	 * @return 주문 상세 DTO 응답 리스트
+	 */
 
 	private List<ReadOrderDetailResponse> convertOrderDetailsToDto(List<OrderDetail> orderDetails) {
 		List<ReadOrderDetailResponse> details = new ArrayList<>();
@@ -399,6 +462,13 @@ public class OrderService {
 		return details;
 	}
 
+	/**
+	 * 비회원이 주문을 조회합니다.
+	 *
+	 * @param request 비회원 주문 조회 요청 객체
+	 * @return 주문 응답 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public ReadOrderResponse readOrderWithoutLogin(ReadOrderWithoutLoginRequest request) {
 		Order order = orderRepository.findByOrderStr(request.getOrderId());
@@ -412,21 +482,48 @@ public class OrderService {
 		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), null);
 	}
 
+	/**
+	 * 번호로 주문 상태를 조회합니다.
+	 *
+	 * @param id 주문 상태 번호
+	 * @return 주문 상태 응답 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public ReadOrderStatusResponse readOrderStatusById(int id) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
 			.orElseThrow(OrderStatusNotFoundException::new));
 	}
 
+	/**
+	 * 이름으로 주문 상태를 조회합니다.
+	 *
+	 * @param orderStatusName 주문 상태 이름
+	 * @return 주문 상태 응답 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public ReadOrderStatusResponse readOrderStatusByName(String orderStatusName) {
 		return OrderStatusMapper.toDto(orderStatusRepository.findByName(orderStatusName));
 	}
 
+	/**
+	 * 모든 주문 상태들을 조회합니다.
+	 *
+	 * @return 주문 상태 응답 객체 리스트
+	 */
+
 	@Transactional(readOnly = true)
 	public List<ReadOrderStatusResponse> readAllOrderStatus() {
 		return orderStatusRepository.findAll().stream().map(OrderStatusMapper::toDto).toList();
 	}
+
+	/**
+	 * 운임비 정책을 생성합니다.
+	 *
+	 * @param createDeliveryPolicyRequest 운임비 정책 생성 요청 객체
+	 * @return 운임비 정책 응답 객체
+	 */
 
 	@Transactional
 	public ReadDeliveryPolicyResponse createDeliveryPolicy(CreateDeliveryPolicyRequest createDeliveryPolicyRequest) {
@@ -439,6 +536,12 @@ public class OrderService {
 				.build()));
 	}
 
+	/**
+	 * 운임비 정책을 삭제합니다.
+	 *
+	 * @param deliveryPolicyId 운임비 정책 번호
+	 */
+
 	@Transactional
 	public void deleteDeliveryPolicy(int deliveryPolicyId) {
 		DeliveryPolicy deliveryPolicy = deliveryPolicyRepository.findById(deliveryPolicyId).orElseThrow(
@@ -446,16 +549,36 @@ public class OrderService {
 		deliveryPolicy.delete();
 	}
 
+	/**
+	 * 번호로 운임비 정책을 조회합니다.
+	 *
+	 * @param deliveryPolicyId 운임비 정책 번호
+	 * @return 운임비 정책 응답 객체
+	 */
+
 	@Transactional(readOnly = true)
 	public ReadDeliveryPolicyResponse readDeliveryPolicyById(int deliveryPolicyId) {
 		return DeliveryPolicyMapper.toDto(deliveryPolicyRepository.findById(deliveryPolicyId)
 			.orElseThrow(DeliveryPolicyNotFoundException::new));
 	}
 
+	/**
+	 * 모든 운임비 정책들을 조회합니다.
+	 *
+	 * @return 운임비 정책 응답 객체 리스트
+	 */
+
 	@Transactional(readOnly = true)
 	public List<ReadDeliveryPolicyResponse> readAllDeliveryPolicy() {
 		return deliveryPolicyRepository.findAll().stream().filter(deliveryPolicy -> !deliveryPolicy.isDeleted()).map(DeliveryPolicyMapper::toDto).toList();
 	}
+
+	/**
+	 * 포장지를 생성합니다.
+	 *
+	 * @param createWrappingRequest 포장지 생성 요청 객체
+	 * @return 포장지 응답 객체
+	 */
 
 	@Transactional
 	public ReadWrappingResponse createWrapping(CreateWrappingRequest createWrappingRequest) {
@@ -463,11 +586,24 @@ public class OrderService {
 			.price(createWrappingRequest.getPrice()).deleted(false).build()));
 	}
 
+	/**
+	 * 포장지를 삭제합니다.
+	 *
+	 * @param wrappingId 포장지 번호
+	 */
+
 	@Transactional
 	public void deleteWrapping(int wrappingId) {
 		Wrapping wrapping = wrappingRepository.findById(wrappingId).orElseThrow(WrappingNotFoundException::new);
 		wrapping.delete();
 	}
+
+	/**
+	 * 번호로 포장지를 조회합니다.
+	 *
+	 * @param wrappingId 포장지 번호
+	 * @return 포장지 응답 객체
+	 */
 
 	@Transactional(readOnly = true)
 	public ReadWrappingResponse readWrappingById(int wrappingId) {
@@ -475,10 +611,24 @@ public class OrderService {
 			.orElseThrow(WrappingNotFoundException::new));
 	}
 
+	/**
+	 * 모든 포장지를 조회합니다.
+	 *
+	 * @return 포장지 응답 객체 리스트
+	 */
+
 	@Transactional(readOnly = true)
 	public List<ReadWrappingResponse> readAllWrapping() {
 		return wrappingRepository.findAll().stream().filter(wrapping -> !wrapping.isDeleted()).map(WrappingMapper::toDto).toList();
 	}
+
+	/**
+	 * 고객이 주문 상세를 수정합니다.
+	 *
+	 * @param request 주문 상세 업데이트 요청 객체
+	 * @param loginId 고객 아이디
+	 * @return 주문 상세 응답 객체
+	 */
 
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderDetailResponse updateOrderDetail(UpdateOrderDetailRequest request, String loginId) {
@@ -513,6 +663,13 @@ public class OrderService {
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
 
+	/**
+	 * 관리자가 주문 상세를 수정합니다.
+	 *
+	 * @param request 주문 상세 업데이트 요청 객체
+	 * @return 주문 상세 응답 객체
+	 */
+
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderDetailResponse updateOrderDetailWithAdmin(UpdateOrderDetailRequest request) {
 		OrderDetail orderDetail = orderDetailRepository.findById(request.getId())
@@ -541,6 +698,13 @@ public class OrderService {
 
 		return OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse);
 	}
+
+	/**
+	 * 주문 상세 번호로 주문 문자열(코드)을 조회합니다.
+	 *
+	 * @param orderDetailId 주문 상세 번호
+	 * @return 주문 문자열(코드)
+	 */
 
 	@Transactional(readOnly = true)
 	public String readOrderStr(long orderDetailId) {

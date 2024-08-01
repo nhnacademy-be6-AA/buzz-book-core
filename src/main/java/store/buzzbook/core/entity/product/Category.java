@@ -8,6 +8,9 @@ import java.util.List;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -40,8 +43,10 @@ public class Category {
 
 	@ManyToOne
 	@JoinColumn(name = "parent_id")
+	@JsonManagedReference
 	private Category parentCategory;
 
+	@JsonBackReference
 	@OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
 	@Fetch(FetchMode.SUBSELECT)
 	private List<Category> subCategories = new ArrayList<>();

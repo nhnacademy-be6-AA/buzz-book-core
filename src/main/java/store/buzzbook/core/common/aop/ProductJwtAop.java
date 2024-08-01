@@ -31,21 +31,22 @@ public class ProductJwtAop {
 
 		Map<String, Object> claims = authService.getInfoMapFromJwt(request);
 
+		try {
 		Long userId = (Long) claims.get(AuthService.USER_ID);
 		String loginId = (String) claims.get(AuthService.LOGIN_ID);
 		String role = (String) claims.get(AuthService.ROLE);
 
-		if (Objects.isNull(userId) || Objects.isNull(loginId) || Objects.isNull(role)) {
-			throw new AuthorizeFailException("사용자 정보가 null 입니다.");
-		}
+			if (!"admin".equals(role)) {
+				throw new AuthorizeFailException("접근 권한이 없습니다.");
+			}
 
-		if (!"admin".equals(role)) {
-			throw new AuthorizeFailException("접근 권한이 없습니다.");
-		}
+			request.setAttribute(AuthService.USER_ID, userId);
+			request.setAttribute(AuthService.LOGIN_ID, loginId);
+			request.setAttribute(AuthService.ROLE, role);
 
-		request.setAttribute(AuthService.USER_ID, userId);
-		request.setAttribute(AuthService.LOGIN_ID, loginId);
-		request.setAttribute(AuthService.ROLE, role);
+		}catch (NullPointerException e) {
+			throw new AuthorizeFailException("user info가 null입니다.");
+		}
 	}
 
 }

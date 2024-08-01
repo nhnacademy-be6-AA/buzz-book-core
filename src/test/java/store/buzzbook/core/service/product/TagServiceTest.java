@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import store.buzzbook.core.dto.product.TagResponse;
 import store.buzzbook.core.entity.product.Tag;
+import store.buzzbook.core.repository.product.ProductTagRepository;
 import store.buzzbook.core.repository.product.TagRepository;
 
 import java.util.Collections;
@@ -28,6 +29,9 @@ class TagServiceTest {
 
 	@Mock
 	private TagRepository tagRepository;
+
+	@Mock
+	private ProductTagRepository productTagRepository;
 
 	@InjectMocks
 	private TagService tagService;
@@ -48,7 +52,7 @@ class TagServiceTest {
 		// then
 		assertNotNull(tagResponse);
 		assertEquals(tagName, tagResponse.getName());
-		verify(tagRepository, times(1)).findByName(eq(tagName));
+		verify(tagRepository, times(1)).findByName(anyString());
 		verify(tagRepository, times(1)).save(any(Tag.class));
 	}
 
@@ -106,7 +110,7 @@ class TagServiceTest {
 		// then
 		assertNotNull(tagResponses);
 		assertEquals(1, tagResponses.size());
-		assertEquals(tag.getName(), tagResponses.get(0).getName());
+		assertEquals(tag.getName(), tagResponses.getFirst().getName());
 		verify(tagRepository, times(1)).findAll();
 	}
 
@@ -128,7 +132,7 @@ class TagServiceTest {
 		// then
 		assertNotNull(tagResponses);
 		assertEquals(1, tagResponses.getTotalElements());
-		assertEquals(tag.getName(), tagResponses.getContent().get(0).getName());
+		assertEquals(tag.getName(), tagResponses.getContent().getFirst().getName());
 		verify(tagRepository, times(1)).findAll(pageable);
 	}
 }

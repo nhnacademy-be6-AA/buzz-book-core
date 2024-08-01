@@ -27,6 +27,7 @@ public class CategoryService {
 	private final CategoryRepository categoryRepository;
 	private final ProductRepository productRepository;
 
+	@Transactional
 	public CategoryResponse createCategory(CategoryRequest categoryRequest) {
 		Integer parentId = categoryRequest.getParentCategoryId();
 		Category parentCategory = null;
@@ -40,11 +41,13 @@ public class CategoryService {
 		return new CategoryResponse(categoryRepository.save(category));
 	}
 
+	@Transactional(readOnly = true)
 	public Page<CategoryResponse> getPageableCategoryResponses(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		return categoryRepository.findAll(pageable).map(CategoryResponse::new);
 	}
 
+	@Transactional
 	public CategoryResponse updateCategory(int categoryId, CategoryRequest categoryRequest) {
 		Category category = categoryRepository.findById(categoryId).orElseThrow(
 			() -> new DataNotFoundException("Category", categoryId));
@@ -93,6 +96,7 @@ public class CategoryService {
 		categoryRepository.deleteById(categoryId);
 	}
 
+	@Transactional
 	public CategoryResponse getTopCategories() {
 		List<Category> topCategories = categoryRepository.findAllByParentCategoryIsNull();
 		if (topCategories.size() > 1) {
@@ -101,6 +105,7 @@ public class CategoryService {
 		return new CategoryResponse(topCategories.getFirst());
 	}
 
+	@Transactional
 	// 상위카테고리들 + 하위 1차 카테고리들
 	public CategoryResponse getSubCategoriesResponse(int categoryId) {
 		return new CategoryResponse((categoryRepository.findById(categoryId).orElseThrow(

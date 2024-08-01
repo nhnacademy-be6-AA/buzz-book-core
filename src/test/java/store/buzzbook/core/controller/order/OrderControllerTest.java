@@ -413,14 +413,14 @@ class OrderControllerTest {
 	@DisplayName("주문 및 취소 시 포인트 변경")
 	void updatePointLog() throws Exception {
 		when(userService.getUserInfoByLoginId(anyString())).thenReturn(testUserInfo2);
-		when(orderService.updatePointLog(any(), any())).thenReturn(pointLogResponse);
+		when(orderService.createPointLog(any(), any())).thenReturn(pointLogResponse);
 
 		mockMvc.perform(post("/api/orders/point")
 				.content(objectMapper.writeValueAsString(readOrdersRequest))
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk());
 
-		verify(orderService).updatePointLog(any(), any());
+		verify(orderService).createPointLog(any(), any());
 	}
 
 	@Test

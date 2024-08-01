@@ -7,18 +7,19 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import store.buzzbook.core.elastic.document.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.dto.product.BookApiRequest;
+import store.buzzbook.core.elastic.repository.BookDocumentRepository;
 import store.buzzbook.core.entity.product.Author;
 import store.buzzbook.core.entity.product.Book;
 import store.buzzbook.core.entity.product.BookAuthor;
@@ -38,7 +39,6 @@ import store.buzzbook.core.repository.product.PublisherRepository;
 @Slf4j
 public class BookSearchService {
 
-	private final CharacterEncodingFilter characterEncodingFilter;
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final BookRepository bookRepository;
 	private final AuthorRepository authorRepository;
@@ -46,10 +46,10 @@ public class BookSearchService {
 	private final ProductRepository productRepository;
 	private final BookAuthorRepository bookAuthorRepository;
 	private final CategoryRepository categoryRepository;
+	private final BookDocumentRepository bookDocumentRepository;
 	@Value("${aladin.api.key}")
 	private String aladinApiKey;
 
-	// private final ProductDocumentRepository productDocumentRepository;
 	public void searchAndSaveBooks(String query) {
 		List<BookApiRequest.Item> items = searchBooks(query);
 		saveBooksToDatabase(items);
@@ -91,7 +91,6 @@ public class BookSearchService {
 
 		for (BookApiRequest.Item item : items) {
 			if (bookRepository.existsByIsbn(item.getIsbn())) {
-				// ISBN을 기준으로 이미 존재하는 책은 스킵
 				log.info("이미 존재하는 책 스킵: {}", item.getTitle());
 				continue;
 			}
@@ -127,10 +126,9 @@ public class BookSearchService {
 				);
 				book = bookRepository.save(book);
 
-				// 기존 Product 확인
+				// Product 저장
 				Product product = productRepository.findByThumbnailPath(item.getCover());
 				if (product == null) {
-					// 새로운 Product 생성 및 저장
 					product = Product.builder()
 						.stock(item.getStock() != null ? Integer.parseInt(item.getStock()) : 1)
 						.productName(item.getTitle())
@@ -147,6 +145,8 @@ public class BookSearchService {
 
 				book.setProduct(product);
 				bookRepository.save(book);
+
+				indexBookToElasticsearch(book);
 
 				// 저자 저장 및 도서별 저자 저장
 				for (String authorName : item.getAuthor().split(",")) {
@@ -169,4 +169,21 @@ public class BookSearchService {
 		}
 	}
 
+	public void indexBookToElasticsearch(Book book) {
+		try {
+			// BookDocument 생성 및 저장
+			BookDocument bookDocument = new BookDocument(
+				book.getId(),
+				book.getProduct().getId(),
+				book.getIsbn(),
+				book.getTitle(),
+				book.getDescription(),
+				book.getProduct().getForwardDate(),
+				book.getBookAuthors().stream().map(bookAuthor -> bookAuthor.getAuthor().getName()).collect(Collectors.toList())
+			);
+			bookDocumentRepository.save(bookDocument);
+		} catch (Exception e) {
+			log.error("Elasticsearch 인덱싱 오류: {}", book.getTitle(), e);
+		}
+	}
 }

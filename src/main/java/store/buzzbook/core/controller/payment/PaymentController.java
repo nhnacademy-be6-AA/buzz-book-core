@@ -32,6 +32,12 @@ import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.payment.PaymentService;
 import store.buzzbook.core.service.user.UserService;
 
+/**
+ * 결제 관련 컨트롤러
+ *
+ * @author 박설
+ */
+
 @Slf4j
 @Tag(name = "결제", description = "결제 관련 api")
 @RestController
@@ -82,10 +88,10 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.createBillLog(createBillLogRequest));
 	}
 
-	@Operation(summary = "결제 내역 추가 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
+	@Operation(summary = "토스 결제 승인 실패 시 롤백", description = "포인트, 쿠폰 결제 로그, 포인트 적립 로그 취소")
 	@PostMapping("/bill-log/rollback")
-	public ResponseEntity<String> rollbackBillLog(@RequestBody ReadPaymentResponse readPaymentResponse) {
-		paymentService.rollbackBillLog(readPaymentResponse);
+	public ResponseEntity<String> rollbackBillLog(@RequestBody String paymentKey) {
+		paymentService.rollbackBillLog(paymentKey);
 		return ResponseEntity.ok(SUCCESS);
 	}
 

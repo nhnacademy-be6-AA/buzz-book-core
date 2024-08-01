@@ -45,6 +45,12 @@ import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
 import store.buzzbook.core.service.user.UserService;
 
+/**
+ * 주문 관련 컨트롤러
+ *
+ * @author 박설
+ */
+
 @Tag(name = "주문", description = "주문 관련 api")
 @RestController
 @RequestMapping("/api/orders")
@@ -130,7 +136,7 @@ public class OrderController {
 	@PostMapping("/point")
 	public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
 		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		return ResponseEntity.ok(orderService.updatePointLog(createPointLogForOrderRequest, userInfo));
+		return ResponseEntity.ok(orderService.createPointLog(createPointLogForOrderRequest, userInfo));
 	}
 
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
