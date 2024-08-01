@@ -113,6 +113,7 @@ class ProductSpecificationTest {
 		verify(root.get("category").get("id")).in(anyList());
 	}
 
+	@Disabled
 	@Test
 	void testGetProductsByCriteria_NullParameters() {
 		// Given

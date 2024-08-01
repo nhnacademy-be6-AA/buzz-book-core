@@ -12,9 +12,14 @@ public interface ElasticSearchClient {
 
 	@GetMapping("/aa-bb_book_index/_search")
 	String searchProducts(@RequestParam("q") String query,
-		@RequestHeader("Authorization") String authorization);
+		@RequestHeader("Authorization") String authorization,
+		@RequestParam("from") int from,
+		@RequestParam("size") int size);
+
 
 	@PostMapping("/aa-bb_book_index/_doc")
 	void indexDocument(@RequestBody String document,
 		@RequestHeader("Authorization") String authorization);
+
+
 }

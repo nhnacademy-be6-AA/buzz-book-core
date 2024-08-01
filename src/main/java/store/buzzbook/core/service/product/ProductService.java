@@ -2,15 +2,22 @@ package store.buzzbook.core.service.product;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.product.DataNotFoundException;
@@ -19,6 +26,7 @@ import store.buzzbook.core.dto.product.ProductRequest;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.product.ProductUpdateRequest;
 import store.buzzbook.core.dto.product.TagResponse;
+import store.buzzbook.core.elastic.client.ElasticSearchClient;
 import store.buzzbook.core.entity.product.Category;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.product.ProductTag;
@@ -37,11 +45,16 @@ public class ProductService {
 	private final TagRepository tagRepository;
 	private final ProductTagRepository productTagRepository;
 	private final ProductSpecification productSpecification;
+	private final ElasticSearchClient elasticSearchClient;
 
 	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private final ObjectMapper objectMapper;
 
-	// // // Elasticsearch 용 리포지토리
-	// private final ProductDocumentRepository productDocumentRepository;
+	@Value("${spring.elasticsearch.username}")
+	private String username;
+
+	@Value("${spring.elasticsearch.password}")
+	private String password;
 
 	@Transactional
 	public ProductResponse saveProduct(ProductRequest productReq) {
@@ -59,8 +72,6 @@ public class ProductService {
 			.build();
 		product = productRepository.save(product);
 
-		// // Elasticsearch 저장
-		// productDocumentRepository.save(new ProductDocument(product));
 
 		return convertToProductResponse(product);
 	}
@@ -136,7 +147,6 @@ public class ProductService {
 			product.getForwardDate(), product.getScore(), product.getThumbnailPath(), Product.StockStatus.SOLD_OUT,
 			product.getCategory(), product.getProductTags());
 
-		// productDocumentRepository.save(new ProductDocument(newProduct));
 
 		return productRepository.save(newProduct);
 	}
@@ -152,32 +162,57 @@ public class ProductService {
 			.toList();
 	}
 
+
+	private String createAuthToken() {
+		return "Basic " + Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+	}
+
+	//엘라스틱으로 받아온 값을 objectMapper로 변환해서 book json에서 product id값만 list로 가져오기
 	@Transactional(readOnly = true)
-	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId,
-		String orderBy, int pageNo, int pageSize) {
+	public Page<ProductResponse> getProductsByCriteria(Product.StockStatus status, String name, String elasticName,
+		Integer categoryId, String orderBy, int pageNo, int pageSize) {
+		List<Integer> productIds = new ArrayList<>();
+
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+		if (elasticName != null) {
+			String authHeader = createAuthToken();
+
+			String searchResult = elasticSearchClient.searchProducts(elasticName, authHeader, pageNo, 1000);
+
+			try {
+				JsonNode rootNode = objectMapper.readTree(searchResult);
+				JsonNode hitsNode = rootNode.path("hits").path("hits");
+
+				for (JsonNode hitNode : hitsNode) {
+					JsonNode sourceNode = hitNode.path("_source");
+					Integer productId = sourceNode.path("productId").asInt();
+					productIds.add(productId);
+				}
+
+				// 추출한 productId로 제품 데이터 조회
+				// Page<Product> products = productRepository.findByIdIn(productIds, pageable);
+
+			} catch (JsonProcessingException e) {
+				e.getStackTrace();
+				return Page.empty(pageable);
+			}
+		}
 
 		Page<Product> products;
-
 		if ("reviews".equals(orderBy)) {
 			products = productRepository.findProductsByCriteriaOrderByReviewCountDesc(status, name, categoryId,
 				pageable);
 		} else {
+
 			Specification<Product> spec = Specification.where(
-					productSpecification.getProductsByCriteria(status, name, categoryId))
-				.and(productSpecification.orderBy(orderBy));
+					productSpecification.getProductsByCriteria(status, name, categoryId, productIds)
+				.and(productSpecification.orderBy(orderBy)));
 			products = productRepository.findAll(spec, pageable);
 		}
 
 		return products.map(this::convertToProductResponse);
 
 	}
-
-	// // Elasticsearch 사용한 검색 메소드
-	// @Transactional(readOnly = true)
-	// public List<ProductDocument> searchByProductName(String productName) {
-	// 	// return productDocumentRepository.findByProductNameContaining(productName);
-	// }
 
 	// 태그 관련 정보를 포함하는 ProductResponse 변환 메서드
 	private ProductResponse convertToProductResponse(Product product) {
