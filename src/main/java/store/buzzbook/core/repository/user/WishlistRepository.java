@@ -8,5 +8,5 @@ import store.buzzbook.core.entity.cart.Wishlist;
 
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 	Page<Wishlist> findAllByUserId(long userId, Pageable pageable);
-	Boolean existsByUserIdAndProductId(long userId, int productId);
+	Wishlist findByUserIdAndProductId(long userId, int productId);
 }

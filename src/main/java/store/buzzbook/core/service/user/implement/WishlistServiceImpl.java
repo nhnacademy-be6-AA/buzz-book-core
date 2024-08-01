@@ -38,8 +38,19 @@ public class WishlistServiceImpl implements WishlistService {
 
 	@Override
 	@Transactional
-	public void deleteWishlist(long wishlistId) {
-		wishlistRepository.deleteById(wishlistId);
+	public void deleteWishlist(long userId, int productId) {
+		if (!userRepository.existsById(userId)) {
+			throw new UserNotFoundException(userId);
+		}
+
+		if (!productRepository.existsById(productId)) {
+			throw new DataNotFoundException("product", productId);
+		}
+
+		Wishlist delWishlist = wishlistRepository.findByUserIdAndProductId(userId, productId);
+		if (delWishlist != null) {
+			wishlistRepository.delete(delWishlist);
+		}
 	}
 
 	@Override
@@ -63,7 +74,7 @@ public class WishlistServiceImpl implements WishlistService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public boolean isUserWishlist(long userId, int productId) {
+	public Long isUserWishlist(long userId, int productId) {
 
 		if (!userRepository.existsById(userId)) {
 			throw new UserNotFoundException();
@@ -73,6 +84,10 @@ public class WishlistServiceImpl implements WishlistService {
 			throw new DataNotFoundException("product", productId);
 		}
 
-		return wishlistRepository.existsByUserIdAndProductId(userId, productId);
+		Wishlist wishlist = wishlistRepository.findByUserIdAndProductId(userId, productId);
+		if (wishlist != null) {
+			return wishlist.getId();
+		}
+		return null;
 	}
 }
