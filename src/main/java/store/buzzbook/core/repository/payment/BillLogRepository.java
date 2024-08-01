@@ -22,4 +22,7 @@ public interface BillLogRepository extends JpaRepository<BillLog, Long> {
 	List<BillLog> findAllByPaymentKey(String paymentKey);
 
 	boolean existsByPaymentAndPaymentKey(String payment, String paymentKey);
+
+	@Query("select b.order.id from BillLog b where b.paymentKey = :paymentKey")
+	Long findOrderIdByPaymentKey(@Param("paymentKey") String paymentKey);
 }

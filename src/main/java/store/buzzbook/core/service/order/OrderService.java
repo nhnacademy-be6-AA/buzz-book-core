@@ -168,25 +168,25 @@ public class OrderService {
 		}
 
 		Order order = null;
+		OrderStatus orderStatus = orderStatusRepository.findByName(createOrderRequest.getOrderStatus());
 
 		if (createOrderRequest.getAddress().isEmpty()) {
 			Optional<Address> address = addressRepository.findById(Long.parseLong(createOrderRequest.getAddresses()));
 			if (address.isPresent()) {
-				order = orderRepository.save(OrderMapper.toEntityWithAddress(createOrderRequest, user, address.get()));
+				order = orderRepository.save(OrderMapper.toEntityWithAddress(createOrderRequest, user, orderStatus, address.get()));
 			} else {
 				throw new AddressNotFoundException();
 			}
 
 		} else {
-			order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
+			order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, orderStatus, user));
 		}
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (CreateOrderDetailRequest detail : details) {
 			detail.setOrderId(order.getId());
-			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
-				.orElseThrow(OrderStatusNotFoundException::new);
+			OrderStatus orderDetailStatus = orderStatusRepository.findByName(detail.getOrderStatus());
 			Wrapping wrapping = null;
 			if (detail.getWrappingId() != 0) {
 				wrapping = wrappingRepository.findById(detail.getWrappingId())
@@ -200,7 +200,7 @@ public class OrderService {
 
 			detail.setPrice(product.getPrice());
 
-			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
+			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderDetailStatus);
 			orderDetail = orderDetailRepository.save(orderDetail);
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);

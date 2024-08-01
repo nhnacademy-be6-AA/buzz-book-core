@@ -7,7 +7,6 @@ import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,35 +20,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import store.buzzbook.core.common.exception.order.DuplicateBillLogException;
-import store.buzzbook.core.common.exception.order.JSONParsingException;
-import store.buzzbook.core.common.exception.order.ProductNotFoundException;
-import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
-import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderWithBillLogsResponse;
-import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.payment.CreateCancelBillLogRequest;
+import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
-import store.buzzbook.core.dto.payment.ReadPaymentResponse;
-import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.entity.order.Order;
-import store.buzzbook.core.entity.order.OrderDetail;
-import store.buzzbook.core.entity.order.Wrapping;
 import store.buzzbook.core.entity.payment.BillLog;
-import store.buzzbook.core.entity.product.Product;
-import store.buzzbook.core.mapper.order.OrderDetailMapper;
-import store.buzzbook.core.mapper.order.WrappingMapper;
 import store.buzzbook.core.mapper.payment.BillLogMapper;
 import store.buzzbook.core.repository.order.OrderDetailRepository;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.order.WrappingRepository;
 import store.buzzbook.core.repository.payment.BillLogRepository;
-import store.buzzbook.core.repository.point.PointLogRepository;
-import store.buzzbook.core.repository.point.PointPolicyRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
-import store.buzzbook.core.service.point.PointService;
 import store.buzzbook.core.service.user.UserService;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.dto.user.UserInfo;
@@ -105,22 +90,14 @@ public class PaymentService {
 	 */
 
 	@Transactional(rollbackFor = Exception.class)
-	public void order(JSONObject paymentInfo, HttpServletRequest request) {
-
-		ReadPaymentResponse readPaymentResponse = null;
-		try {
-			readPaymentResponse = objectMapper.convertValue(paymentInfo,
-				ReadPaymentResponse.class);
-		} catch (Exception e) {
-			throw new JSONParsingException();
-		}
+	public void order(PayInfo paymentInfo, HttpServletRequest request) {
 
 		// 중복 체크
-		if (billLogRepository.existsByPaymentAndPaymentKey(readPaymentResponse.getMethod(), readPaymentResponse.getPaymentKey())) {
+		if (billLogRepository.existsByPaymentAndPaymentKey(paymentInfo.getPayType().name(), paymentInfo.getPaymentKey())) {
 			throw new DuplicateBillLogException();
 		}
 
-		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
+		Order order = orderRepository.findByOrderStr(paymentInfo.getOrderId());
 
 		if (order.getUser() != null) {
 			HttpHeaders headers = new HttpHeaders();
@@ -128,7 +105,7 @@ public class PaymentService {
 			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-			orderFactory.setOrderStrategy(userOrderProcessService, order.getId(), readPaymentResponse.getPaymentKey(), headers);
+			orderFactory.setOrderStrategy(userOrderProcessService, order.getId(), paymentInfo.getPaymentKey(), headers);
 			orderFactory.process();
 		} else {
 			orderFactory.setOrderStrategy(nonUserOrderProcessService, order.getId(), null, null);
@@ -144,22 +121,22 @@ public class PaymentService {
 	 * @return 주문 상세 응답 객체 리스트
 	 */
 
-	private List<ReadOrderDetailResponse> getReadOrderDetailResponses(Order order, String orderStatus) {
-		List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.setOrderStatus(orderStatusRepository.findByName(orderStatus));
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(ProductNotFoundException::new);
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(WrappingNotFoundException::new);
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			readOrderDetailResponses.add(
-				OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-					readWrappingResponse));
-		}
-		return readOrderDetailResponses;
-	}
+	// private List<ReadOrderDetailResponse> getReadOrderDetailResponses(Order order, String orderStatus) {
+	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
+	// 	List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
+	// 	for (OrderDetail orderDetail : orderDetails) {
+	// 		orderDetail.setOrderStatus(orderStatusRepository.findByName(orderStatus));
+	// 		Product product = productRepository.findById(orderDetail.getProduct().getId())
+	// 			.orElseThrow(ProductNotFoundException::new);
+	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
+	// 			.orElseThrow(WrappingNotFoundException::new);
+	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
+	// 		readOrderDetailResponses.add(
+	// 			OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
+	// 				readWrappingResponse));
+	// 	}
+	// 	return readOrderDetailResponses;
+	// }
 
 	/**
 	 * 주문 취소 내역을 생성합니다.
@@ -169,17 +146,9 @@ public class PaymentService {
 	 */
 
 	@Transactional(rollbackFor = Exception.class)
-	public void cancel(JSONObject paymentInfo, HttpServletRequest request) {
+	public void cancel(PayInfo paymentInfo, HttpServletRequest request) {
 
-		ReadPaymentResponse readPaymentResponse = null;
-		try {
-			readPaymentResponse = objectMapper.convertValue(paymentInfo,
-				ReadPaymentResponse.class);
-		} catch (Exception e) {
-			throw new JSONParsingException();
-		}
-
-		Order order = orderRepository.findByOrderStr(readPaymentResponse.getOrderId());
+		Order order = orderRepository.findByOrderStr(paymentInfo.getOrderId());
 
 		if (order.getUser() != null) {
 			HttpHeaders headers = new HttpHeaders();
@@ -187,7 +156,7 @@ public class PaymentService {
 			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-			orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), readPaymentResponse.getPaymentKey(), headers);
+			orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), paymentInfo.getPaymentKey(), headers);
 			orderFactory.process();
 		} else {
 			orderFactory.setOrderStrategy(nonUserOrderCancelService, order.getId(), null, null);
@@ -205,11 +174,6 @@ public class PaymentService {
 	@Transactional(rollbackFor = Exception.class)
 	public void refund(CreateCancelBillLogRequest createCancelBillLogRequest, HttpServletRequest request) {
 
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-
-		User user = userRepository.findByLoginId(userInfo.loginId())
-			.orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-
 		Order order = orderRepository.findByOrderStr(createCancelBillLogRequest.getOrderId());
 
 		HttpHeaders headers = new HttpHeaders();
@@ -219,7 +183,6 @@ public class PaymentService {
 
 		orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), createCancelBillLogRequest.getPaymentKey(), headers);
 		orderFactory.process();
-
 	}
 
 	/**
@@ -326,5 +289,10 @@ public class PaymentService {
 	@Transactional(readOnly = true)
 	public String getPaymentKey(String orderId, long userId) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getFirst().getPaymentKey();
+	}
+
+	@Transactional(readOnly = true)
+	public Long getOrderIdByPaymentKey(String paymentKey) {
+		return billLogRepository.findOrderIdByPaymentKey(paymentKey);
 	}
 }

@@ -8,12 +8,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
-import store.buzzbook.core.common.exception.order.ProductNotFoundException;
-import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.product.Product;
+import store.buzzbook.core.entity.user.User;
 import store.buzzbook.core.repository.order.OrderRepository;
 import store.buzzbook.core.repository.order.OrderStatusRepository;
 import store.buzzbook.core.repository.product.ProductRepository;
@@ -25,6 +24,11 @@ public class NonUserOrderCancelService extends AbstractOrderCancelService {
 		OrderStatusRepository orderStatusRepository,
 		ProductRepository productRepository) {
 		super(orderRepository, orderStatusRepository, productRepository);
+	}
+
+	@Override
+	boolean validateCoupon(User user, String couponCode, HttpHeaders headers) {
+		return false;
 	}
 
 	public void nonUserProcess(long orderId) {

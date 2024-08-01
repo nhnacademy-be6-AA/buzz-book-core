@@ -38,8 +38,8 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 	}
 
 	@Override
-	boolean validateCoupon(User user, String couponCode) {
-		return !(user.getUserCoupons().stream().anyMatch(c -> c.getCouponCode().equals(couponCode)));
+	boolean validateCoupon(User user, String couponCode, HttpHeaders headers) {
+		return false;
 	}
 
 	// @Override

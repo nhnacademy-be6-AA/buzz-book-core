@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.payment.CreateCancelBillLogRequest;
+import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.dto.payment.ReadBillLogsRequest;
 import store.buzzbook.core.dto.payment.ReadBillLogWithoutOrderResponse;
 import store.buzzbook.core.dto.payment.ReadPaymentKeyRequest;
@@ -80,14 +81,14 @@ public class PaymentController {
 
 	@Operation(summary = "주문 결제", description = "주문 결제")
 	@PostMapping("/order")
-	public ResponseEntity<String> order(@RequestBody JSONObject paymentInfo, HttpServletRequest request) {
+	public ResponseEntity<String> order(@RequestBody PayInfo paymentInfo, HttpServletRequest request) {
 		paymentService.order(paymentInfo, request);
 		return ResponseEntity.ok().build();
 	}
 
 	@Operation(summary = "주문 취소", description = "주문 취소")
 	@PostMapping("/cancel")
-	public ResponseEntity<String> cancel(@RequestBody JSONObject paymentInfo, HttpServletRequest request) {
+	public ResponseEntity<String> cancel(@RequestBody PayInfo paymentInfo, HttpServletRequest request) {
 		paymentService.cancel(paymentInfo, request);
 		return ResponseEntity.ok().build();
 	}
@@ -145,7 +146,7 @@ public class PaymentController {
 	@JwtOrderValidate
 	@Operation(summary = "주문상세 아이디로 결제키 조회", description = "주문상세 아이디로 결제키 조회")
 	@PostMapping("/detail/payment-key")
-	public ResponseEntity<String> getPaymentKeyWithOrderDetailId(@RequestBody ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest, HttpServletRequest request) {
+	public ResponseEntity<String> getPaymentKeyByOrderDetailId(@RequestBody ReadPaymentKeyWithOrderDetailRequest readPaymentKeyWithOrderDetailRequest, HttpServletRequest request) {
 		if (request.getAttribute(AuthService.LOGIN_ID) == null) {
 			String responses = paymentService.getPaymentKeyWithoutLogin(orderService.readOrderStr(readPaymentKeyWithOrderDetailRequest.getOrderDetailId()), readPaymentKeyWithOrderDetailRequest.getOrderEmail());
 			return ResponseEntity.ok(responses);
@@ -154,4 +155,10 @@ public class PaymentController {
 
 		return ResponseEntity.ok(paymentService.getPaymentKey(orderService.readOrderStr(readPaymentKeyWithOrderDetailRequest.getOrderDetailId()), userInfo.id()));
 	}
+
+	// @Operation(summary = "결제키로 주문 아이디 조회", description = "결제키로 주문 아이디 조회")
+	// @PostMapping("/orderid")
+	// public ResponseEntity<Long> getOrderIdByPaymentKey(@RequestBody ReadOrderIdByPaymentKeyRequest request) {
+	// 	return ResponseEntity.ok(paymentService.getOrderIdByPaymentKey(request.getPaymentKey()));
+	// }
 }

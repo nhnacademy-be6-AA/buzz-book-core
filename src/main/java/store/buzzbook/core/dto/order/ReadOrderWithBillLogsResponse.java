@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,6 +34,10 @@ public class ReadOrderWithBillLogsResponse {
 	private String couponCode;
 	private String orderEmail;
 	private Integer deliveryRate;
+	private String orderStatus;
+	private Integer deductedPoints;
+	private Integer earnedPoints;
+	private Integer deductedCouponPrice;
 
 	private List<ReadBillLogWithoutOrderResponse> billlogs;
 }
