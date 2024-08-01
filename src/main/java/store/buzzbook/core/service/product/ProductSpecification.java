@@ -42,7 +42,7 @@ public class ProductSpecification {
 	}
 
 	@Transactional(readOnly = true)
-	public Specification<Product> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId) {
+	public Specification<Product> getProductsByCriteria(Product.StockStatus status, String name, Integer categoryId,List<Integer> productIdList) {
 		return (Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
 			List<Predicate> predicates = new ArrayList<>();
 
@@ -51,6 +51,10 @@ public class ProductSpecification {
 			}
 			if (name != null && !name.isBlank()) {
 				predicates.add(criteriaBuilder.like(root.get("productName"), "%" + name + "%"));
+			}
+			if(productIdList != null && !productIdList.isEmpty())
+			{
+				predicates.add(root.get("id").in(productIdList));
 			}
 			if (categoryId != null) {
 				Category category = categoryRepository.findById(categoryId).orElseThrow(

@@ -34,5 +34,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 	@Query("SELECT p FROM Product p ORDER BY p.forwardDate DESC")
 	List<Product> findProductsByLatestForwardDate(Pageable pageable);
+
+	//특정 ID 리스트에 해당하는 제품을 페이징으로 조회
+	Page<Product> findByIdIn(List<Integer> productIds, Pageable pageable);
 }
 

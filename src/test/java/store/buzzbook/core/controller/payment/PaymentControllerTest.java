@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static store.buzzbook.core.common.listener.OrderStatusListener.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -157,6 +155,7 @@ class PaymentControllerTest {
 		verify(paymentService).createBillLog(any(JSONObject.class));
 	}
 
+
 	@Test
 	@DisplayName("결제 내역 추가 실패 시 롤백")
 	void rollbackBillLog() throws Exception {
@@ -167,7 +166,7 @@ class PaymentControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk());
 
-		verify(paymentService).rollbackBillLog(any(ReadPaymentResponse.class));
+		verify(paymentService).rollbackBillLog(any());
 	}
 
 	@Test

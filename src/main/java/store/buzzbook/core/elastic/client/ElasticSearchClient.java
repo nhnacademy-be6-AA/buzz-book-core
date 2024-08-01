@@ -17,10 +17,6 @@ public interface ElasticSearchClient {
 		@RequestParam("size") int size);
 
 
-	// @PostMapping("/aa-bb_book_index/_search")
-	// String suggest(@RequestBody String suggestQuery,
-	// 	@RequestHeader("Authorization") String authorization);
-
 	@PostMapping("/aa-bb_book_index/_doc")
 	void indexDocument(@RequestBody String document,
 		@RequestHeader("Authorization") String authorization);
