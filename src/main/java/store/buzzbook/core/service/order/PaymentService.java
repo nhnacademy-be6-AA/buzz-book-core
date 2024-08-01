@@ -105,7 +105,7 @@ public class PaymentService {
 			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-			orderFactory.setOrderStrategy(userOrderProcessService, order.getId(), paymentInfo.getPaymentKey(), headers);
+			orderFactory.setOrderStrategy(userOrderProcessService, order.getId(), paymentInfo, headers);
 			orderFactory.process();
 		} else {
 			orderFactory.setOrderStrategy(nonUserOrderProcessService, order.getId(), null, null);
@@ -156,7 +156,7 @@ public class PaymentService {
 			headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 			headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-			orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), paymentInfo.getPaymentKey(), headers);
+			orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), paymentInfo, headers);
 			orderFactory.process();
 		} else {
 			orderFactory.setOrderStrategy(nonUserOrderCancelService, order.getId(), null, null);
@@ -181,7 +181,7 @@ public class PaymentService {
 		headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 		headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-		orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), createCancelBillLogRequest.getPaymentKey(), headers);
+		orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), createCancelBillLogRequest.getPayInfo(), headers);
 		orderFactory.process();
 	}
 

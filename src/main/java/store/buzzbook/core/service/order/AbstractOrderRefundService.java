@@ -27,6 +27,7 @@ public abstract class AbstractOrderRefundService implements OrderStrategy {
 	// - 회원해당
 	// - Validation (재고, 포인트, 쿠폰)
 	// - 재고처리
+	// - 결제 취소
 	// - 포인트 사용 취소
 	// - 쿠폰 사용 취소
 	// - 결제 내역 포인트 환불

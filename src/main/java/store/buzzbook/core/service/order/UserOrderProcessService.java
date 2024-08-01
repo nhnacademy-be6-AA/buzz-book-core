@@ -26,6 +26,7 @@ import store.buzzbook.core.dto.coupon.CouponRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CouponStatusResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
+import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.order.Order;
@@ -88,7 +89,7 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<CouponStatusResponse> couponResponseEntity = restTemplate.exchange(
-			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.POST, couponRequestHttpEntity,
+			String.format("http://%s:%d/api/coupons/info", host, port), HttpMethod.POST, couponRequestHttpEntity,
 			CouponStatusResponse.class);
 
 		if (CouponStatus.AVAILABLE == CouponStatus.fromString(couponResponseEntity.getBody().status())) {
@@ -96,6 +97,20 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 		} else {
 			return true;
 		}
+	}
+
+	void savePayment(Order order, PayInfo payInfo) {
+		billLogRepository.save(
+			BillLog.builder()
+				.price(payInfo.getPrice())
+				.paymentKey(
+					payInfo.getPaymentKey())
+				.order(order)
+				.status(BillStatus.DONE)
+				.payment(payInfo.getPayType().name())
+				.payAt(
+					LocalDateTime.now())
+				.build());
 	}
 
 	void usePoints(Order order, long userId, int usePoints, String paymentKey) {
@@ -179,11 +194,19 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 	// }
 
 	@Override
-	public void process(long orderId, String paymentKey, HttpHeaders headers) {
+	public void process(long orderId, PayInfo payInfo, HttpHeaders headers) {
 		OrderStatus orderStatus = orderStatusRepository.findByName(PAID);
 
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
 		List<OrderDetail> details = order.getDetails();
+
+		if (validatePoints(order.getDeductedPoints(), pointService.getUserPoint(order.getUser().getId()))) {
+			throw new OutOfPointsException();
+		}
+
+		if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
+			throw new OutOfCouponException();
+		}
 
 		for (OrderDetail detail : details) {
 			Product product = detail.getProduct();
@@ -192,27 +215,22 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 				throw new ProductOutOfStockException();
 			}
 
-			if (validatePoints(order.getDeductedPoints(), pointService.getUserPoint(order.getUser().getId()))) {
-				throw new OutOfPointsException();
-			}
-
-			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
-				throw new OutOfCouponException();
-			}
-
 			// 2. 재고 처리
 			decreaseStock(product.getId(), detail.getQuantity());
 		}
 
-		// 3. 포인트 사용
-		usePoints(order, order.getUser().getId(), order.getDeductedPoints(), paymentKey);
-		// 4. 쿠폰 사용
-		useCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), paymentKey, headers);
-		// 5. 포인트 적립
+		// 3. 결제
+		savePayment(order, payInfo);
+
+		// 4. 포인트 사용
+		usePoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+		// 5. 쿠폰 사용
+		useCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), payInfo.getPaymentKey(), headers);
+		// 6. 포인트 적립
 		earnPoints(orderId, order.getUser().getId(), order.getPrice() - order.getDeliveryRate());
-		// 6. 주문 상태 변경
+		// 7. 주문 상태 변경
 		updateOrderStatus(order.getId(), orderStatus);
-		// 7. 고객 알림
+		// 8. 고객 알림
 		// notify(order.getId(), order.getUser().getId(), "Order successful");
 	}
 

@@ -1,5 +1,9 @@
 package store.buzzbook.core.dto.payment;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.Getter;
 
 @Getter
@@ -23,9 +27,13 @@ public class PayInfo {
 		}
 	}
 
+	@JsonProperty("orderId")
 	private final String orderId;
+	@JsonProperty("totalAmount")
 	private final int price;
+	@JsonProperty("method")
 	private final PayType payType;
+	@JsonProperty("paymentKey")
 	private final String paymentKey;
 
 	public PayInfo(String orderId, int price, PayType payType, String paymentKey) {

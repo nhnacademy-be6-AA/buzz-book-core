@@ -23,6 +23,7 @@ import store.buzzbook.core.dto.coupon.CouponRequest;
 import store.buzzbook.core.dto.coupon.CouponResponse;
 import store.buzzbook.core.dto.coupon.CouponStatusResponse;
 import store.buzzbook.core.dto.coupon.UpdateCouponRequest;
+import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.entity.coupon.CouponStatus;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
@@ -66,7 +67,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<CouponStatusResponse> couponResponseEntity = restTemplate.exchange(
-			String.format("http://%s:%d/api/coupons", host, port), HttpMethod.POST, couponRequestHttpEntity,
+			String.format("http://%s:%d/api/coupons/info", host, port), HttpMethod.POST, couponRequestHttpEntity,
 			CouponStatusResponse.class);
 
 		if (CouponStatus.USED == CouponStatus.fromString(couponResponseEntity.getBody().status())) {
@@ -74,6 +75,20 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		} else {
 			return true;
 		}
+	}
+
+	void saveCancelPayment(Order order, PayInfo payInfo) {
+		billLogRepository.save(
+			BillLog.builder()
+				.price(payInfo.getPrice())
+				.paymentKey(
+					payInfo.getPaymentKey())
+				.order(order)
+				.status(BillStatus.CANCELED)
+				.payment(payInfo.getPayType().name())
+				.payAt(
+					LocalDateTime.now())
+				.build());
 	}
 
 	void cancelPoints(Order order, long userId, int cancelPoints, String paymentKey) {
@@ -145,25 +160,27 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		pointService.createPointLogWithDelta(userId, CANCEL_EARNED_POINT_INQUIRY, earnedPoints);
 	}
 
-	public void process(long orderId, String paymentKey, HttpHeaders headers) {
+	public void process(long orderId, PayInfo payInfo, HttpHeaders headers) {
 		OrderStatus orderStatus = orderStatusRepository.findByName(CANCELED);
 
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
 		List<OrderDetail> details = order.getDetails();
 
+		// 1. 검증
+		if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
+			throw new OutOfCouponException();
+		}
+
 		for (OrderDetail detail : details) {
 			Product product = detail.getProduct();
-			// 1. 검증
-			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
-				throw new OutOfCouponException();
-			}
 
 			// 2. 재고 처리
 			increaseStock(product.getId(), detail.getQuantity());
 		}
 
-		cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), paymentKey);
-		cancelCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), paymentKey, headers);
+		saveCancelPayment(order, payInfo);
+		cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+		cancelCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), payInfo.getPaymentKey(), headers);
 		cancelEarnedPoints(order.getUser().getId(), order.getEarnedPoints());
 		updateOrderStatus(orderId, orderStatus);
 	}

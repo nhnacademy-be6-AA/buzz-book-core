@@ -64,7 +64,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						"orderDetailWrap"
 					),
 					orderDetail.createAt.as("orderDetailCreatedAt"),
-					orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+					orderDetail.orderStatus.name.as("orderDetailStatusName"),
 					orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
 					orderDetail.product.productName.as("orderDetailProductName"),
 					orderDetail.updateAt.as("orderDetailUpdatedAt")
@@ -131,7 +131,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						"orderDetailWrap"
 					),
 					orderDetail.createAt.as("orderDetailCreatedAt"),
-					orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+					orderDetail.orderStatus.name.as("orderDetailStatusName"),
 					orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
 					orderDetail.product.productName.as("orderDetailProductName"),
 					orderDetail.updateAt.as("orderDetailUpdatedAt")
