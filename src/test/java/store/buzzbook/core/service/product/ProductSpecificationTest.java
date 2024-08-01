@@ -2,7 +2,6 @@ package store.buzzbook.core.service.product;
 
 import static org.mockito.Mockito.*;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -88,43 +87,43 @@ class ProductSpecificationTest {
 	@Mock
 	Category category;
 
-	@Disabled
-	@Test
-	void testGetProductsByCriteria() {
-		// Given
-		Product.StockStatus stockStatus = Product.StockStatus.SALE;
-		String name = "test";
-		Integer categoryId = 1;
+	// @Disabled
+	// @Test
+	// void testGetProductsByCriteria() {
+	// 	// Given
+	// 	Product.StockStatus stockStatus = Product.StockStatus.SALE;
+	// 	String name = "test";
+	// 	Integer categoryId = 1;
+	//
+	// 	Root<Product> root = mock(Root.class);
+	// 	CriteriaQuery<?> query = mock(CriteriaQuery.class);
+	// 	CriteriaBuilder criteriaBuilder = mock(CriteriaBuilder.class);
+	//
+	// 	// Mock CategoryRepository behavior
+	// 	when(category.getId()).thenReturn(1);
+	// 	when(categoryRepository.findById(anyInt())).thenReturn(java.util.Optional.of(category));
+	//
+	// 	// When
+	// 	productSpecification.getProductsByCriteria(stockStatus, name, categoryId).toPredicate(root, query, criteriaBuilder);
+	//
+	// 	// Then
+	// 	verify(criteriaBuilder).equal(root.get("stockStatus"), stockStatus);
+	// 	verify(criteriaBuilder).like(root.get("productName"), "%" + name + "%");
+	// 	verify(root.get("category").get("id")).in(anyList());
+	// }
 
-		Root<Product> root = mock(Root.class);
-		CriteriaQuery<?> query = mock(CriteriaQuery.class);
-		CriteriaBuilder criteriaBuilder = mock(CriteriaBuilder.class);
-
-		// Mock CategoryRepository behavior
-		when(category.getId()).thenReturn(1);
-		when(categoryRepository.findById(anyInt())).thenReturn(java.util.Optional.of(category));
-
-		// When
-		productSpecification.getProductsByCriteria(stockStatus, name, categoryId).toPredicate(root, query, criteriaBuilder);
-
-		// Then
-		verify(criteriaBuilder).equal(root.get("stockStatus"), stockStatus);
-		verify(criteriaBuilder).like(root.get("productName"), "%" + name + "%");
-		verify(root.get("category").get("id")).in(anyList());
-	}
-
-	@Disabled
-	@Test
-	void testGetProductsByCriteria_NullParameters() {
-		// Given
-		Root<Product> root = mock(Root.class);
-		CriteriaQuery<?> query = mock(CriteriaQuery.class);
-		CriteriaBuilder criteriaBuilder = mock(CriteriaBuilder.class);
-
-		// When
-		productSpecification.getProductsByCriteria(null, null, null).toPredicate(root, query, criteriaBuilder);
-
-		// Then
-		verify(criteriaBuilder, never()).equal(any(), any());
-	}
+	// @Disabled
+	// @Test
+	// void testGetProductsByCriteria_NullParameters() {
+	// 	// Given
+	// 	Root<Product> root = mock(Root.class);
+	// 	CriteriaQuery<?> query = mock(CriteriaQuery.class);
+	// 	CriteriaBuilder criteriaBuilder = mock(CriteriaBuilder.class);
+	//
+	// 	// When
+	// 	productSpecification.getProductsByCriteria(null, null, null).toPredicate(root, query, criteriaBuilder);
+	//
+	// 	// Then
+	// 	verify(criteriaBuilder, never()).equal(any(), any());
+	// }
 }
