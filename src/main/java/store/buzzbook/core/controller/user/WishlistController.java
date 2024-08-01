@@ -49,20 +49,25 @@ public class WishlistController {
 	}
 
 	@JwtValidate
-	@DeleteMapping("/{id}")
-	@ApiOperation("좋아요된 상태에서 또 좋아요를 누르면 발생. wishlist의 id필요")
+	@DeleteMapping("/{productId}")
+	@ApiOperation("좋아요된 상태에서 또 좋아요를 누르면 발생. product id필요")
 	public ResponseEntity<Void> deleteWishlist(HttpServletRequest request,
-		@PathVariable long id) {
-		wishlistService.deleteWishlist(id);
+		@PathVariable int productId) {
+		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
+		wishlistService.deleteWishlist(userId, productId);
 		return ResponseEntity.noContent().build();
 	}
 
 	@JwtValidate
 	@GetMapping("/{productId}")
 	@ApiOperation("해당 상품이 user가 wishlist에 등록한 상품인지 확인")
-	public ResponseEntity<Boolean> checkWishlist(HttpServletRequest request,
+	public ResponseEntity<Long> checkWishlist(HttpServletRequest request,
 		@PathVariable int productId) {
 		Long userId = (Long)request.getAttribute(AuthService.USER_ID);
+		Long id = wishlistService.isUserWishlist(userId, productId);
+		if (id == null) {
+			return ResponseEntity.noContent().build();
+		}
 		return ResponseEntity.ok(wishlistService.isUserWishlist(userId, productId));
 	}
 
