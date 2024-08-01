@@ -36,6 +36,7 @@ public abstract class AbstractOrderCancelService implements OrderStrategy {
 	// - 고객 알림 ( 문자, 카카오 메시지)
 
 	// 검증
+	abstract boolean validateOrderStatus(Order order);
 	abstract boolean validateCoupon(User user, String couponCode, HttpHeaders headers);
 
 	// 재고 처리

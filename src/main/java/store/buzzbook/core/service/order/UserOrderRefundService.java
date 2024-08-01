@@ -15,7 +15,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
+import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.CouponStatusNotUpdatedException;
+import store.buzzbook.core.common.exception.order.NotShippedException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.OutOfCouponException;
 import store.buzzbook.core.dto.coupon.CouponRequest;
@@ -59,6 +62,22 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 		super(orderRepository, orderStatusRepository, productRepository);
 		this.pointService = pointService;
 		this.billLogRepository = billLogRepository;
+	}
+
+	@Override
+	boolean validateOrderStatus(Order order) {
+		if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
+			throw new AlreadyCanceledException();
+		}
+		if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
+			|| order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+			throw new AlreadyRefundedException();
+		}
+		if (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+			throw new NotShippedException();
+		}
+
+		return false;
 	}
 
 	@Override
@@ -172,6 +191,8 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 		List<OrderDetail> details = order.getDetails();
 
 		// 1. 검증
+		validateOrderStatus(order);
+
 		if (order.getCouponCode() != null) {
 			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
 				throw new OutOfCouponException();

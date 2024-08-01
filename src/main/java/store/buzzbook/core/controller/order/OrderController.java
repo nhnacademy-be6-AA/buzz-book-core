@@ -88,7 +88,7 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 
-	@JwtOrderValidate
+	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
 	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest,
@@ -97,7 +97,8 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
 		}
-		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
+		// return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
+		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
 
 	@JwtOrderValidate

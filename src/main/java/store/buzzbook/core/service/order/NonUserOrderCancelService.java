@@ -8,6 +8,9 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
+import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
+import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
+import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.entity.order.Order;
@@ -34,6 +37,21 @@ public class NonUserOrderCancelService extends AbstractOrderCancelService {
 	}
 
 	@Override
+	boolean validateOrderStatus(Order order) {
+		if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
+			throw new AlreadyCanceledException();
+		}
+		if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+			throw new AlreadyRefundedException();
+		}
+		if (!order.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
+			throw new NotPaidException();
+		}
+
+		return false;
+	}
+
+	@Override
 	boolean validateCoupon(User user, String couponCode, HttpHeaders headers) {
 		return false;
 	}
@@ -57,6 +75,8 @@ public class NonUserOrderCancelService extends AbstractOrderCancelService {
 
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
 		List<OrderDetail> details = order.getDetails();
+
+		validateOrderStatus(order);
 
 		for (OrderDetail detail : details) {
 			Product product = detail.getProduct();

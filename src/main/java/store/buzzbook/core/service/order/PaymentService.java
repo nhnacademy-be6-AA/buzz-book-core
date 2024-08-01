@@ -55,6 +55,7 @@ public class PaymentService {
 	private final UserOrderCancelService userOrderCancelService;
 	private final NonUserOrderProcessService nonUserOrderProcessService;
 	private final NonUserOrderCancelService nonUserOrderCancelService;
+	private final UserOrderRefundService userOrderRefundService;
 
 	@Value("${api.gateway.host}")
 	private String host;
@@ -181,7 +182,7 @@ public class PaymentService {
 		headers.set(AuthService.TOKEN_HEADER, request.getHeader(AuthService.TOKEN_HEADER));
 		headers.set(AuthService.REFRESH_HEADER, request.getHeader(AuthService.REFRESH_HEADER));
 
-		orderFactory.setOrderStrategy(userOrderCancelService, order.getId(), createCancelBillLogRequest.getPayInfo(), headers);
+		orderFactory.setOrderStrategy(userOrderRefundService, order.getId(), createCancelBillLogRequest.getPayInfo(), headers);
 		orderFactory.process();
 	}
 
