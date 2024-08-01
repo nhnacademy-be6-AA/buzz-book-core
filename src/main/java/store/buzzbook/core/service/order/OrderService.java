@@ -252,6 +252,9 @@ public class OrderService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
 		if (updateOrderRequest.getOrderStatusName().equals(SHIPPING_OUT)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPING_OUT))) {
+				throw new AlreadyShippingOutException();
+			}
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPING_OUT))) {
 					throw new AlreadyShippingOutException();
@@ -261,6 +264,16 @@ public class OrderService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
+				throw new AlreadyCanceledException();
+			}
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+				throw new AlreadyRefundedException();
+			}
+			if (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+				throw new NotShippedException();
+			}
+
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
 					throw new AlreadyCanceledException();
@@ -278,6 +291,15 @@ public class OrderService {
 		}
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
+				throw new AlreadyCanceledException();
+			}
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+				throw new AlreadyRefundedException();
+			}
+			if (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+				throw new NotShippedException();
+			}
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
 					throw new AlreadyCanceledException();
@@ -295,6 +317,12 @@ public class OrderService {
 		}
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+				throw new AlreadyRefundedException();
+			}
+			if (!order.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
+				throw new NotPaidException();
+			}
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException();
@@ -306,6 +334,8 @@ public class OrderService {
 		}
 
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
+
+		order.changeOrderStatus(orderStatus);
 
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.changeOrderStatus(orderStatus);
@@ -342,6 +372,17 @@ public class OrderService {
 			order.getId(), loginId);
 
 		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
+				throw new AlreadyCanceledException();
+			}
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
+				|| order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+				throw new AlreadyRefundedException();
+			}
+			if (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+				throw new NotShippedException();
+			}
+
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
 					throw new AlreadyCanceledException();
@@ -361,6 +402,17 @@ public class OrderService {
 		}
 
 		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
+				throw new AlreadyCanceledException();
+			}
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
+				|| order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+				throw new AlreadyRefundedException();
+			}
+			if (!order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
+				throw new NotShippedException();
+			}
+
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
 					throw new AlreadyCanceledException();
@@ -380,6 +432,13 @@ public class OrderService {
 		}
 
 		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || order.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
+				throw new AlreadyRefundedException();
+			}
+			if (!order.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
+				throw new NotPaidException();
+			}
+
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
 					throw new AlreadyRefundedException();
@@ -392,6 +451,8 @@ public class OrderService {
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
+
+		order.changeOrderStatus(orderStatus);
 
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.changeOrderStatus(orderStatus);
