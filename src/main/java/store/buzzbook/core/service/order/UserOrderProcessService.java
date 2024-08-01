@@ -222,7 +222,10 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 		}
 
 		// 3. 결제
-		savePayment(order, payInfo);
+		if (order.getPrice() != 0) {
+			savePayment(order, payInfo);
+		}
+
 
 		// 4. 포인트 사용
 		if (order.getDeductedPoints() != 0) {

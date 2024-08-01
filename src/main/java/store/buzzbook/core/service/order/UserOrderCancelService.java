@@ -181,11 +181,16 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		}
 
 		saveCancelPayment(order, payInfo);
-		cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+
+		if (order.getDeductedPoints() != 0) {
+			cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+		}
+
 		if (order.getCouponCode() != null) {
 			cancelCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(),
 				payInfo.getPaymentKey(), headers);
 		}
+
 		cancelEarnedPoints(order.getUser().getId(), order.getEarnedPoints());
 		updateOrderStatus(orderId, orderStatus);
 	}

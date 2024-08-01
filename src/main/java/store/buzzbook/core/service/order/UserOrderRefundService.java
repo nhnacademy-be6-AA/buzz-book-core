@@ -187,11 +187,16 @@ public class UserOrderRefundService extends AbstractOrderRefundService {
 		}
 
 		saveRefundPayment(order, payInfo);
-		cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+
+		if (order.getDeductedPoints() != 0) {
+			cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+		}
+
 		if (order.getCouponCode() != null) {
 			cancelCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(),
 				payInfo.getPaymentKey(), headers);
 		}
+
 		refundPoints(order.getUser().getId(), order.getPrice() - order.getDeliveryRate());
 		cancelEarnedPoints(order.getUser().getId(), order.getEarnedPoints());
 		updateOrderStatus(orderId, orderStatus);
