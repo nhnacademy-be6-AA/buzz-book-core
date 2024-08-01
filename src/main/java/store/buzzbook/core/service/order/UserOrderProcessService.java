@@ -179,6 +179,10 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 	}
 
 	void earnPoints(long orderId, long userId, int earnPoints) {
+		if (earnPoints < 0) {
+			earnPoints = 0;
+		}
+
 		Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
 		UserInfo userInfo = userService.getUserInfoByUserId(userId);
 		double pointRate = pointPolicyRepository.findByName(ORDER_BOOK_POINT_POLICY).getRate();
