@@ -32,7 +32,13 @@ public class UuidUtil {
 	}
 
 	public static byte[] stringToByte(String uuidString) {
-		String formatted = formatUuid(uuidString);
+		String formatted;
+		if (uuidString.contains("-")) {
+			formatted = uuidString;
+		} else {
+			formatted = formatUuid(uuidString);
+		}
+
 		return convertToByte(UUID.fromString(formatted));
 	}
 

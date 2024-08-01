@@ -5,4 +5,8 @@ public class UnEncryptedPasswordException extends RuntimeException {
 		super(String.format("암호화 되지 않은 비밀번호입니다. userId : %s ", userId));
 	}
 
+	public UnEncryptedPasswordException() {
+		super("암호화 되지 않은 비밀번호입니다. : oauth ");
+	}
+
 }
