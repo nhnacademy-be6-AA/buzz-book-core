@@ -24,9 +24,10 @@ public interface WishlistService {
 	/**
 	 * 찜목록을 삭제합니다.
 	 *
-	 * @param wishlistId 찜목록의 ID
+	 * @param userId 사용자의 ID
+	 * @param productId 상품의 ID
 	 */
-	void deleteWishlist(long wishlistId);
+	void deleteWishlist(long userId, int productId);
 
 	/**
 	 * 주어진 사용자의 ID로 찜목록에 등록된 상품들을 반환
@@ -47,7 +48,7 @@ public interface WishlistService {
      * @throws UserNotFoundException 존재하지 않는 사용자의 ID로 찜목록 등록 요청
 	 * @throws DataNotFoundException 존재하지 않는 상품 ID로 찜목록 등록 요청
 	 *
-	 * @return 등록되어있으면 true, 등록되어있지 않으면 false
+	 * @return 등록되어있으면 해당 wishlist의 id값, 등록되어있지 않으면 null 반환
 	 */
-	boolean isUserWishlist(long userId, int productId);
+	Long isUserWishlist(long userId, int productId);
 }
