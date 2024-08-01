@@ -204,8 +204,10 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 			throw new OutOfPointsException();
 		}
 
-		if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
-			throw new OutOfCouponException();
+		if (order.getCouponCode() != null) {
+			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
+				throw new OutOfCouponException();
+			}
 		}
 
 		for (OrderDetail detail : details) {
@@ -223,9 +225,14 @@ public class UserOrderProcessService extends AbstractOrderProcessService {
 		savePayment(order, payInfo);
 
 		// 4. 포인트 사용
-		usePoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+		if (order.getDeductedPoints() != 0) {
+			usePoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
+		}
+
 		// 5. 쿠폰 사용
-		useCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), payInfo.getPaymentKey(), headers);
+		if (order.getCouponCode() != null) {
+			useCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), payInfo.getPaymentKey(), headers);
+		}
 		// 6. 포인트 적립
 		earnPoints(orderId, order.getUser().getId(), order.getPrice() - order.getDeliveryRate());
 		// 7. 주문 상태 변경

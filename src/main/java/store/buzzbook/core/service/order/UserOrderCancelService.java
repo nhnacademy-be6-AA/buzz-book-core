@@ -100,7 +100,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 				.paymentKey(
 					paymentKey)
 				.order(order)
-				.status(BillStatus.DONE)
+				.status(BillStatus.CANCELED)
 				.payment(POINT)
 				.payAt(
 					LocalDateTime.now())
@@ -128,7 +128,7 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 				.paymentKey(
 					paymentKey)
 				.order(order)
-				.status(BillStatus.DONE)
+				.status(BillStatus.CANCELED)
 				.payment(couponCode)
 				.payAt(
 					LocalDateTime.now())
@@ -167,8 +167,10 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 		List<OrderDetail> details = order.getDetails();
 
 		// 1. 검증
-		if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
-			throw new OutOfCouponException();
+		if (order.getCouponCode() != null) {
+			if (validateCoupon(order.getUser(), order.getCouponCode(), headers)) {
+				throw new OutOfCouponException();
+			}
 		}
 
 		for (OrderDetail detail : details) {
@@ -180,7 +182,10 @@ public class UserOrderCancelService extends AbstractOrderCancelService {
 
 		saveCancelPayment(order, payInfo);
 		cancelPoints(order, order.getUser().getId(), order.getDeductedPoints(), payInfo.getPaymentKey());
-		cancelCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(), payInfo.getPaymentKey(), headers);
+		if (order.getCouponCode() != null) {
+			cancelCoupon(order, order.getUser().getId(), order.getCouponCode(), order.getDeductedCouponPrice(),
+				payInfo.getPaymentKey(), headers);
+		}
 		cancelEarnedPoints(order.getUser().getId(), order.getEarnedPoints());
 		updateOrderStatus(orderId, orderStatus);
 	}

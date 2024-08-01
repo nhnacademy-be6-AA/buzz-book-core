@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
+import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
@@ -49,7 +50,7 @@ public class NonUserOrderCancelService extends AbstractOrderCancelService {
 	}
 
 	@Override
-	public void process(long orderId, String paymentKey, HttpHeaders headers) {
+	public void process(long orderId, PayInfo payInfo, HttpHeaders headers) {
 		return;
 	}
 }

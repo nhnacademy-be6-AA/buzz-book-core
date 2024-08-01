@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductOutOfStockException;
+import store.buzzbook.core.dto.payment.PayInfo;
 import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
@@ -70,7 +71,7 @@ public class NonUserOrderProcessService extends AbstractOrderProcessService {
 	}
 
 	@Override
-	public void process(long orderId, String paymentKey, HttpHeaders headers) {
+	public void process(long orderId, PayInfo payInfo, HttpHeaders headers) {
 		return;
 	}
 }
