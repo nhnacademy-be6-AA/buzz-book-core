@@ -115,31 +115,6 @@ public class PaymentService {
 	}
 
 	/**
-	 * 주문 번호로 조회한 주문 상세 리스트들의 상태를 수정하고 DTO 리스트로 반환합니다.
-	 *
-	 * @param order 주문 엔터티
-	 * @param orderStatus 주문 상태 이름
-	 * @return 주문 상세 응답 객체 리스트
-	 */
-
-	// private List<ReadOrderDetailResponse> getReadOrderDetailResponses(Order order, String orderStatus) {
-	// 	List<ReadOrderDetailResponse> readOrderDetailResponses = new ArrayList<>();
-	// 	List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
-	// 	for (OrderDetail orderDetail : orderDetails) {
-	// 		orderDetail.setOrderStatus(orderStatusRepository.findByName(orderStatus));
-	// 		Product product = productRepository.findById(orderDetail.getProduct().getId())
-	// 			.orElseThrow(ProductNotFoundException::new);
-	// 		Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-	// 			.orElseThrow(WrappingNotFoundException::new);
-	// 		ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-	// 		readOrderDetailResponses.add(
-	// 			OrderDetailMapper.toDto(orderDetail, ProductResponse.convertToProductResponse(product),
-	// 				readWrappingResponse));
-	// 	}
-	// 	return readOrderDetailResponses;
-	// }
-
-	/**
 	 * 주문 취소 내역을 생성합니다.
 	 *
 	 * @param paymentInfo 토스 api에서 반환하는 payment 객체

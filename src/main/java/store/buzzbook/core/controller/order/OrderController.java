@@ -130,14 +130,6 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest));
 	}
 
-	// @JwtOrderValidate
-	// @Operation(summary = "주문 및 취소 시 포인트 변경", description = "주문 및 취소 시 포인트 변경")
-	// @PostMapping("/point")
-	// public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
-	// 	UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-	// 	return ResponseEntity.ok(orderService.createPointLog(createPointLogForOrderRequest, userInfo));
-	// }
-
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
 	@PostMapping("/status/name")
 	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(
