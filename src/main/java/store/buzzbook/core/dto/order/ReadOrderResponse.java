@@ -31,4 +31,8 @@ public class ReadOrderResponse {
 	private String orderEmail;
 	private String couponCode;
 	private int deliveryRate;
+	private Integer deductedPoints;
+	private Integer earnedPoints;
+	private Integer deductedCouponPrice;
+	private String orderStatus;
 }

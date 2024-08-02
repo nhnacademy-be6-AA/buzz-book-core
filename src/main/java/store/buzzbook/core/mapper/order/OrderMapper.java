@@ -8,6 +8,7 @@ import store.buzzbook.core.dto.order.CreateOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
 import store.buzzbook.core.dto.order.ReadOrderResponse;
 import store.buzzbook.core.entity.order.Order;
+import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
 
@@ -33,10 +34,14 @@ public class OrderMapper {
 			.orderEmail(order.getOrderEmail())
 			.couponCode(order.getCouponCode())
 			.deliveryRate(order.getDeliveryRate())
+			.deductedPoints(order.getDeductedPoints())
+			.earnedPoints(order.getEarnedPoints())
+			.deductedCouponPrice(order.getDeductedCouponPrice())
+			.orderStatus(order.getOrderStatus().getName())
 			.build();
 	}
 
-	public static Order toEntity(CreateOrderRequest createOrderRequest, User user) {
+	public static Order toEntity(CreateOrderRequest createOrderRequest, OrderStatus orderStatus, User user) {
 		return Order.builder()
 			.user(user)
 			.orderStr(createOrderRequest.getOrderStr())
@@ -53,10 +58,14 @@ public class OrderMapper {
 			.orderEmail(createOrderRequest.getOrderEmail())
 			.couponCode(createOrderRequest.getCouponCode())
 			.deliveryRate(createOrderRequest.getDeliveryRate())
+			.orderStatus(orderStatus)
+			.deductedPoints(createOrderRequest.getDeductedPoints())
+			.earnedPoints(createOrderRequest.getEarnedPoints())
+			.deductedCouponPrice(createOrderRequest.getDeductedCouponPrice())
 			.build();
 	}
 
-	public static Order toEntityWithAddress(CreateOrderRequest createOrderRequest, User user, Address address) {
+	public static Order toEntityWithAddress(CreateOrderRequest createOrderRequest, User user, OrderStatus orderStatus, Address address) {
 
 		return Order.builder()
 			.user(user)
@@ -74,6 +83,10 @@ public class OrderMapper {
 			.orderEmail(createOrderRequest.getOrderEmail())
 			.couponCode(createOrderRequest.getCouponCode())
 			.deliveryRate(createOrderRequest.getDeliveryRate())
+			.orderStatus(orderStatus)
+			.deductedPoints(createOrderRequest.getDeductedPoints())
+			.earnedPoints(createOrderRequest.getEarnedPoints())
+			.deductedCouponPrice(createOrderRequest.getDeductedCouponPrice())
 			.build();
 	}
 }

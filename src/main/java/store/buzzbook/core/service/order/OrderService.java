@@ -4,7 +4,6 @@ import static store.buzzbook.core.common.listener.OrderStatusListener.*;
 import static store.buzzbook.core.common.listener.WrappingListener.*;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,22 +23,15 @@ import jakarta.ws.rs.NotAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
-import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
-import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
-import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
-import store.buzzbook.core.common.exception.order.NotPaidException;
-import store.buzzbook.core.common.exception.order.NotShippedException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
-import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderDetailRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
@@ -52,7 +44,6 @@ import store.buzzbook.core.dto.order.ReadOrdersResponse;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.product.ProductResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.entity.order.DeliveryPolicy;
@@ -60,7 +51,6 @@ import store.buzzbook.core.entity.order.Order;
 import store.buzzbook.core.entity.order.OrderDetail;
 import store.buzzbook.core.entity.order.OrderStatus;
 import store.buzzbook.core.entity.order.Wrapping;
-import store.buzzbook.core.entity.point.PointLog;
 import store.buzzbook.core.entity.product.Product;
 import store.buzzbook.core.entity.user.Address;
 import store.buzzbook.core.entity.user.User;
@@ -117,7 +107,6 @@ public class OrderService {
 	 * @return 주문 내역 리스트와 다음 페이지 유무 여부를 가진 Map 객체
 	 */
 
-	@Cacheable(value = "readOrders", key = "#request.page")
 	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -158,7 +147,6 @@ public class OrderService {
 	 * @return 생성된 주문 반환
 	 */
 
-	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
@@ -171,25 +159,25 @@ public class OrderService {
 		}
 
 		Order order = null;
+		OrderStatus orderStatus = orderStatusRepository.findByName(createOrderRequest.getOrderStatus());
 
 		if (createOrderRequest.getAddress().isEmpty()) {
 			Optional<Address> address = addressRepository.findById(Long.parseLong(createOrderRequest.getAddresses()));
 			if (address.isPresent()) {
-				order = orderRepository.save(OrderMapper.toEntityWithAddress(createOrderRequest, user, address.get()));
+				order = orderRepository.save(OrderMapper.toEntityWithAddress(createOrderRequest, user, orderStatus, address.get()));
 			} else {
 				throw new AddressNotFoundException();
 			}
 
 		} else {
-			order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, user));
+			order = orderRepository.save(OrderMapper.toEntity(createOrderRequest, orderStatus, user));
 		}
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
 
 		for (CreateOrderDetailRequest detail : details) {
 			detail.setOrderId(order.getId());
-			OrderStatus orderStatus = orderStatusRepository.findById(detail.getOrderStatusId())
-				.orElseThrow(OrderStatusNotFoundException::new);
+			OrderStatus orderDetailStatus = orderStatusRepository.findByName(detail.getOrderStatus());
 			Wrapping wrapping = null;
 			if (detail.getWrappingId() != 0) {
 				wrapping = wrappingRepository.findById(detail.getWrappingId())
@@ -201,11 +189,9 @@ public class OrderService {
 			Product product = productRepository.findById(detail.getProductId())
 				.orElseThrow(ProductNotFoundException::new);
 
-			product.decreaseStock(detail.getQuantity());
-
 			detail.setPrice(product.getPrice());
 
-			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderStatus);
+			OrderDetail orderDetail = OrderDetailMapper.toEntity(detail, order, wrapping, product, orderDetailStatus);
 			orderDetail = orderDetailRepository.save(orderDetail);
 
 			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
@@ -225,25 +211,6 @@ public class OrderService {
 	}
 
 	/**
-	 * 포인트 내역을 생성합니다.
-	 *
-	 * @param createPointLogForOrderRequest 포인트 내역 생성 요청 객체
-	 * @param userInfo 유저 정보 객체
-	 * @return 생성된 포인트 내역 반환
-	 */
-
-	@Transactional(rollbackFor = Exception.class)
-	public PointLogResponse createPointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
-		User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-		double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
-		int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
-		int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
-		PointLog pointLog = pointService.createPointLogWithDelta(user, createPointLogForOrderRequest.getPointOrderInquiry(), point+benefit);
-
-		return PointLogResponse.from(pointLog);
-	}
-
-	/**
 	 * 관리자가 주문을 수정하는 기능입니다.
 	 *
 	 * @param updateOrderRequest 주문 업데이트 요청 객체
@@ -257,6 +224,9 @@ public class OrderService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_Id(order.getId());
 
 		if (updateOrderRequest.getOrderStatusName().equals(SHIPPING_OUT)) {
+			if (order.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPING_OUT))) {
+				throw new AlreadyShippingOutException();
+			}
 			for (OrderDetail orderDetail : orderDetails) {
 				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPING_OUT))) {
 					throw new AlreadyShippingOutException();
@@ -265,52 +235,10 @@ public class OrderService {
 		}
 
 		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
-		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
-			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException();
-				}
-				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
-					throw new NotShippedException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED)) && isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
-					throw new ExpiredToRefundException();
-				}
-			}
-		}
-
-		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
-			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException();
-				}
-				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
-					throw new NotShippedException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED)) && isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
-					throw new ExpiredToRefundException();
-				}
-			}
-		}
-
-		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
-			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException();
-				}
-				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
-					throw new NotPaidException();
-				}
-			}
-		}
 
 		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
+
+		order.changeOrderStatus(orderStatus);
 
 		for (OrderDetail orderDetail : orderDetails) {
 			orderDetail.changeOrderStatus(orderStatus);
@@ -328,97 +256,6 @@ public class OrderService {
 		}
 
 		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
-	}
-
-	/**
-	 * 고객이 주문을 수정하는 기능입니다.
-	 *
-	 * @param updateOrderRequest 주문 업데이트 요청 객체
-	 * @param loginId 고객 아이디
-	 * @return 업데이트된 주문 응답 객체
-	 */
-
-	@CacheEvict(value = "getOrders", allEntries = true)
-	@Transactional(rollbackFor = Exception.class)
-	public ReadOrderResponse updateOrder(UpdateOrderRequest updateOrderRequest, String loginId) {
-		Order order = orderRepository.findByOrderStr(updateOrderRequest.getOrderId());
-
-		List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrder_IdAndOrder_User_LoginId(
-			order.getId(), loginId);
-
-		if (updateOrderRequest.getOrderStatusName().equals(REFUND)) {
-			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
-					|| orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException();
-				}
-				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
-					throw new NotShippedException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))
-					&& isCreatedBeforeDays(orderDetail.getCreateAt(), REFUND_PERIOD)) {
-					throw new ExpiredToRefundException();
-				}
-			}
-		}
-
-		if (updateOrderRequest.getOrderStatusName().equals(BREAKAGE_REFUND)) {
-			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(CANCELED))) {
-					throw new AlreadyCanceledException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND))
-					|| orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException();
-				}
-				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))) {
-					throw new NotShippedException();
-				}
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(SHIPPED))
-					&& isCreatedBeforeDays(orderDetail.getCreateAt(), BREAKAGE_REFUND_PERIOD)) {
-					throw new ExpiredToRefundException();
-				}
-			}
-		}
-
-		if (updateOrderRequest.getOrderStatusName().equals(CANCELED)) {
-			for (OrderDetail orderDetail : orderDetails) {
-				if (orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(REFUND)) || orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(BREAKAGE_REFUND))) {
-					throw new AlreadyRefundedException();
-				}
-				if (!orderDetail.getOrderStatus().equals(orderStatusRepository.findByName(PAID))) {
-					throw new NotPaidException();
-				}
-			}
-		}
-
-		List<ReadOrderDetailResponse> readOrderDetailResponse = new ArrayList<>();
-		OrderStatus orderStatus = orderStatusRepository.findByName(updateOrderRequest.getOrderStatusName());
-
-		for (OrderDetail orderDetail : orderDetails) {
-			orderDetail.changeOrderStatus(orderStatus);
-			entityManager.flush();
-
-			Product product = productRepository.findById(orderDetail.getProduct().getId())
-				.orElseThrow(ProductNotFoundException::new);
-
-			Wrapping wrapping = wrappingRepository.findById(orderDetail.getWrapping().getId())
-				.orElseThrow(WrappingNotFoundException::new);
-
-			ReadWrappingResponse readWrappingResponse = WrappingMapper.toDto(wrapping);
-			ProductResponse productResponse = ProductResponse.convertToProductResponse(product);
-			readOrderDetailResponse.add(OrderDetailMapper.toDto(orderDetail, productResponse, readWrappingResponse));
-		}
-
-		return OrderMapper.toDto(order, readOrderDetailResponse, order.getUser().getLoginId());
-	}
-
-	private static boolean isCreatedBeforeDays(LocalDateTime createAt, int sub) {
-		LocalDateTime daysAgo = LocalDateTime.now().minus(sub, ChronoUnit.DAYS);
-		return createAt.isBefore(daysAgo);
 	}
 
 	/**
@@ -480,19 +317,6 @@ public class OrderService {
 			request.getOrderEmail());
 
 		return OrderMapper.toDto(order, convertOrderDetailsToDto(orderDetails), null);
-	}
-
-	/**
-	 * 번호로 주문 상태를 조회합니다.
-	 *
-	 * @param id 주문 상태 번호
-	 * @return 주문 상태 응답 객체
-	 */
-
-	@Transactional(readOnly = true)
-	public ReadOrderStatusResponse readOrderStatusById(int id) {
-		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
-			.orElseThrow(OrderStatusNotFoundException::new));
 	}
 
 	/**

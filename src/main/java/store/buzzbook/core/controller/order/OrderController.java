@@ -23,14 +23,12 @@ import store.buzzbook.core.common.annotation.JwtOrderAdminValidate;
 import store.buzzbook.core.common.annotation.JwtOrderValidate;
 import store.buzzbook.core.dto.order.CreateDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.CreateOrderRequest;
-import store.buzzbook.core.dto.order.CreatePointLogForOrderRequest;
 import store.buzzbook.core.dto.order.CreateWrappingRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyRequest;
 import store.buzzbook.core.dto.order.ReadDeliveryPolicyResponse;
 import store.buzzbook.core.dto.order.ReadOrderRequest;
 import store.buzzbook.core.dto.order.ReadOrderWithoutLoginRequest;
 import store.buzzbook.core.dto.order.ReadOrdersRequest;
-import store.buzzbook.core.dto.order.ReadOrderStatusByIdRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusByNameRequest;
 import store.buzzbook.core.dto.order.ReadOrderStatusResponse;
 import store.buzzbook.core.dto.order.ReadOrderDetailResponse;
@@ -39,7 +37,6 @@ import store.buzzbook.core.dto.order.ReadWrappingRequest;
 import store.buzzbook.core.dto.order.ReadWrappingResponse;
 import store.buzzbook.core.dto.order.UpdateOrderDetailRequest;
 import store.buzzbook.core.dto.order.UpdateOrderRequest;
-import store.buzzbook.core.dto.point.PointLogResponse;
 import store.buzzbook.core.dto.user.UserInfo;
 import store.buzzbook.core.service.auth.AuthService;
 import store.buzzbook.core.service.order.OrderService;
@@ -90,7 +87,7 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.createOrder(createOrderRequest));
 	}
 
-	@JwtOrderValidate
+	@JwtOrderAdminValidate
 	@Operation(summary = "주문 상태 수정", description = "주문 상태 변경")
 	@PutMapping
 	public ResponseEntity<ReadOrderResponse> updateOrder(@RequestBody UpdateOrderRequest updateOrderRequest,
@@ -99,7 +96,8 @@ public class OrderController {
 		if (userInfo.isAdmin()) {
 			return ResponseEntity.ok(orderService.updateOrderWithAdmin(updateOrderRequest));
 		}
-		return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
+		// return ResponseEntity.ok(orderService.updateOrder(updateOrderRequest, userInfo.loginId()));
+		throw new NotAuthorizedException("관리자 계정으로 접속해주세요.");
 	}
 
 	@JwtOrderValidate
@@ -131,26 +129,11 @@ public class OrderController {
 		return ResponseEntity.ok(orderService.readOrderWithoutLogin(readOrderWithoutLoginRequest));
 	}
 
-	@JwtOrderValidate
-	@Operation(summary = "주문 및 취소 시 포인트 변경", description = "주문 및 취소 시 포인트 변경")
-	@PostMapping("/point")
-	public ResponseEntity<PointLogResponse> updatePointLog(@RequestBody CreatePointLogForOrderRequest createPointLogForOrderRequest, HttpServletRequest request) {
-		UserInfo userInfo = userService.getUserInfoByLoginId((String)request.getAttribute(AuthService.LOGIN_ID));
-		return ResponseEntity.ok(orderService.createPointLog(createPointLogForOrderRequest, userInfo));
-	}
-
 	@Operation(summary = "주문 상태 이름으로 조회", description = "주문 상태 조회")
 	@PostMapping("/status/name")
 	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusByName(
 		@RequestBody ReadOrderStatusByNameRequest readOrderStatusByNameRequest) {
 		return ResponseEntity.ok(orderService.readOrderStatusByName(readOrderStatusByNameRequest.getName()));
-	}
-
-	@Operation(summary = "주문 상태 아이디로 조회", description = "주문 상태 조회")
-	@PostMapping("/status/id")
-	public ResponseEntity<ReadOrderStatusResponse> getOrderStatusById(
-		@RequestBody ReadOrderStatusByIdRequest readOrderStatusByIdRequest) {
-		return ResponseEntity.ok(orderService.readOrderStatusById(readOrderStatusByIdRequest.getStatusId()));
 	}
 
 	@Operation(summary = "주문 상태 모두 조회", description = "주문 상태 모두 조회")
