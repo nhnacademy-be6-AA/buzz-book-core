@@ -266,9 +266,4 @@ public class PaymentService {
 	public String getPaymentKey(String orderId, long userId) {
 		return billLogRepository.findByOrder_OrderStrAndOrder_User_Id(orderId, userId).getFirst().getPaymentKey();
 	}
-
-	@Transactional(readOnly = true)
-	public Long getOrderIdByPaymentKey(String paymentKey) {
-		return billLogRepository.findOrderIdByPaymentKey(paymentKey);
-	}
 }

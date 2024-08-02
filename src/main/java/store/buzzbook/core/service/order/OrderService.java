@@ -348,19 +348,6 @@ public class OrderService {
 	}
 
 	/**
-	 * 번호로 주문 상태를 조회합니다.
-	 *
-	 * @param id 주문 상태 번호
-	 * @return 주문 상태 응답 객체
-	 */
-
-	@Transactional(readOnly = true)
-	public ReadOrderStatusResponse readOrderStatusById(int id) {
-		return OrderStatusMapper.toDto(orderStatusRepository.findById(id)
-			.orElseThrow(OrderStatusNotFoundException::new));
-	}
-
-	/**
 	 * 이름으로 주문 상태를 조회합니다.
 	 *
 	 * @param orderStatusName 주문 상태 이름

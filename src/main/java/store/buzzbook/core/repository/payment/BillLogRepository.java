@@ -19,10 +19,5 @@ public interface BillLogRepository extends JpaRepository<BillLog, Long> {
 	List<BillLog> findByOrder_OrderStrAndOrder_User_Id(String orderStr, long userId);
 	List<BillLog> findByOrder_OrderStrAndOrder_OrderEmail(String orderStr, String orderEmail);
 
-	List<BillLog> findAllByPaymentKey(String paymentKey);
-
 	boolean existsByPaymentAndPaymentKey(String payment, String paymentKey);
-
-	@Query("select b.order.id from BillLog b where b.paymentKey = :paymentKey")
-	Long findOrderIdByPaymentKey(@Param("paymentKey") String paymentKey);
 }
