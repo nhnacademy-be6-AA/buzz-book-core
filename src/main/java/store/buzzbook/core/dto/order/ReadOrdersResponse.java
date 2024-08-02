@@ -35,4 +35,8 @@ public class ReadOrdersResponse implements Serializable {
 	private String couponCode;
 	private int deliveryRate;
 	private String orderEmail;
+	private String orderStatus;
+	private Integer deductedPoints;
+	private Integer earnedPoints;
+	private Integer deductedCouponPrice;
 }

@@ -31,12 +31,17 @@ public class CreateOrderRequest {
 	private String loginId;
 	private List<CreateOrderDetailRequest> details;
 	private String contactNumber;
-	private Integer orderStatusId;
+	private String orderStatus;
 	private String sender;
 	private String receiverContactNumber;
 	private String orderEmail;
-	private Integer myPoint;
+	@Nullable
+	private Integer deductedPoints;
 	@Nullable
 	private String couponCode;
 	private int deliveryRate;
+	@Nullable
+	private Integer earnedPoints;
+	@Nullable
+	private Integer deductedCouponPrice;
 }

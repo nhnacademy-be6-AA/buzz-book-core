@@ -64,7 +64,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						"orderDetailWrap"
 					),
 					orderDetail.createAt.as("orderDetailCreatedAt"),
-					orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+					orderDetail.orderStatus.name.as("orderDetailStatusName"),
 					orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
 					orderDetail.product.productName.as("orderDetailProductName"),
 					orderDetail.updateAt.as("orderDetailUpdatedAt")
@@ -74,7 +74,11 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 				order.senderContactNumber.as("senderContactNumber"),
 				order.couponCode.as("couponCode"),
 				order.deliveryRate.as("deliveryRate"),
-				order.orderEmail.as("orderEmail")
+				order.orderEmail.as("orderEmail"),
+				order.orderStatus.name.as("orderStatus"),
+				order.deductedPoints.as("deductedPoints"),
+				order.earnedPoints.as("earnedPoints"),
+				order.deductedCouponPrice.as("deductedCouponPrice")
 			)));
 
 		return checkEndPage(results, pageable);
@@ -127,7 +131,7 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 						"orderDetailWrap"
 					),
 					orderDetail.createAt.as("orderDetailCreatedAt"),
-					orderDetail.orderStatus.name.as("orderDetailOrderStatusName"),
+					orderDetail.orderStatus.name.as("orderDetailStatusName"),
 					orderDetail.wrapping.paper.as("orderDetailWrappingPaper"),
 					orderDetail.product.productName.as("orderDetailProductName"),
 					orderDetail.updateAt.as("orderDetailUpdatedAt")
@@ -137,7 +141,11 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 				order.senderContactNumber.as("senderContactNumber"),
 				order.couponCode.as("couponCode"),
 				order.deliveryRate.as("deliveryRate"),
-				order.orderEmail.as("orderEmail")
+				order.orderEmail.as("orderEmail"),
+				order.orderStatus.name.as("orderStatus"),
+				order.deductedPoints.as("deductedPoints"),
+				order.earnedPoints.as("earnedPoints"),
+				order.deductedCouponPrice.as("deductedCouponPrice")
 			)));
 
 		return checkEndPage(results, pageable);
@@ -171,6 +179,10 @@ public class OrderQuerydslRepositoryImpl implements OrderQuerydslRepository {
 					order.couponCode.as("couponCode"),
 					order.orderEmail.as("orderEmail"),
 					order.deliveryRate.as("deliveryRate"),
+					order.orderStatus.name.as("orderStatus"),
+					order.deductedPoints.as("deductedPoints"),
+					order.earnedPoints.as("earnedPoints"),
+					order.deductedCouponPrice.as("deductedCouponPrice"),
 					GroupBy.list(Projections.fields(
 						ReadBillLogWithoutOrderResponse.class,
 						billLog.id.as("id"),
