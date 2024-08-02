@@ -8,8 +8,6 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
-import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.NotPaidException;
 import store.buzzbook.core.common.exception.order.OrderNotFoundException;
 import store.buzzbook.core.dto.payment.PayInfo;
