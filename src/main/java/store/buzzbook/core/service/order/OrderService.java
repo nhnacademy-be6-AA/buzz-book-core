@@ -4,7 +4,6 @@ import static store.buzzbook.core.common.listener.OrderStatusListener.*;
 import static store.buzzbook.core.common.listener.WrappingListener.*;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,15 +23,9 @@ import jakarta.ws.rs.NotAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import store.buzzbook.core.common.exception.order.AddressNotFoundException;
-import store.buzzbook.core.common.exception.order.AlreadyCanceledException;
-import store.buzzbook.core.common.exception.order.AlreadyRefundedException;
 import store.buzzbook.core.common.exception.order.AlreadyShippingOutException;
 import store.buzzbook.core.common.exception.order.DeliveryPolicyNotFoundException;
-import store.buzzbook.core.common.exception.order.ExpiredToRefundException;
-import store.buzzbook.core.common.exception.order.NotPaidException;
-import store.buzzbook.core.common.exception.order.NotShippedException;
 import store.buzzbook.core.common.exception.order.OrderDetailNotFoundException;
-import store.buzzbook.core.common.exception.order.OrderStatusNotFoundException;
 import store.buzzbook.core.common.exception.order.ProductNotFoundException;
 import store.buzzbook.core.common.exception.order.WrappingNotFoundException;
 import store.buzzbook.core.common.exception.user.UserNotFoundException;
@@ -114,7 +107,6 @@ public class OrderService {
 	 * @return 주문 내역 리스트와 다음 페이지 유무 여부를 가진 Map 객체
 	 */
 
-	@Cacheable(value = "readOrders", key = "#request.page")
 	@Transactional(readOnly = true)
 	public Map<String, Object> readOrders(ReadOrdersRequest request) {
 		Map<String, Object> data = new HashMap<>();
@@ -155,7 +147,6 @@ public class OrderService {
 	 * @return 생성된 주문 반환
 	 */
 
-	@CacheEvict(value = "readOrders", allEntries = true)
 	@Transactional(rollbackFor = Exception.class)
 	public ReadOrderResponse createOrder(CreateOrderRequest createOrderRequest) {
 		List<CreateOrderDetailRequest> details = createOrderRequest.getDetails();
@@ -218,25 +209,6 @@ public class OrderService {
 
 		return OrderMapper.toDto(order, readOrderDetailResponse, user.getLoginId());
 	}
-
-	/**
-	 * 포인트 내역을 생성합니다.
-	 *
-	 * @param createPointLogForOrderRequest 포인트 내역 생성 요청 객체
-	 * @param userInfo 유저 정보 객체
-	 * @return 생성된 포인트 내역 반환
-	 */
-
-	// @Transactional(rollbackFor = Exception.class)
-	// public PointLogResponse createPointLog(CreatePointLogForOrderRequest createPointLogForOrderRequest, UserInfo userInfo) {
-	// 	User user = userRepository.findByLoginId(userInfo.loginId()).orElseThrow(() -> new UserNotFoundException(userInfo.loginId()));
-	// 	double pointRate = pointPolicyRepository.findByName(createPointLogForOrderRequest.getPointPolicyName()).getRate();
-	// 	int benefit = (int)(createPointLogForOrderRequest.getPrice() * userInfo.grade().benefit());
-	// 	int point = (int)(createPointLogForOrderRequest.getPrice() * pointRate);
-	// 	PointLog pointLog = pointService.createPointLogWithDelta(user, createPointLogForOrderRequest.getPointOrderInquiry(), point+benefit);
-	//
-	// 	return PointLogResponse.from(pointLog);
-	// }
 
 	/**
 	 * 관리자가 주문을 수정하는 기능입니다.

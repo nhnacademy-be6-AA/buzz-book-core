@@ -37,9 +37,6 @@ import store.buzzbook.core.repository.product.ProductRepository;
 import store.buzzbook.core.repository.user.UserRepository;
 import store.buzzbook.core.service.user.UserService;
 import store.buzzbook.core.service.auth.AuthService;
-import store.buzzbook.core.dto.user.UserInfo;
-import store.buzzbook.core.entity.user.User;
-import store.buzzbook.core.common.exception.user.UserNotFoundException;
 
 /**
  * 결제 관련 서비스
